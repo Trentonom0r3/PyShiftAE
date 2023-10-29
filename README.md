@@ -2,17 +2,18 @@
 An experimental repository for research, ideas, and (hopefully) eventually, working code. See README.md for more info. 
 
 # Goals
-The main Goal of PyShiftAE is to create a replacement library for extendscript, in python. 
-This is not going to be done via wrappers around JS calls, but an actual library creation. 
-Ideally, you could write and run external .py scripts, as well as use them internally. 
-There would be an interface for using PyShiftAE within CEP (and eventually UXP) extensions. (Call it Pyinterface.js, use Pyinterface.evalpy(), hehe)
-This would GREATLY extend the capabilities of scripting in AE -- image data, audio data, access to numpy, ML libraries, and other custom libraries. 
-Script entirely in python, and access functionality you never could have with CEP.
+- The main Goal of PyShiftAE is to create a replacement library for extendscript, in python. 
+- This is not going to be done via wrappers around JS calls, but an actual library creation. 
+- Ideally, you could write and run external .py scripts, as well as use them internally. 
+- There would be an interface for using PyShiftAE within CEP (and eventually UXP) extensions. (Call it Pyinterface.js, use Pyinterface.evalpy(), hehe)
+- This would GREATLY extend the capabilities of scripting in AE -- image data, audio data, access to numpy, ML libraries, and other custom libraries. 
+- Script entirely in python, and access functionality you never could have with CEP.
 
 # Contributing
 I really would like this to be a community project. Posting ideas, thoughts, functionality suggestions, workflow suggestions, etc, would be very much appreciated.
 
-I don't expect anyone to delve too deep into this, but any sort of "reverse-engineering" or "hacking" to get more info regarding internal AEFX workings would also help --- This is how I figured out how to call/create/listen to CSXS events directly from native code. 
+- I don't expect anyone to delve too deep into this, but any sort of "reverse-engineering" or "hacking" to get more info regarding internal AEFX workings would also help
+  - This is how I figured out how to call/create/listen to CSXS events directly from native code. 
 
 # Documentation 
 Coming soon
