@@ -1,16 +1,7 @@
 # Use AETypes.d.ts as a guide for creating the python version of the AEType class
 
-from typing import Union, List, Optional
+from typing import Any, Union, List, Optional
 from definitions import *
-
-class ThreeDColorValue:
-    pass  # Define the ThreeDColorValue class later
-
-class File:
-    pass  # Define the File class later
-
-class FootageSource:
-    pass  # Define the FootageSource class later
 
 class Property:
     pass  # Define the Property class later
@@ -21,7 +12,14 @@ class PropertyGroup:
 class MaskPropertyGroup:
     pass  # Define the MaskPropertyGroup class later
 
+class CompItem:
+    pass  # Define the CompItem class later
+
+class FootageItem:
+    pass  # Define the FootageItem class later
+
 _PropertyClasses = Union[Property, PropertyGroup, MaskPropertyGroup]
+_ItemClasses = Union[CompItem,  FootageItem,  FolderItem]
 
 class Project:
     pass  # Define the Project class later
@@ -69,21 +67,31 @@ class Preferences:
     def saveToDisk(self) -> None:
         pass
 
-
-class GpuAccelType:
-    pass  # Define the GpuAccelType enum later
-
+class Collection:
+    length: int
+    
+class ItemCollection(Collection):
+    items = List[_ItemClasses]
+    
+    ## method to get items by index
+    def __getitem__(self, index: int) -> _ItemClasses:
+        pass
+    
+    ## method to get items by name
+    def __getitem__(self, name: str) -> _ItemClasses:
+        pass
+    
+    def addComp(self, name: str, width: int, height: int, pixelAspect: float, duration: float, frameRate: float) -> CompItem:
+        pass
+    
+    def addFolder(self, name: str) -> FolderItem:
+        pass
+    
 class Folder:
     pass  # Define the Folder class later
 
 class File:
     pass  # Define the File class later
-
-class Language:
-    pass  # Define the Language enum later
-
-class PurgeTarget:
-    pass  # Define the PurgeTarget enum later
 
 class _Swatch:
     pass  # Define the _Swatch class later
@@ -174,4 +182,39 @@ class Application:
 
     def cancelTimeout(self, id: int) -> None:
         pass
+    
+class Item:
+    # read-only
+    id : int
+    typeName : str
+    
+    # read-write
+    name : str
+    comment: str
+    parentFolder: FolderItem
+    selected: bool
+    label: int
+    
+    def addGuide(self, orientationType: int, position: int) -> int:
+        pass
+    
+    def removeGuide(self, guideIndex: int) -> None:
+        pass
+    
+    def setGuide(self, position: int, guideIndex: int) -> None:
+        pass
+    
+    def remove(self) -> None:
+        pass
+    
+class FolderItem(Item):
+    items: ItemCollection
+    numItems: int
+    
+    def __getitem__(self, index: int) -> Item:
+        pass
+    
+    def __getitem__(self, name: str) -> Item:
+        pass
+    
     
