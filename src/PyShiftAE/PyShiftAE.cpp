@@ -13,7 +13,6 @@
 #include "PyShiftAE.h"
 
 static AEGP_Command			PyShift				=	6769L;
-static AEGP_PluginID		PyShiftAE = 10L;
 static A_long				S_idle_count		=	0L;
 static SPBasicSuite			*sP					=	NULL;
 

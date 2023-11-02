@@ -1,4 +1,4 @@
-import PyShiftCore
+from PyShiftCore import *
 import traceback
 try:
     import numpy
@@ -7,9 +7,13 @@ except:
 
 print("Imported Numpy!")
 
-name = PyShiftCore.app.project.name
-version = PyShiftCore.app.version
-path = PyShiftCore.app.project.path
+app.beginUndoGroup();
+name = app.project.name
+version = app.version
+path = app.project.path
+app.executeCommand(2080);
+print("executing command");
+app.endUndoGroup();
 
 # Do something with the name, version, and path
 print("Project name:", name)

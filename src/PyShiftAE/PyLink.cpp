@@ -36,13 +36,20 @@ PYBIND11_EMBEDDED_MODULE(PyShiftCore, m) {
         // Expose the App::getVersion method to Python as a read-only property "version".
         .def_property_readonly("version", &App::getVersion)
         // Expose the App::getProject method to Python as a read-only property "project".
-        .def_property_readonly("project", &App::getProject, py::return_value_policy::reference_internal);
+        .def_property_readonly("project", &App::getProject, py::return_value_policy::reference_internal)
+        // Expose the App::startUndoGroup method to Python.
+        .def("beginUndoGroup", &App::startUndoGroup, py::arg("undo_name") = "Default Undo Group Name")
+        // Expose the App::endUndoGroup method to Python.
+        .def("endUndoGroup", &App::endUndoGroup)
 
+        .def("executeCommand", &App::executeCommand, py::arg("commandId"));
     // Initially set the 'app' attribute of the module to None.
     // This will later be replaced by the actual App instance in the set_app function.
     m.attr("app") = py::none();
     // Expose the set_app function to Python.
     m.def("set_app", &set_app);
+
+
 }
 
 // Function to initialize the embedded Python interpreter and import the PyShiftCore module.
@@ -145,4 +152,9 @@ void finalize() {
 name = app.project.name
 version = app.version
 path = app.project.path
+items = app.project.items # get the items 
+for item in items:
+    if item(isinstance FootageItem):
+        img = item.getFrame(TIME)
+
 */

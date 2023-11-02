@@ -5,7 +5,6 @@
 This is the core Implementation File. May Refactor into individual component files as
 the library expands, but keeping everything here for now while I figure it all out.
 */
-
 // Implementation of the Project class.
 Project::Project(AEGP_SuiteHandler* suites, AEGP_ProjectH& projH)
     : suites_(suites), projH_(projH) {  // Initializes member variables with constructor arguments.
@@ -64,6 +63,9 @@ std::string Project::GetProjectPath() const {  // Method to get the project path
     }
 }
 
+
+
+
 // Implementation of the App class.
 App::App(AEGP_SuiteHandler& suites) : suites_(suites) {  // Initializes member variables with constructor arguments.
     populateAttributes();  // Calls method to populate attribute values.
@@ -74,7 +76,7 @@ void App::populateAttributes() {
     AEGP_ProjectH projH;
     suites_.ProjSuite6()->AEGP_GetProjectByIndex(0, &projH);  // Gets the project handle for the current project (assuming only one project).
     project = std::make_unique<Project>(&suites_, projH);  // Creates a new Project instance and sets it as the project attribute.
-}
+ }
 
 std::string App::getVersion() const {  // Method to get the app version.
     return std::string("1.0.0");  // Returns a hardcoded version string.
@@ -82,4 +84,22 @@ std::string App::getVersion() const {  // Method to get the app version.
 
 const Project& App::getProject() const {
     return *project;  // Dereferences the unique_ptr to the Project instance and returns it as a reference.
+}
+
+// Implementation for starting an undo group.
+void App::startUndoGroup(const std::string& undo_name) {
+    // Call the AEGP_StartUndoGroup function from the After Effects SDK.
+    // Convert the std::string to a C-style string using c_str().
+    suites_.UtilitySuite5()->AEGP_StartUndoGroup(undo_name.c_str());
+}
+
+// Implementation for ending an undo group.
+void App::endUndoGroup() {
+    // Call the AEGP_EndUndoGroup function from the After Effects SDK.
+    suites_.UtilitySuite5()->AEGP_EndUndoGroup();
+}
+
+void App::executeCommand(const int commandId) {
+    AEGP_Command cmd = commandId;
+    suites_.CommandSuite1()->AEGP_DoCommand(cmd);
 }
