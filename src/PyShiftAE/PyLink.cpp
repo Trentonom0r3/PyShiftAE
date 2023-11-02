@@ -2,43 +2,44 @@
 #include "PyLink.h"
 
 // Global or static variable to hold the App instance.
-std::unique_ptr<App> global_app;
 
-void set_app_instance(AEGP_SuiteHandler& suites) {
-    // Create the App instance and store it in the global variable.
-    // std::make_unique is a helper function that creates a new unique_ptr.
-    global_app = std::make_unique<App>(suites);
-}
+py::object pyApp;  // Global variable to hold the Python App instance
 
-void setup_module(py::module& m) {
-    // Check if the global App instance has been created.
-    if (global_app) {
-        // Wrap the Project class for Python.
-        py::class_<Project>(m, "Project")
-            // Create read-only properties for the name and path.
-            .def_property_readonly("name", &Project::getName)
-            .def_property_readonly("path", &Project::GetProjectPath);
-
-        // Wrap the App class for Python.
-        py::class_<App>(m, "App")
-            // Create read-only properties for the version and project.
-            .def_property_readonly("version", &App::getVersion)
-            .def_property_readonly("project", &App::getProject, py::return_value_policy::reference_internal);
-
-        // Set a module-level variable 'app' to hold the global App instance.
-        m.attr("app") = py::cast(global_app.get());
+void set_app(const App& app) {
+    try {
+        py::module_ m = py::module_::import("PyShiftCore");
+        m.attr("app") = py::cast(app, py::return_value_policy::reference);
+        pyApp = m.attr("app");  // Now pyApp holds the Python object
     }
-    else {
-        // Throw an exception if the App instance hasn't been created.
-        throw std::runtime_error("App instance has not been set");
+    catch (const py::error_already_set& e) {
+        // This block will catch and report Python exceptions
+        std::cerr << "Python error: " << e.what() << std::endl;
+    }
+    catch (const std::exception& e) {
+        // This block will catch and report standard C++ exceptions
+        std::cerr << "Standard exception: " << e.what() << std::endl;
+    }
+    catch (...) {
+        // This block will catch any other type of exception
+        std::cerr << "An unknown exception occurred" << std::endl;
     }
 }
 
-// Define the embedded Python module.
+
 PYBIND11_EMBEDDED_MODULE(PyShiftCore, m) {
-    // Set up the module using the previously defined setup_module function.
-    setup_module(m);
+    py::class_<Project>(m, "Project")
+        .def_property_readonly("name", &Project::getName)
+        .def_property_readonly("path", &Project::GetProjectPath);
+
+    py::class_<App>(m, "App")
+        .def_property_readonly("version", &App::getVersion)
+        .def_property_readonly("project", &App::getProject, py::return_value_policy::reference_internal); 
+
+    m.attr("app") = py::none();
+    m.def("set_app", &set_app);
+
 }
+
 
 void initialize_python_module() {
     try {
@@ -63,7 +64,6 @@ void initialize_python_module() {
 }
 // Function to execute a Python script.
 std::string execute_python_script(const std::string& script) {
-    py::gil_scoped_acquire acquire;  // Acquire the GIL
     std::string output;
     try {
         // Run some Python code to redirect stdout and stderr to a string stream.
@@ -99,6 +99,16 @@ std::string execute_python_script(const std::string& script) {
         std::cerr << "Python exception: " << e.what() << std::endl;
         output = e.what();
     }
+    catch (const std::exception& e) {
+        // Handle standard exceptions.
+        std::cerr << "Standard exception: " << e.what() << std::endl;
+        output = "Standard exception: " + std::string(e.what());
+    }
+    catch (...) {
+        // Catch any other types of exceptions.
+        std::cerr << "Unknown exception occurred" << std::endl;
+        output = "Unknown exception occurred";
+    }
     return output;
 }
 
@@ -120,7 +130,7 @@ std::string execute_python_script_from_file(const std::string& scriptPath) {
 void finalize() {
     // Finalize the Python interpreter.
     py::finalize_interpreter();
-    global_app.reset();
+    pyApp.release();
 }
 
 /*PYTHON USAGE

@@ -11,8 +11,7 @@
 
 
 namespace py = pybind11;
-void set_app_instance(AEGP_SuiteHandler& suites);
-void setup_module(py::module& m);
+void set_app(const App& app);
 void initialize_python_module();
 std::string execute_python_script(const std::string& script);
 std::string execute_python_script_from_file(const std::string& scriptPath);

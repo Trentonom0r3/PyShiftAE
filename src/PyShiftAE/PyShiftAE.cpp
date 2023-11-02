@@ -26,7 +26,7 @@ DeathHook(
 	AEGP_SuiteHandler	suites(sP);
 
 	A_char report[AEGP_MAX_ABOUT_STRING_SIZE] = {'\0'};
-
+	finalize();
 	return err;
 }
 
@@ -80,9 +80,12 @@ CommandHook(
 	if (command == PyShift) {
 		std::cout << "PyShift Command Received" << std::endl;
 		App app(suites);
-		set_app_instance(suites);
-		// Initialize Python and expose the App instance
-		initialize_python_module();  // pass suites, not app
+
+		py::gil_scoped_acquire acquire;  // Acquire the GIL
+
+		// Remove this line: py::module m = py::module::import("PyShiftCore");
+		set_app(app);
+
 
 		// Get the main window handle of After Effects
 		HWND ae_hwnd;
@@ -131,7 +134,6 @@ CommandHook(
 		delete[] ofn.lpstrFile;
 
 		*handledPB = TRUE;  // Mark the command as handled
-		finalize();
 	}
 	//finalize();
 	return err;
@@ -172,6 +174,7 @@ EntryPointFunc(
 
 	ERR(suites.RegisterSuite5()->AEGP_RegisterIdleHook(PyShiftAE, IdleHook, NULL));
 
+	initialize_python_module();
 	if (err) { // not !err, err!
 		ERR2(suites.UtilitySuite3()->AEGP_ReportInfo(PyShiftAE, "PyShiftAE : Could not register command hook."));
 	}
