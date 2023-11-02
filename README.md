@@ -18,6 +18,12 @@ I really would like this to be a community project. Posting ideas, thoughts, fun
 # Documentation 
 Coming soon
 
+# Proof of Concept
+
+
+https://github.com/Trentonom0r3/PyShiftAE/assets/130304830/31369ac6-a3a0-40e2-a78a-5a3936c60239
+
+
 # Usage
 - The files included in this repo currently demonstrate how to use the PlugPlug.Dll from the c++ side in order to send and receive csxs events. 
 - In addition, the src/PyShiftAE directory is the source files for the plugin. 
