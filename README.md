@@ -19,8 +19,8 @@ I really would like this to be a community project. Posting ideas, thoughts, fun
 Coming soon
 
 # Usage
-The files included in this repo currently demonstrate how to use the PlugPlug.Dll from the c++ side in order to send and receive csxs events. 
-In addition the src/PyShiftAE directory is the source files for the plugin. 
+- The files included in this repo currently demonstrate how to use the PlugPlug.Dll from the c++ side in order to send and receive csxs events. 
+- In addition, the src/PyShiftAE directory is the source files for the plugin. 
 You can go to File->Run Script (.py), and run the test script provided from within AE.
 Make sure Python 3.11 x64 is available on PATH.
 
