@@ -7,11 +7,10 @@
 
 	version		notes							engineer				date
 	
-	1.0			First implementation			Trentonom0r3 (Spigon) 	10/10/2019
+	1.0			First implementation			Trentonom0r3 (Spigon) 	10/31/2023
 	
 */
 #include "PyShiftAE.h"
-
 
 static AEGP_Command			PyShift				=	6769L;
 static AEGP_PluginID		PyShiftAE = 10L;
@@ -63,28 +62,78 @@ UpdateMenuHook(
 	return err;
 }
 
+
 static A_Err
 CommandHook(
-	AEGP_GlobalRefcon	plugin_refconPV,		/* >> */
-	AEGP_CommandRefcon	refconPV,				/* >> */
-	AEGP_Command		command,				/* >> */
-	AEGP_HookPriority	hook_priority,			/* >> */
-	A_Boolean			already_handledB,		/* >> */
-	A_Boolean* handledPB)				/* << */
+	AEGP_GlobalRefcon    plugin_refconPV,        /* >> */
+	AEGP_CommandRefcon    refconPV,                /* >> */
+	AEGP_Command        command,                /* >> */
+	AEGP_HookPriority    hook_priority,            /* >> */
+	A_Boolean            already_handledB,        /* >> */
+	A_Boolean* handledPB)                /* << */
 {
-	A_Err			err = A_Err_NONE,
-					err2 = A_Err_NONE;
+	A_Err            err = A_Err_NONE,
+		err2 = A_Err_NONE;
 
-	AEGP_SuiteHandler	suites(sP);
-
+	AEGP_SuiteHandler    suites(sP);
+	std::cout << "CommandHook called" << std::endl;
 	if (command == PyShift) {
-
+		std::cout << "PyShift Command Received" << std::endl;
 		App app(suites);
-		const Project& project = app.getProject(); // Get a reference to the Project object
-		std::string name = project.name;
+		set_app_instance(suites);
+		// Initialize Python and expose the App instance
+		initialize_python_module();  // pass suites, not app
 
+		// Get the main window handle of After Effects
+		HWND ae_hwnd;
+		suites.UtilitySuite6()->AEGP_GetMainHWND(&ae_hwnd);
+
+		// Set up an OPENFILENAME structure to configure the file picker dialog
+		OPENFILENAME ofn;
+		ZeroMemory(&ofn, sizeof(OPENFILENAME));
+		ofn.lStructSize = sizeof(OPENFILENAME);
+		ofn.hwndOwner = ae_hwnd;
+		ofn.lpstrFilter = "Python Scripts (*.py)\0*.py\0All Files (*.*)\0*.*\0";
+		ofn.lpstrFile = new CHAR[MAX_PATH];
+		ofn.lpstrFile[0] = '\0';
+		ofn.nMaxFile = MAX_PATH;
+		ofn.Flags = OFN_EXPLORER | OFN_FILEMUSTEXIST | OFN_HIDEREADONLY;
+		ofn.lpstrDefExt = "py";
+
+		// Show the file picker dialog
+		if (GetOpenFileName(&ofn)) {
+			// User selected a file; ofn.lpstrFile contains the file path
+			std::string scriptPath = ofn.lpstrFile;
+
+			// Execute the Python script
+			std::string output = execute_python_script_from_file(scriptPath);
+			if (output.find("Traceback (most recent call last):") != std::string::npos) {
+				std::string error_message = "Python error:\n" + output;
+				suites.UtilitySuite3()->AEGP_ReportInfo(PyShiftAE, error_message.c_str());
+			}
+			else {
+				std::string success_message = "Script output:\n" + output;
+				suites.UtilitySuite3()->AEGP_ReportInfo(PyShiftAE, success_message.c_str());
+			}
+
+		}
+		else {
+			// User cancelled the dialog or an error occurred
+			DWORD error = CommDlgExtendedError();
+			if (error) {
+				std::cerr << "File dialog error: " << error << std::endl;
+			}
+			else {
+				std::cerr << "No script file selected" << std::endl;
+			}
+		}
+
+		delete[] ofn.lpstrFile;
+
+		*handledPB = TRUE;  // Mark the command as handled
+		finalize();
 	}
-
+	//finalize();
 	return err;
 }
 
@@ -104,7 +153,6 @@ EntryPointFunc(
 	sP = pica_basicP;
 
 	AEGP_SuiteHandler suites(pica_basicP);
-
 	ERR(suites.CommandSuite1()->AEGP_GetUniqueCommand(&PyShift));
 
 	ERR(suites.CommandSuite1()->AEGP_InsertMenuCommand(PyShift,

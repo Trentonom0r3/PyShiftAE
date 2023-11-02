@@ -8,9 +8,9 @@
 #include "entry.h"
 #include "AE_GeneralPlug.h"
 #include "AE_Macros.h"
-#include "AEGP_SuiteHandler.h"
-#include "String_Utils.h"
-#include "PyShiftCore.h"
+#include "PyLink.h"
+#include <commdlg.h>
+
 
 #define AEGP_MAX_STREAM_DIM 4
 

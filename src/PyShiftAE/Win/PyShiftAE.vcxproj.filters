@@ -80,6 +80,9 @@
     <ClInclude Include="..\PyShiftCore.h">
       <Filter>Headers</Filter>
     </ClInclude>
+    <ClInclude Include="..\PyLink.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\Util\AEGP_SuiteHandler.cpp">

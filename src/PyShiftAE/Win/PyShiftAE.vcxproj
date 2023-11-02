@@ -20,7 +20,7 @@
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{F92835DD-4FE4-4F57-A439-B7EA704933DF}</ProjectGuid>
-    <RootNamespace>Grabba</RootNamespace>
+    <RootNamespace>PyShiftAE</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
     <ProjectName>PyShiftAE</ProjectName>
   </PropertyGroup>
@@ -97,14 +97,18 @@
     <TargetExt Condition="'$(Configuration)|$(Platform)'=='Release|x64'">.aex</TargetExt>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>C:\Users\tjerf\vcpkg\installed\x64-windows-static\include\python3.10;C:\Users\tjerf\vcpkg\installed\x64-windows-static\include;$(IncludePath)</IncludePath>
+    <IncludePath>C:\Users\tjerf\vcpkg\installed\x64-windows-static\include;C:\Program Files\Python311\include;$(IncludePath)</IncludePath>
     <ExternalIncludePath>$(ExternalIncludePath)</ExternalIncludePath>
-    <LibraryPath>C:\Users\tjerf\vcpkg\installed\x64-windows-static\lib;$(LibraryPath)</LibraryPath>
+    <LibraryPath>C:\Program Files\Python311\libs;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>C:\Users\tjerf\vcpkg\installed\x64-windows-static\include\python3.10;C:\Users\tjerf\vcpkg\installed\x64-windows-static\include;$(IncludePath)</IncludePath>
+    <IncludePath>C:\Python311\include;C:\Users\tjerf\vcpkg\installed\x64-windows-static\include;$(IncludePath)</IncludePath>
     <ExternalIncludePath>$(ExternalIncludePath)</ExternalIncludePath>
-    <LibraryPath>C:\Users\tjerf\vcpkg\installed\x64-windows-static\lib;$(LibraryPath)</LibraryPath>
+    <LibraryPath>C:\Python311\libs;$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
+  <PropertyGroup Label="Vcpkg" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <VcpkgUseStatic>true</VcpkgUseStatic>
+    <VcpkgConfiguration>Debug</VcpkgConfiguration>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <Midl>
@@ -118,7 +122,7 @@
     </Midl>
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>C:\Users\tjerf\vcpkg\installed\x64-windows-static\include\python3.10;C:\Users\tjerf\vcpkg\installed\x64-windows-static\include;..\..\..\Headers;..\..\..\Headers\SP;..\..\..\Headers\Win;..\..\..\Resources;..\..\..\Util;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Users\tjerf\vcpkg\installed\x64-windows-static\include;C:\Program Files\Python311\include;..\..\..\Headers;..\..\..\Headers\SP;..\..\..\Headers\Win;..\..\..\Resources;..\..\..\Util;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>MSWindows;WIN32;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <StructMemberAlignment>Default</StructMemberAlignment>
@@ -154,8 +158,8 @@
       </DataExecutionPrevention>
       <ImportLibrary>$(IntDir)/$(TargetName).lib</ImportLibrary>
       <TargetMachine>MachineX64</TargetMachine>
-      <AdditionalDependencies>"C:\Users\tjerf\vcpkg\installed\x64-windows-static\lib\python310.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\python310_d.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\opencv_highgui4d.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\opencv_imgcodecs4d.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\opencv_imgproc4d.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\opencv_ml4d.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\opencv_objdetect4d.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\opencv_photo4d.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\opencv_stitching4d.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\opencv_video4d.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\opencv_videoio4d.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\quirc.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\tiffd.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\turbojpeg.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\zlibd.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\zstd.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\jpeg.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\libexpatdMT.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\libpng16d.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\libprotobufd.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\libprotobuf-lited.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\libprotocd.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\libsharpyuv.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\libwebp.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\libwebpdecoder.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\libwebpdemux.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\libwebpmux.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\lzma.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\opencv_calib3d4d.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\opencv_core4d.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\opencv_dnn4d.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\opencv_features2d4d.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\opencv_flann4d.lib";%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib;C:\Users\tjerf\vcpkg\installed\x64-windows-static\lib</AdditionalLibraryDirectories>
+      <AdditionalDependencies>"C:\Program Files\Python311\libs\python311.lib";"C:\Program Files\Python311\libs\python311_d.lib";%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>C:\Program Files\Python311\libs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <Bscmake>
       <OutputFile>$(IntDir)$(TargetName).bsc</OutputFile>
@@ -173,7 +177,7 @@
     </Midl>
     <ClCompile>
       <Optimization>MaxSpeed</Optimization>
-      <AdditionalIncludeDirectories>C:\Users\tjerf\vcpkg\installed\x64-windows-static\include\python3.10;C:\Users\tjerf\vcpkg\installed\x64-windows-static\include;..\..\..\Headers;..\..\..\Headers\SP;..\..\..\Headers\Win;..\..\..\Resources;..\..\..\Util;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Python311\include;C:\Users\tjerf\vcpkg\installed\x64-windows-static\include;..\..\..\Headers;..\..\..\Headers\SP;..\..\..\Headers\Win;..\..\..\Resources;..\..\..\Util;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>MSWindows;WIN32;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <StructMemberAlignment>Default</StructMemberAlignment>
@@ -210,8 +214,8 @@
       </DataExecutionPrevention>
       <ImportLibrary>$(IntDir)/$(TargetName).lib</ImportLibrary>
       <TargetMachine>MachineX64</TargetMachine>
-      <AdditionalDependencies>"C:\Users\tjerf\vcpkg\installed\x64-windows-static\lib\python310.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\python310_d.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\opencv_highgui4d.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\opencv_imgcodecs4d.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\opencv_imgproc4d.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\opencv_ml4d.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\opencv_objdetect4d.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\opencv_photo4d.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\opencv_stitching4d.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\opencv_video4d.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\opencv_videoio4d.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\quirc.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\tiffd.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\turbojpeg.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\zlibd.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\zstd.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\jpeg.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\libexpatdMT.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\libpng16d.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\libprotobufd.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\libprotobuf-lited.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\libprotocd.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\libsharpyuv.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\libwebp.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\libwebpdecoder.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\libwebpdemux.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\libwebpmux.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\lzma.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\opencv_calib3d4d.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\opencv_core4d.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\opencv_dnn4d.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\opencv_features2d4d.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\opencv_flann4d.lib";%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib;C:\Users\tjerf\vcpkg\installed\x64-windows-static\lib</AdditionalLibraryDirectories>
+      <AdditionalDependencies>"C:\Python311\libs\python311.lib";%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>C:\Python311\libs;C:\Users\tjerf\vcpkg\installed\x64-windows-static\lib;C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <Bscmake>
       <OutputFile>$(IntDir)$(TargetName).bsc</OutputFile>
@@ -323,6 +327,7 @@
     </Bscmake>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\PyLink.h" />
     <ClInclude Include="..\PyShiftAE.h" />
     <ClInclude Include="..\..\..\Headers\A.h" />
     <ClInclude Include="..\..\..\Headers\AE_AdvEffectSuites.h" />
