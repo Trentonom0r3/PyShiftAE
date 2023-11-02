@@ -1,7 +1,7 @@
 # PyShiftAE
 An experimental repository for research, ideas, and (hopefully) eventually, working code. See README.md for more info. 
 
-# Goals
+# Goals (See [TODO](https://github.com/Trentonom0r3/PyShiftAE/blob/main/TODO.md))
 - The main Goal of PyShiftAE is to create a replacement library for extendscript, in python. 
 - This is not going to be done via wrappers around JS calls, but an actual library creation. 
 - Ideally, you could write and run external .py scripts, as well as use them internally. 
