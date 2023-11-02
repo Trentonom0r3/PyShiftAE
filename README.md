@@ -20,6 +20,11 @@ Coming soon
 
 # Usage
 The files included in this repo currently demonstrate how to use the PlugPlug.Dll from the c++ side in order to send and receive csxs events. 
+In addition the src/PyShiftAE directory is the source files for the plugin. 
+You can go to File->Run Script (.py), and run the test script provided from within AE.
+Make sure Python 3.11 x64 is available on PATH.
+
+
 You can actually use the CSXS wrappers for any adobe app, provided you find a way to get the path to PlugPlug.Dll in your app.
 
 You would then make sure the event listener is loaded whenever your plugin is initialized. 
