@@ -1,7 +1,7 @@
 # PyShiftAE
 An experimental repository for research, ideas, and (hopefully) eventually, working code. See README.md for more info. 
 
-# Goals
+# Goals (See [TODO](https://github.com/Trentonom0r3/PyShiftAE/blob/main/TODO.md))
 - The main Goal of PyShiftAE is to create a replacement library for extendscript, in python. 
 - This is not going to be done via wrappers around JS calls, but an actual library creation. 
 - Ideally, you could write and run external .py scripts, as well as use them internally. 
@@ -18,8 +18,19 @@ I really would like this to be a community project. Posting ideas, thoughts, fun
 # Documentation 
 Coming soon
 
+# Proof of Concept
+
+
+https://github.com/Trentonom0r3/PyShiftAE/assets/130304830/31369ac6-a3a0-40e2-a78a-5a3936c60239
+
+
 # Usage
-The files included in this repo currently demonstrate how to use the PlugPlug.Dll from the c++ side in order to send and receive csxs events. 
+- The files included in this repo currently demonstrate how to use the PlugPlug.Dll from the c++ side in order to send and receive csxs events. 
+- In addition, the src/PyShiftAE directory is the source files for the plugin. 
+You can go to File->Run Script (.py), and run the test script provided from within AE.
+Make sure Python 3.11 x64 is available on PATH.
+
+
 You can actually use the CSXS wrappers for any adobe app, provided you find a way to get the path to PlugPlug.Dll in your app.
 
 You would then make sure the event listener is loaded whenever your plugin is initialized. 
