@@ -11,6 +11,7 @@
 #include <vector>
 static AEGP_PluginID		PyShiftAE = 10L;
 
+
 struct ImageData {
     std::vector<uint8_t> data;
     int width;
@@ -42,8 +43,10 @@ public:
     virtual ~CompItem() = default;
 
     ImageData frameAtTime(float time);
-    //void replaceFrameAtTime(const std::vector<uint8_t>& new_img, float time);
+    void replaceFrameAtTime(ImageData& new_img, float time);
+    float getDuration() const;
 
+    float Duration;
 protected:
     //void populateAttributes();
 

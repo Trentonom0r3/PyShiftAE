@@ -161,10 +161,68 @@ ImageData CompItem::frameAtTime(float time) {
     return ImageData{};  // Return an empty vector if something goes wrong.
 }
 
-/*
-void CompItem::replaceFrameAtTime(const std::vector<uint8_t>& new_img, float time) {
-    // ... implementation ...
+void CompItem::replaceFrameAtTime(ImageData& new_img, float time) {
+    AEGP_ItemH active_itemH = NULL;
+    AEGP_RenderOptionsH roH = NULL;
+    A_Err err = A_Err_NONE,
+         err2 = A_Err_NONE;
+
+    ERR(suites_->ItemSuite6()->AEGP_GetActiveItem(&active_itemH));
+
+    if (active_itemH) {
+        ERR(suites_->RenderOptionsSuite1()->AEGP_NewFromItem(PyShiftAE, active_itemH, &roH));
+
+        if (!err && roH) {
+            AEGP_FrameReceiptH receiptH = NULL;
+            AEGP_WorldH frameH = NULL;
+            A_Time timeT;
+            timeT.value = static_cast<A_long>(time * 1000000);  // Convert seconds to microseconds.
+            timeT.scale = 1000000;  // Set the scale factor to 1,000,000.
+
+            ERR(suites_->RenderOptionsSuite1()->AEGP_SetTime(roH, timeT));  // Set render time.
+            ERR(suites_->RenderSuite2()->AEGP_RenderAndCheckoutFrame(roH, NULL, NULL, &receiptH));
+
+            if (receiptH) {
+                ERR(suites_->RenderSuite2()->AEGP_GetReceiptWorld(receiptH, &frameH));
+
+                if (!err && frameH) {
+                    PF_Pixel8* baseAddr = nullptr;
+                    ERR(suites_->WorldSuite3()->AEGP_GetBaseAddr8(frameH, &baseAddr));
+
+                    if (!err && baseAddr) {
+                        int width, height;
+                        ERR(suites_->WorldSuite3()->AEGP_GetSize(frameH, &width, &height));
+
+                        // Ensure the dimensions match.
+                        if (width == new_img.width && height == new_img.height) {
+                            // Determine the total size of the image data in bytes.
+                            size_t dataSize = static_cast<size_t>(width) * height * new_img.channels; // Use the number of channels in new_img.
+
+                            // Manually copy the data from new_img to baseAddr.
+                            std::memcpy(baseAddr, new_img.data.data(), dataSize);
+                        }
+                        else {
+                            // Handle the error for mismatched dimensions.
+                            err = A_Err_GENERIC;
+                        }
+
+                        ERR2(suites_->RenderSuite2()->AEGP_CheckinFrame(receiptH));
+                    }
+                }
+
+                if (err) {
+                    ERR2(suites_->RenderSuite2()->AEGP_CheckinFrame(receiptH));
+                }
+            }
+        }
+
+        ERR(suites_->RenderOptionsSuite1()->AEGP_Dispose(roH));
+    }
 }
+
+
+/*
+
 
 void CompItem::populateAttributes() {
     Item::populateAttributes();  // Call base class implementation

@@ -30,10 +30,33 @@ PYBIND11_EMBEDDED_MODULE(PyShiftCore, m) {
 
     py::class_<CompItem, Item>(m, "CompItem")
         .def("frameAtTime", [](CompItem& self, float time) {
-        ImageData image_data = self.frameAtTime(time);
-        py::array_t<uint8_t> result({ image_data.height, image_data.width, image_data.channels }, image_data.data.data());
-        return result;
+            ImageData image_data = self.frameAtTime(time);
+            py::array_t<uint8_t> result({ image_data.height, image_data.width, image_data.channels }, image_data.data.data());
+            return result;
+            })
+        
+        .def("replaceFrameAtTime", [](CompItem& self, py::array_t<uint8_t> img, float time) {
+            // Ensure the NumPy array is C-style contiguous
+            if (!img.flags() & py::array::c_style) {
+                throw std::runtime_error("Input array must be a C-style contiguous array");
+            }
+
+            // Check the number of dimensions
+            if (img.ndim() != 3) {
+                throw std::runtime_error("Input array must have three dimensions");
+            }
+
+            // Convert the NumPy array to ImageData
+            ImageData new_img;
+            new_img.width = img.shape(1);
+            new_img.height = img.shape(0);
+            new_img.channels = img.shape(2);
+            new_img.data.assign(img.data(), img.data() + img.size());
+
+            // Call the C++ method
+            self.replaceFrameAtTime(new_img, time);
             });
+
 
 
     // Expose the Project class to Python as "Project".
