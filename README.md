@@ -20,8 +20,14 @@ Coming soon
 
 # Proof of Concept
 
-
+### Simple Attribute Gathering, Command Execution:
+ 
 https://github.com/Trentonom0r3/PyShiftAE/assets/130304830/31369ac6-a3a0-40e2-a78a-5a3936c60239
+
+### New "frameAtTime" method, usage with cv2 demo:
+
+https://github.com/Trentonom0r3/PyShiftAE/assets/130304830/26afed06-ef81-458c-ba4e-c5bc97af0d1e
+
 
 
 # Usage
