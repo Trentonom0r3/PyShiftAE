@@ -24,12 +24,26 @@ void set_app(const App& app) {
 
 // Define a Python module using pybind11. This will expose the C++ classes to Python.
 PYBIND11_EMBEDDED_MODULE(PyShiftCore, m) {
+    py::class_<Item>(m, "Item")
+        .def_property_readonly("name", &Item::getName);
+
+
+    py::class_<CompItem, Item>(m, "CompItem")
+        .def("frameAtTime", [](CompItem& self, float time) {
+        ImageData image_data = self.frameAtTime(time);
+        py::array_t<uint8_t> result({ image_data.height, image_data.width, image_data.channels }, image_data.data.data());
+        return result;
+            });
+
+
     // Expose the Project class to Python as "Project".
     py::class_<Project>(m, "Project")
         // Expose the Project::getName method to Python as a read-only property "name".
         .def_property_readonly("name", &Project::getName)
         // Expose the Project::GetProjectPath method to Python as a read-only property "path".
-        .def_property_readonly("path", &Project::GetProjectPath);
+        .def_property_readonly("path", &Project::GetProjectPath)
+        // Expose the Project::getActiveItem method to return the Item Object (ActiveItem)
+        .def_property_readonly("activeItem", &Project::getActiveItem, py::return_value_policy::reference);
 
     // Expose the App class to Python as "App".
     py::class_<App>(m, "App")

@@ -7,58 +7,59 @@
 #include <memory>  // Include for std::unique_ptr
 #include <codecvt>
 #include "AEGP_SuiteHandler.h"
+#include "AE_Macros.h"
 #include <vector>
 static AEGP_PluginID		PyShiftAE = 10L;
 
+struct ImageData {
+    std::vector<uint8_t> data;
+    int width;
+    int height;
+    int channels;
+};
+
+
 class Item {
 public:
-    // Constructor and Destructor
-    explicit Item(AEGP_SuiteHandler* suites, AEGP_ItemH& itemHandle) : suites_(suites), itemHandle_(itemHandle) {}
+    explicit Item(AEGP_SuiteHandler* suites, AEGP_ItemH& itemHandle);
     virtual ~Item() = default;
-
-    // Member functions for Item
-    virtual std::string getType() const {
-        return "Item";
-    }
 
     std::string getName() const;
     void setName(const std::string& name);
 
-    std::string getComment() const;
-    void setComment(const std::string& comment);
-
-    bool isSelected() const;
-    void setSelected(bool isSelected);
-
-    int getLabel() const;
-    void setLabel(int labelColor);
-
-    int addGuide(int orientationType, double position);  // Assuming the return type is an int representing the guide's ID/index
-    void removeGuide(int guideIndex);
-    void setGuide(double position, int guideIndex);
-
-    void remove();
-
+    std::string name;
 protected:
+    void populateAttributes();
+
     AEGP_SuiteHandler* suites_;
     AEGP_ItemH itemHandle_;
-
-    // Assuming that the following attributes are common to all items
-    int id_;
     std::string name_;
-    std::string comment_;
-    bool selected_;
-    int label_;
 };
+
+class CompItem : public Item {
+public:
+    explicit CompItem(AEGP_SuiteHandler* suites, AEGP_ItemH& itemHandle);
+    virtual ~CompItem() = default;
+
+    ImageData frameAtTime(float time);
+    //void replaceFrameAtTime(const std::vector<uint8_t>& new_img, float time);
+
+protected:
+    //void populateAttributes();
+
+    AEGP_SuiteHandler* suites_;
+    AEGP_ItemH itemHandle_;
+};
+
+/*
+std::unique_ptr<Item> createItem(AEGP_SuiteHandler* suites, AEGP_ItemH& itemH);
 
 class FootageItem : public Item {
 public:
     // Constructors and Destructors
     explicit FootageItem(AEGP_SuiteHandler* suites, AEGP_ItemH& itemHandle);
     virtual ~FootageItem() = default;
-    virtual std::string getType() const override {
-        return "Footage";
-    }
+
 protected:
     AEGP_SuiteHandler* suites_;  // Change to pointer
     AEGP_ProjectH projH_;
@@ -75,40 +76,29 @@ protected:
     AEGP_ProjectH projH_;
 };
 
-class CompItem : public Item {
-public:
-    // Constructors and Destructors
-    explicit CompItem(AEGP_SuiteHandler* suites, AEGP_ItemH& itemHandle);
-    virtual ~CompItem() = default;
-
-protected:
-    AEGP_SuiteHandler* suites_;  // Change to pointer
-    AEGP_ProjectH projH_;
-};
-
-class SolidItem : public Item {
-public:
-    // Constructors and Destructors
-    explicit SolidItem(AEGP_SuiteHandler* suites, AEGP_ItemH& itemHandle);
-    virtual ~SolidItem() = default;
-
-protected:
-    AEGP_SuiteHandler* suites_;  // Change to pointer
-    AEGP_ProjectH projH_;
-};
 class ItemCollection {
 public:
-    ItemCollection(AEGP_SuiteHandler* suites, AEGP_ProjectH* projectH);
+    // Constructor: Wraps AEGP_NewCollection
+    ItemCollection(AEGP_SuiteHandler* suites, AEGP_ProjectH& projH);
 
+    // Destructor: Wraps AEGP_DisposeCollection
+    ~ItemCollection();
+
+    // Method to get the number of items in the collection
+    int getNumItems() const;
+
+    // Method to get an item by index
+    const Item& getItemByIndex(int index) const;
+    const Item& getItembyName(std::string name) const;
 
 private:
     void populateItems();
 
     AEGP_SuiteHandler* suites_;
-    AEGP_ProjectH* projH_;  // Now a pointer.
+    AEGP_ProjectH projH_;
     std::vector<std::unique_ptr<Item>> items_;
 };
-
+*/
 
 //Project class definition
 class Project {
@@ -118,10 +108,10 @@ public:
     std::string getName() const;
     std::string GetProjectPath() const;
     const Item& getActiveItem() const;
-    const ItemCollection& getItems() const;
+    //const ItemCollection& getItems() const;
 
     std::unique_ptr<Item> activeItem;
-    std::unique_ptr<ItemCollection> items;
+    //std::unique_ptr<ItemCollection> items;
     std::string name;
     std::string path;
 
