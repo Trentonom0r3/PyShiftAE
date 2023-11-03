@@ -39,14 +39,11 @@ else:
     print("Active item is not a CompItem")
 ```
 
-# Goals (See [TODO](https://github.com/Trentonom0r3/PyShiftAE/blob/main/TODO.md))
-- The main Goal of PyShiftAE is to create a replacement library for extendscript, in python. 
-- This is not going to be done via wrappers around JS calls, but an actual library creation. 
-- Ideally, you could write and run external .py scripts, as well as use them internally. 
-- There would be an interface for using PyShiftAE within CEP (and eventually UXP) extensions. (Call it Pyinterface.js, use Pyinterface.evalpy(), hehe)
-- This would GREATLY extend the capabilities of scripting in AE -- image data, audio data, access to numpy, ML libraries, and other custom libraries. 
-- Script entirely in python, and access functionality you never could have with CEP.
-
+# Challenges Ahead
+- Memory & Lifetime Management: Ensuring robust state storage while averting memory leaks is a paramount concern.
+- Feature Parity: Retaining all the functionality from ExtendScript, albeit with an enhanced and simplified interface, is a significant challenge.
+- See [TODO](https://github.com/Trentonom0r3/PyShiftAE/blob/main/TODO.md)
+- 
 # Contributing
 I really would like this to be a community project. Posting ideas, thoughts, functionality suggestions, workflow suggestions, etc, would be very much appreciated.
 
