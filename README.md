@@ -44,7 +44,7 @@ else:
 - Feature Parity: Retaining all the functionality from ExtendScript, albeit with an enhanced and simplified interface, is a significant challenge.
 - See [TODO](https://github.com/Trentonom0r3/PyShiftAE/blob/main/TODO.md)
   
-# Contributing
+## Contributing
 I really would like this to be a community project. Posting ideas, thoughts, functionality suggestions, workflow suggestions, etc, would be very much appreciated.
 
 - I don't expect anyone to delve too deep into this, but any sort of "reverse-engineering" or "hacking" to get more info regarding internal AEFX workings would also help
@@ -54,4 +54,3 @@ I really would like this to be a community project. Posting ideas, thoughts, fun
 - (API-Reference)[https://github.com/Trentonom0r3/PyShiftAE/wiki/API-Reference]
 - (CSXS)[https://github.com/Trentonom0r3/PyShiftAE/wiki/CSXS-Utils]
 - (Demos)[https://github.com/Trentonom0r3/PyShiftAE/wiki/Demos]
-- (Contributing)[]
