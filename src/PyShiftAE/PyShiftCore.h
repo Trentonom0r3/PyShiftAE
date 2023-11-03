@@ -19,6 +19,28 @@ struct ImageData {
     int channels;
 };
 
+class Layer {
+public:
+    Layer(AEGP_SuiteHandler* suites, AEGP_LayerH& layer);
+
+    std::string getName() const;
+    int getIndex() const;
+    float getDuration() const;
+    float getInPoint() const;
+    float getOutPoint() const;
+
+    float inPoint;
+    float outPoint;
+    float duration;
+    int index;
+    std::string name;
+
+private:
+    void populateAttributes();
+    AEGP_SuiteHandler* suites_;  // Change to pointer
+    AEGP_LayerH layer_;
+};
+
 
 class Item {
 public:
@@ -27,6 +49,8 @@ public:
 
     std::string getName() const;
     void setName(const std::string& name);
+    float duration() const;
+    float time() const;
 
     std::string name;
 protected:
@@ -37,6 +61,7 @@ protected:
     std::string name_;
 };
 
+//TODO: Figure out how to turn "item" into a factory class, but still access things the same way.
 class CompItem : public Item {
 public:
     explicit CompItem(AEGP_SuiteHandler* suites, AEGP_ItemH& itemHandle);
@@ -44,18 +69,15 @@ public:
 
     ImageData frameAtTime(float time);
     void replaceFrameAtTime(ImageData& new_img, float time);
-    float getDuration() const;
+    float getFrameRate() const; //TODO
+    int getNumLayers() const; //TODO
 
-    float Duration;
-protected:
-    //void populateAttributes();
+    std::vector<std::unique_ptr<Layer>> layers;
+    int numLayers;
+    float frameRate;
 
-    AEGP_SuiteHandler* suites_;
-    AEGP_ItemH itemHandle_;
 };
 
-/*
-std::unique_ptr<Item> createItem(AEGP_SuiteHandler* suites, AEGP_ItemH& itemH);
 
 class FootageItem : public Item {
 public:
@@ -63,9 +85,6 @@ public:
     explicit FootageItem(AEGP_SuiteHandler* suites, AEGP_ItemH& itemHandle);
     virtual ~FootageItem() = default;
 
-protected:
-    AEGP_SuiteHandler* suites_;  // Change to pointer
-    AEGP_ProjectH projH_;
 };
 
 class FolderItem : public Item {
@@ -74,34 +93,8 @@ public:
     explicit FolderItem(AEGP_SuiteHandler* suites, AEGP_ItemH& itemHandle);
     virtual ~FolderItem() = default;
 
-protected:
-    AEGP_SuiteHandler* suites_;  // Change to pointer
-    AEGP_ProjectH projH_;
 };
 
-class ItemCollection {
-public:
-    // Constructor: Wraps AEGP_NewCollection
-    ItemCollection(AEGP_SuiteHandler* suites, AEGP_ProjectH& projH);
-
-    // Destructor: Wraps AEGP_DisposeCollection
-    ~ItemCollection();
-
-    // Method to get the number of items in the collection
-    int getNumItems() const;
-
-    // Method to get an item by index
-    const Item& getItemByIndex(int index) const;
-    const Item& getItembyName(std::string name) const;
-
-private:
-    void populateItems();
-
-    AEGP_SuiteHandler* suites_;
-    AEGP_ProjectH projH_;
-    std::vector<std::unique_ptr<Item>> items_;
-};
-*/
 
 //Project class definition
 class Project {
@@ -112,7 +105,12 @@ public:
     std::string GetProjectPath() const;
     const Item& getActiveItem() const;
     //const ItemCollection& getItems() const;
-
+    std::unique_ptr<Item> createItem(AEGP_SuiteHandler* suites, AEGP_ItemH& itemH);
+    void saveToPath() const; //TODO
+    std::string getTimeDisplay() const; //TODO
+    std::string setTimeDisplay() const; //TODO
+    bool ProjectIsDirty() const; //TODO
+   
     std::unique_ptr<Item> activeItem;
     //std::unique_ptr<ItemCollection> items;
     std::string name;

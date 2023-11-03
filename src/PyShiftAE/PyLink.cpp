@@ -25,8 +25,13 @@ void set_app(const App& app) {
 // Define a Python module using pybind11. This will expose the C++ classes to Python.
 PYBIND11_EMBEDDED_MODULE(PyShiftCore, m) {
     py::class_<Item>(m, "Item")
-        .def_property_readonly("name", &Item::getName);
+        .def_property_readonly("name", &Item::getName)
+        .def_property_readonly("duration", &Item::duration)
+        .def_property_readonly("time", &Item::time);
 
+    py::class_<FootageItem, Item>(m, "FootageItem");
+
+    py::class_<FolderItem, Item>(m, "FolderItem");
 
     py::class_<CompItem, Item>(m, "CompItem")
         .def("frameAtTime", [](CompItem& self, float time) {
@@ -37,7 +42,7 @@ PYBIND11_EMBEDDED_MODULE(PyShiftCore, m) {
         
         .def("replaceFrameAtTime", [](CompItem& self, py::array_t<uint8_t> img, float time) {
             // Ensure the NumPy array is C-style contiguous
-            if (!img.flags() & py::array::c_style) {
+            if (!(img.flags() & py::array::c_style)) {
                 throw std::runtime_error("Input array must be a C-style contiguous array");
             }
 
@@ -48,9 +53,10 @@ PYBIND11_EMBEDDED_MODULE(PyShiftCore, m) {
 
             // Convert the NumPy array to ImageData
             ImageData new_img;
-            new_img.width = img.shape(1);
-            new_img.height = img.shape(0);
-            new_img.channels = img.shape(2);
+            new_img.width = static_cast<int>(img.shape(1));
+            new_img.height = static_cast<int>(img.shape(0));
+            new_img.channels = static_cast<int>(img.shape(2));
+
             new_img.data.assign(img.data(), img.data() + img.size());
 
             // Call the C++ method

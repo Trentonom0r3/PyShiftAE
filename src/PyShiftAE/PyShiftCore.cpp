@@ -5,72 +5,6 @@
 This is the core Implementation File. May Refactor into individual component files as
 the library expands, but keeping everything here for now while I figure it all out.
 */
-/* Factory function to create the correct type of Item
-std::unique_ptr<Item> createItem(AEGP_SuiteHandler* suites, AEGP_ItemH& itemH) {
-    AEGP_ItemType itemType;
-    suites->ItemSuite8()->AEGP_GetItemType(itemH, &itemType);
-
-    switch (itemType) {
-    case AEGP_ItemType_FOLDER:
-        return std::make_unique<FolderItem>(suites, itemH);
-    case AEGP_ItemType_COMP:
-        return std::make_unique<CompItem>(suites, itemH);
-
-    case AEGP_ItemType_FOOTAGE:
-        return std::make_unique<FootageItem>(suites, itemH);
-    default:
-        return nullptr;  // Or throw an exception, or handle the error in some other way
-    }
-}
-
-
-
-
-
-
-ItemCollection::ItemCollection(AEGP_SuiteHandler* suites, AEGP_ProjectH& projH)
-    : suites_(suites), projH_(projH) {  // Initializes member variables with constructor arguments.
-    populateItems();  // Calls method to populate attribute values.
-}
-
-
-
-void ItemCollection::populateItems() {
-    AEGP_ItemH itemH;
-    suites_->ItemSuite9()->AEGP_GetFirstProjItem(projH_, &itemH);  // Get the first item in the project
-
-    while (itemH) {  // Continue until itemH is NULL, indicating no more items
-        items_.push_back(createItem(suites_, itemH));  // Create an Item object and add it to the items_ vector
-
-        AEGP_ItemH nextItemH;
-        suites_->ItemSuite9()->AEGP_GetNextProjItem(projH_, itemH, &nextItemH);  // Get the next item in the project
-        itemH = nextItemH;  // Update itemH for the next iteration
-    }
-}
-
-PYBIND11_MODULE(your_module_name, m) {
-    py::class_<Item>(m, "Item")
-        // ... bindings for common Item methods and attributes ...
-    ;
-
-    py::class_<FootageItem, Item>(m, "FootageItem")
-        .def("frame", &FootageItem::frame)
-        .def("replace", &FootageItem::replace)
-        // ... other bindings ...
-    ;
-
-    py::class_<CompItem, Item>(m, "CompItem")
-        .def_property_readonly("comp", [](const CompItem& self) { return self.comp; })
-        // ... other bindings ...
-    ;
-
-    py::class_<FolderItem, Item>(m, "FolderItem")
-        // ... bindings for FolderItem ...
-    ;
-}
-
-
-*/
 /*ITEM*/
 // Constructor implementations
 Item::Item(AEGP_SuiteHandler* suites, AEGP_ItemH& itemHandle)
@@ -84,19 +18,76 @@ void Item::populateAttributes() {
 
 // Method implementations for Item class
 std::string Item::getName() const {
-    const std::string name_ = "test";
-    return name_;
+    AEGP_MemHandle unicode_nameMH = NULL;
+    A_UTF16Char* unicode_nameP = NULL;
+    std::string name;
+
+    A_Err err = suites_->ItemSuite8()->AEGP_GetItemName(PyShiftAE, itemHandle_, &unicode_nameMH);
+
+    if (err == A_Err_NONE && unicode_nameMH != NULL) {
+        // Lock the memory handle to get the string pointer
+        suites_->MemorySuite1()->AEGP_LockMemHandle(unicode_nameMH, (void**)&unicode_nameP);
+
+        // Convert UTF-16 to UTF-8
+        std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> convert;
+        name = convert.to_bytes((char16_t*)unicode_nameP);
+
+        // Unlock and dispose of the memory handle
+        suites_->MemorySuite1()->AEGP_UnlockMemHandle(unicode_nameMH);
+        suites_->MemorySuite1()->AEGP_FreeMemHandle(unicode_nameMH);
+    }
+
+    return name; // Return the name as a UTF-8 string
 }
+
 
 void Item::setName(const std::string& name) {
-    name_ = name;
+    // Convert UTF-8 to UTF-16
+    std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> convert;
+    std::u16string unicode_name = convert.from_bytes(name);
+
+    // Call the AE SDK function to set the item name
+    A_Err err = suites_->ItemSuite8()->AEGP_SetItemName(itemHandle_, reinterpret_cast<const A_UTF16Char*>(unicode_name.c_str()));
+
+    // Handle potential errors here
+    if (err != A_Err_NONE) {
+        // Error handling logic
+    }
 }
+
+float Item::time() const {
+    A_Time curr_timeT; // This will store the current time as A_Time.
+
+    // Get the current time in A_Time.
+    A_Err err = suites_->ItemSuite6()->AEGP_GetItemCurrentTime(itemHandle_, &curr_timeT);
+    if (err == A_Err_NONE) {
+        // Convert A_Time to float.
+        return static_cast<float>(curr_timeT.value) / curr_timeT.scale;
+    }
+    return 0.0f; // In case of error, return 0 time.
+}
+
+float Item::duration() const {
+    A_Time durationT; // This will store the duration as A_Time.
+
+    // Get the duration in A_Time.
+    A_Err err = suites_->ItemSuite6()->AEGP_GetItemDuration(itemHandle_, &durationT);
+    if (err == A_Err_NONE) {
+        // Convert A_Time to float.
+        return static_cast<float>(durationT.value) / durationT.scale;
+    }
+    return 0.0f; // In case of error, return 0 duration.
+}
+
 /*ITEM END*/
 
+FootageItem::FootageItem(AEGP_SuiteHandler* suites, AEGP_ItemH& itemHandle) : Item(suites, itemHandle) {}
+
+FolderItem::FolderItem(AEGP_SuiteHandler* suites, AEGP_ItemH& itemHandle) : Item(suites, itemHandle) {}
 
 /*COMPITEM*/
 CompItem::CompItem(AEGP_SuiteHandler* suites, AEGP_ItemH& itemHandle)
-    : Item(suites, itemHandle), suites_(suites) {}
+    : Item(suites, itemHandle) {}
 // Method implementations for CompItem class
 
 ImageData CompItem::frameAtTime(float time) {
@@ -142,6 +133,14 @@ ImageData CompItem::frameAtTime(float time) {
                         // Manually copy the data from baseAddr to img.
                         std::memcpy(img.data(), baseAddr, dataSize);
 
+                        // Convert ARGB (BGRA in memory on little-endian machines) to RGBA.
+                        for (size_t i = 0; i < dataSize; i += 4) {
+                            // Swap the blue (B) and the alpha (A).
+                            std::swap(img[i], img[i + 3]);
+                            // Swap the green (G) and blue (B).
+                            std::swap(img[i + 1], img[i + 2]);
+                        }
+
                         ERR2(suites_->RenderSuite2()->AEGP_CheckinFrame(receiptH));
 
                         // Create an ImageData object to hold the image data and dimensions.
@@ -149,6 +148,7 @@ ImageData CompItem::frameAtTime(float time) {
 
                         return image_data;  // Return the populated ImageData object.
                     }
+
                 }
 
                 ERR2(suites_->RenderSuite2()->AEGP_CheckinFrame(receiptH));
@@ -221,17 +221,6 @@ void CompItem::replaceFrameAtTime(ImageData& new_img, float time) {
 }
 
 
-/*
-
-
-void CompItem::populateAttributes() {
-    Item::populateAttributes();  // Call base class implementation
-    // ... (additional logic specific to CompItem)
-}
-*/
-
-/*COMPITEM END*/
-
 
 /* THE PROJECT CLASS*/
 Project::Project(AEGP_SuiteHandler* suites, AEGP_ProjectH& projH)
@@ -245,7 +234,7 @@ void Project::populateAttributes() {
     //items = std::make_unique<ItemCollection>(&suites_, projH_);
     AEGP_ItemH item;
     suites_->ItemSuite8()->AEGP_GetActiveItem(&item);
-    activeItem = std::make_unique<CompItem>(suites_, item);
+    activeItem = createItem(suites_, item);
 }
 
 std::string Project::getName() const {  // Method to get the project name.
@@ -300,7 +289,21 @@ const Item& Project::getActiveItem() const
     return *activeItem;
 }
 
+std::unique_ptr<Item> Project::createItem(AEGP_SuiteHandler* suites, AEGP_ItemH& itemH) {
+    AEGP_ItemType itemType;
+    suites->ItemSuite8()->AEGP_GetItemType(itemH, &itemType);
 
+    switch (itemType) {
+    case AEGP_ItemType_FOLDER:
+        return std::make_unique<FolderItem>(suites, itemH);
+    case AEGP_ItemType_COMP:
+        return std::make_unique<CompItem>(suites, itemH);
+    case AEGP_ItemType_FOOTAGE:
+        return std::make_unique<FootageItem>(suites, itemH);
+    default:
+        return nullptr;  // Or throw an exception, or handle the error in some other way
+    }
+}
 
 
 // Implementation of the App class.
