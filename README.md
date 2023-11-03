@@ -51,17 +51,12 @@ else:
    > Couple ideas for solutions are;
    > 	a) Figure out a different combination of suites to use.
    > 	b) Create an effect plugin (possibly built into the AEGP?) to attach to layers, and limit ```item.frameAtTime(idx)``` to prevent being called from loops
-
-   
+  
 - See [TODO](https://github.com/Trentonom0r3/PyShiftAE/blob/main/TODO.md)
   
-## Contributing
-I really would like this to be a community project. Posting ideas, thoughts, functionality suggestions, workflow suggestions, etc, would be very much appreciated.
-
-- I don't expect anyone to delve too deep into this, but any sort of "reverse-engineering" or "hacking" to get more info regarding internal AEFX workings would also help
-  - This is how I figured out how to call/create/listen to CSXS events directly from native code. 
-
 # Documentation 
 - (API-Reference)[https://github.com/Trentonom0r3/PyShiftAE/wiki/API-Reference]
 - (CSXS)[https://github.com/Trentonom0r3/PyShiftAE/wiki/CSXS-Utils]
 - (Demos)[https://github.com/Trentonom0r3/PyShiftAE/wiki/Demos]
+
+
