@@ -17,20 +17,21 @@ The ripple effect of PyShiftAE in the AE community could be profound. Scriptwrit
 Unlike existing Python libraries for AE which serve as wrappers around ExtendScript, PyShiftAE stands out as an independent library with its own suite of features. Here's a glimpse of how PyShiftAE can simplify and elevate the scripting experience in AE:
 ```
 from PyShiftCore import *
-import cv2
-import numpy as np
 import traceback
 
-print("Imported cv2 version:", cv2.__version__)  # Check if cv2 is imported correctly
-
 item = app.project.activeItem
-length = item.duration * 12
+length = item.duration
 
 if isinstance(item, CompItem):  # Check if item is a CompItem
     try:
-        for i in range(1, int(length) - 1):  # Loop through all frames
+        for i in range( 1, int( length ) - 1 ):  # Loop through all frames
+
             img = item.frameAtTime(i)  # Get frame
-            # ... rest of the code
+
+            new_img = some_function() # manipulate the image
+
+	    item.replaceFrameAtTime( new_img, i ) # replace frame at the given time
+
     except Exception as e:
         print("Error:", str(e))
         traceback.print_exc()
