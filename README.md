@@ -43,7 +43,7 @@ else:
 - Memory & Lifetime Management: Ensuring robust state storage while averting memory leaks is a paramount concern.
 - Feature Parity: Retaining all the functionality from ExtendScript, albeit with an enhanced and simplified interface, is a significant challenge.
 - See [TODO](https://github.com/Trentonom0r3/PyShiftAE/blob/main/TODO.md)
-- 
+  
 # Contributing
 I really would like this to be a community project. Posting ideas, thoughts, functionality suggestions, workflow suggestions, etc, would be very much appreciated.
 
