@@ -63,14 +63,14 @@ else:
 - Memory & Lifetime Management: Ensuring robust state storage while averting memory leaks is a paramount concern.
 - Feature Parity: Retaining all the functionality from ExtendScript, albeit with an enhanced and simplified interface, is a significant challenge.
 - Managing threading/loops:
-   > Currently, running ```item.frameAtTime(idx)``` in a loop leads to an unresponsive app and ultimately a crash.
-   > While it works fine on its own in a single run, I'm unsure as to why the loop causes the crash. (I'd assume its memory/lifetime related)
-   > Could possibly simply be a limitation of the suites being used or AEGPs in general, looking into this.
-   > ```item.frameAtTime(idx)``` runs by taking the activeItem (typically the comp) and getting the ```AEGP_WorldH``` from the specified time.
-   > 	It then converts into a custom ImageData struct, passes to python, converts to numpy, and returns. 
-   > Couple ideas for solutions are;
-   > 	a) Figure out a different combination of suites to use.
-   > 	b) Create an effect plugin (possibly built into the AEGP?) to attach to layers, and limit ```item.frameAtTime(idx)``` to prevent being called from loops
+   > - Currently, running ```item.frameAtTime(idx)``` in a loop leads to an unresponsive app and ultimately a crash.
+   > - While it works fine on its own in a single run, I'm unsure as to why the loop causes the crash. (I'd assume its memory/lifetime related)
+   > - Could possibly simply be a limitation of the suites being used or AEGPs in general, looking into this.
+   > - ```item.frameAtTime(idx)``` runs by taking the activeItem (typically the comp) and getting the ```AEGP_WorldH``` from the specified time.
+   > 	- It then converts into a custom ImageData struct, passes to python, converts to numpy, and returns. 
+   > - Couple ideas for solutions are;
+   >    - a) Figure out a different combination of suites to use.
+   > 	- b) Create an effect plugin (possibly built into the AEGP?) to attach to layers, and limit ```item.frameAtTime(idx)``` to prevent being called from loops
   
 - See [TODO](https://github.com/Trentonom0r3/PyShiftAE/blob/main/TODO.md)
   
