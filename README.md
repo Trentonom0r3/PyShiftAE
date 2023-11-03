@@ -51,7 +51,8 @@ I really would like this to be a community project. Posting ideas, thoughts, fun
   - This is how I figured out how to call/create/listen to CSXS events directly from native code. 
 
 # Documentation 
-Coming soon
+- See the (WIKI)[https://github.com/Trentonom0r3/PyShiftAE/wiki/PyShiftAE-Documentation---API-Reference#class-footageitem-inherits-from-item] or more info.
+- Will be updating docs as methods are added/removed so that the library has full, extensive documentation.
 
 # Proof of Concept
 
