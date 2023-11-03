@@ -75,7 +75,7 @@ else:
 - See [TODO](https://github.com/Trentonom0r3/PyShiftAE/blob/main/TODO.md)
   
 ## Documentation 
-- [PI-Reference](https://github.com/Trentonom0r3/PyShiftAE/wiki/API-Reference)
+- [API-Reference](https://github.com/Trentonom0r3/PyShiftAE/wiki/API-Reference)
 - [CSXS](https://github.com/Trentonom0r3/PyShiftAE/wiki/CSXS-Utils)
 - [Demos](https://github.com/Trentonom0r3/PyShiftAE/wiki/Demos)
 - [Building from source](https://github.com/Trentonom0r3/PyShiftAE/wiki/Building-from-source)
@@ -123,7 +123,7 @@ Contributions from the community are welcome, and I would be pleased to have the
 
 #### Environment Setup
 
-- The project is currently set up for Microsoft x64, using pybind11 x64 static, linked to Python 3.11 (debug and release). Follow the instructions provided in the WIKI for setting up your development environment.
+- The project is currently set up for Microsoft x64, using pybind11 x64 static, linked to Python 3.11 (debug and release). Follow the instructions provided in the [WIKI](https://github.com/Trentonom0r3/PyShiftAE/wiki/Building-from-source) for setting up your development environment.
 
 #### Review Process
 
