@@ -75,11 +75,11 @@ else:
 - See [TODO](https://github.com/Trentonom0r3/PyShiftAE/blob/main/TODO.md)
   
 ## Documentation 
-- (API-Reference)[https://github.com/Trentonom0r3/PyShiftAE/wiki/API-Reference]
-- (CSXS)[https://github.com/Trentonom0r3/PyShiftAE/wiki/CSXS-Utils]
-- (Demos)[https://github.com/Trentonom0r3/PyShiftAE/wiki/Demos]
-- (Building from source)[https://github.com/Trentonom0r3/PyShiftAE/wiki/Building-from-source]
-- (Pre-Compiled .aex Binary)[https://github.com/Trentonom0r3/PyShiftAE/blob/main/dist/PyShiftAE.aex]
+- [PI-Reference](https://github.com/Trentonom0r3/PyShiftAE/wiki/API-Reference)
+- [CSXS](https://github.com/Trentonom0r3/PyShiftAE/wiki/CSXS-Utils)
+- [Demos](https://github.com/Trentonom0r3/PyShiftAE/wiki/Demos)
+- [Building from source](https://github.com/Trentonom0r3/PyShiftAE/wiki/Building-from-source)
+- [Pre-Compiled .aex Binary](https://github.com/Trentonom0r3/PyShiftAE/blob/main/dist/PyShiftAE.aex)
   
 ### Contributing
 
