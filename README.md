@@ -1,6 +1,26 @@
 # PyShiftAE
 PyShiftAE is an experimental library designed to transcend the boundaries of the built-in ExtendScript library in Adobe After Effects (AE), heralding a new era of scripting possibilities in AE. By offering a Python library as an alternative to ExtendScript, PyShiftAE not only enriches the existing feature set but simplifies and amplifies the scripting experience.
 
+## Contents
+
+- [Problem Statement](#problem-statement)
+- [Why PyShiftAE?](#why-pyshiftae)
+- [Impact](#impact)
+- [Distinguishing Features](#distinguishing-features)
+- [Challenges](#challenges-ahead)
+- [Documentation](#documenation)
+- [Contributing](#contributing)
+    - [Issues](#reporting-issues)
+    - [Pull Requests](#submitting-pull-requests)
+    - [Guidelines](#guidelines)
+    - [Testing](#testing)
+    - [Docs](#docs)
+    - [Community](#community-interaction)
+    - [Legal](#legal)
+    - [Setup](#environment-setup)
+    - [Review Process](#review-process)
+    - [Acknowledgements](#acknowledgements)
+      
 ### Problem Statement
 ExtendScript, the established scripting language in AE, poses certain limitations particularly around sophisticated tasks such as pixel or audio data manipulation. Its capabilities are somewhat confined, often demanding a transition to the more complex C++ SDK for advanced functionalities.
 
@@ -86,7 +106,7 @@ Contributions from the community are welcome, and I would be pleased to have the
 
 - At the moment, there is not a specific testing framework in place. However, I would appreciate if you could provide simple tests or usage examples to demonstrate the functionality of your contribution. Eg: scripts used, video demonstrations, etc;
 
-#### Documentation
+#### Docs
 
 - You can follow the existing documentation as a format guide.
 - When adding new features, it would be great to include relevant documentation updates alongside your code contributions.
