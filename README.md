@@ -51,20 +51,7 @@ I really would like this to be a community project. Posting ideas, thoughts, fun
   - This is how I figured out how to call/create/listen to CSXS events directly from native code. 
 
 # Documentation 
-- See the (WIKI)[https://github.com/Trentonom0r3/PyShiftAE/wiki/PyShiftAE-Documentation---API-Reference#class-footageitem-inherits-from-item] or more info.
-- Will be updating docs as methods are added/removed so that the library has full, extensive documentation.
-
-# Proof of Concept
-
-### Simple Attribute Gathering, Command Execution:
- 
-https://github.com/Trentonom0r3/PyShiftAE/assets/130304830/31369ac6-a3a0-40e2-a78a-5a3936c60239
-
-### New "frameAtTime" method, usage with cv2 demo:
-
-https://github.com/Trentonom0r3/PyShiftAE/assets/130304830/26afed06-ef81-458c-ba4e-c5bc97af0d1e
-
-
-
-# Usage
-
+- (API-Reference)[https://github.com/Trentonom0r3/PyShiftAE/wiki/API-Reference]
+- (CSXS)[https://github.com/Trentonom0r3/PyShiftAE/wiki/CSXS-Utils]
+- (Demos)[https://github.com/Trentonom0r3/PyShiftAE/wiki/Demos]
+- (Contributing)[]
