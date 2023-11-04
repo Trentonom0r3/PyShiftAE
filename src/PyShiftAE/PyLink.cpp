@@ -34,12 +34,43 @@ PYBIND11_EMBEDDED_MODULE(PyShiftCore, m) {
     py::class_<FolderItem, Item>(m, "FolderItem");
 
     py::class_<CompItem, Item>(m, "CompItem")
-        .def("frameAtTime", [](CompItem& self, float time) {
+        // Binding for frameAtTime with memory management
+        .def("frameAtTime", [](CompItem& self, float time) -> py::array_t<uint8_t> {
+            py::gil_scoped_release;
+            // Get the ImageData object from your API
             ImageData image_data = self.frameAtTime(time);
-            py::array_t<uint8_t> result({ image_data.height, image_data.width, image_data.channels }, image_data.data.data());
-            return result;
+
+            // Get the raw pointer to the vector's data
+            uint8_t* raw_data = image_data.data->data();
+            int height = image_data.height;
+            int width = image_data.width;
+            int channels = image_data.channels;
+
+            // Define a std::function with the deleter
+            auto deleter_func = [data = image_data.data](void* /* owner */) {
+                // The shared_ptr data will be released when the NumPy array is deleted
+            };
+
+            // Convert std::function to a function pointer
+            auto capsule_deleter = new std::function<void(void*)>(deleter_func);
+
+            // Use a lambda that calls the function pointer as the deleter
+            auto capsule_deleter_wrapper = [](void* data) {
+                auto func_ptr = reinterpret_cast<std::function<void(void*)>*>(data);
+                (*func_ptr)(nullptr);
+                delete func_ptr;
+            };
+            py::gil_scoped_acquire;
+            // Create the NumPy array
+            return py::array_t<uint8_t>(
+                { height, width, channels }, // shape
+                { channels * width * sizeof(uint8_t), channels * sizeof(uint8_t), sizeof(uint8_t) }, // strides
+                raw_data, // the data pointer
+                py::capsule(capsule_deleter, "array_data_capsule", capsule_deleter_wrapper) // the capsule with the deleter
+            );
             })
-        
+
+
         .def("replaceFrameAtTime", [](CompItem& self, py::array_t<uint8_t> img, float time) {
             // Ensure the NumPy array is C-style contiguous
             if (!(img.flags() & py::array::c_style)) {
@@ -51,13 +82,14 @@ PYBIND11_EMBEDDED_MODULE(PyShiftCore, m) {
                 throw std::runtime_error("Input array must have three dimensions");
             }
 
-            // Convert the NumPy array to ImageData
             ImageData new_img;
             new_img.width = static_cast<int>(img.shape(1));
             new_img.height = static_cast<int>(img.shape(0));
             new_img.channels = static_cast<int>(img.shape(2));
 
-            new_img.data.assign(img.data(), img.data() + img.size());
+            // Reserve the size for the vector and copy the data
+            new_img.data->reserve(new_img.width * new_img.height * new_img.channels);
+            std::copy_n(img.data(), img.size(), std::back_inserter(*new_img.data));
 
             // Call the C++ method
             self.replaceFrameAtTime(new_img, time);

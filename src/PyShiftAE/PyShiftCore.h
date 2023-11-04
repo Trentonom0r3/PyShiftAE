@@ -13,11 +13,25 @@ static AEGP_PluginID		PyShiftAE = 10L;
 
 
 struct ImageData {
-    std::vector<uint8_t> data;
+    std::shared_ptr<std::vector<uint8_t>> data;
     int width;
     int height;
     int channels;
+
+    // Default constructor
+    ImageData() : width(0), height(0), channels(0), data(std::make_shared<std::vector<uint8_t>>()) {}
+
+    // Constructor with shared_ptr and dimensions
+    ImageData(std::shared_ptr<std::vector<uint8_t>> d, int w, int h, int c)
+        : data(std::move(d)), width(w), height(h), channels(c) {}
+
+    // Constructor with initialization
+    ImageData(int w, int h, int c) : width(w), height(h), channels(c) {
+        data = std::make_shared<std::vector<uint8_t>>(w * h * c);
+    }
 };
+
+
 
 class Layer {
 public:
@@ -44,7 +58,7 @@ private:
 
 class Item {
 public:
-    explicit Item(AEGP_SuiteHandler* suites, AEGP_ItemH& itemHandle);
+    explicit Item(AEGP_SuiteHandler& suites, AEGP_ItemH itemHandle);
     virtual ~Item() = default;
 
     std::string getName() const;
@@ -56,7 +70,7 @@ public:
 protected:
     void populateAttributes();
 
-    AEGP_SuiteHandler* suites_;
+    AEGP_SuiteHandler& suites_;
     AEGP_ItemH itemHandle_;
     std::string name_;
 };
@@ -64,7 +78,7 @@ protected:
 //TODO: Figure out how to turn "item" into a factory class, but still access things the same way.
 class CompItem : public Item {
 public:
-    explicit CompItem(AEGP_SuiteHandler* suites, AEGP_ItemH& itemHandle);
+    explicit CompItem(AEGP_SuiteHandler& suites, AEGP_ItemH itemHandle);
     virtual ~CompItem() = default;
 
     ImageData frameAtTime(float time);
@@ -82,7 +96,7 @@ public:
 class FootageItem : public Item {
 public:
     // Constructors and Destructors
-    explicit FootageItem(AEGP_SuiteHandler* suites, AEGP_ItemH& itemHandle);
+    explicit FootageItem(AEGP_SuiteHandler& suites, AEGP_ItemH itemHandle);
     virtual ~FootageItem() = default;
 
 };
@@ -90,7 +104,7 @@ public:
 class FolderItem : public Item {
 public:
     // Constructors and Destructors
-    explicit FolderItem(AEGP_SuiteHandler* suites, AEGP_ItemH& itemHandle);
+    explicit FolderItem(AEGP_SuiteHandler& suites, AEGP_ItemH itemHandle);
     virtual ~FolderItem() = default;
 
 };
@@ -99,13 +113,13 @@ public:
 //Project class definition
 class Project {
 public:
-    Project(AEGP_SuiteHandler* suites, AEGP_ProjectH& projH);  // Change to pointer
+    Project(AEGP_SuiteHandler& suites, AEGP_ProjectH projH);  // Change to pointer
 
     std::string getName() const;
     std::string GetProjectPath() const;
     const Item& getActiveItem() const;
     //const ItemCollection& getItems() const;
-    std::unique_ptr<Item> createItem(AEGP_SuiteHandler* suites, AEGP_ItemH& itemH);
+    std::unique_ptr<Item> createItem(AEGP_SuiteHandler& suites, AEGP_ItemH itemH);
     void saveToPath() const; //TODO
     std::string getTimeDisplay() const; //TODO
     std::string setTimeDisplay() const; //TODO
@@ -118,7 +132,7 @@ public:
 
 private:
     void populateAttributes();
-    AEGP_SuiteHandler* suites_;  // Change to pointer
+    AEGP_SuiteHandler& suites_;  // Change to pointer
     AEGP_ProjectH projH_;
 };
 

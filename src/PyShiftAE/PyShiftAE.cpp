@@ -80,7 +80,7 @@ CommandHook(
 		std::cout << "PyShift Command Received" << std::endl;
 		App app(suites);
 
-		py::gil_scoped_acquire acquire;  // Acquire the GIL
+		//py::gil_scoped_acquire acquire;  // Acquire the GIL
 
 		// Remove this line: py::module m = py::module::import("PyShiftCore");
 		set_app(app);
