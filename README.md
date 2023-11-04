@@ -1,97 +1,137 @@
 # PyShiftAE
-An experimental repository for research, ideas, and (hopefully) eventually, working code. See README.md for more info. 
+PyShiftAE is an experimental library designed to transcend the boundaries of the built-in ExtendScript library in Adobe After Effects (AE), heralding a new era of scripting possibilities in AE. By offering a Python library as an alternative to ExtendScript, PyShiftAE not only enriches the existing feature set but simplifies and amplifies the scripting experience.
 
-# Goals (See [TODO](https://github.com/Trentonom0r3/PyShiftAE/blob/main/TODO.md))
-- The main Goal of PyShiftAE is to create a replacement library for extendscript, in python. 
-- This is not going to be done via wrappers around JS calls, but an actual library creation. 
-- Ideally, you could write and run external .py scripts, as well as use them internally. 
-- There would be an interface for using PyShiftAE within CEP (and eventually UXP) extensions. (Call it Pyinterface.js, use Pyinterface.evalpy(), hehe)
-- This would GREATLY extend the capabilities of scripting in AE -- image data, audio data, access to numpy, ML libraries, and other custom libraries. 
-- Script entirely in python, and access functionality you never could have with CEP.
+## Contents
 
-# Contributing
-I really would like this to be a community project. Posting ideas, thoughts, functionality suggestions, workflow suggestions, etc, would be very much appreciated.
+- [Problem Statement](#problem-statement)
+- [Why PyShiftAE?](#why-pyshiftae)
+- [Impact](#impact)
+- [Distinguishing Features](#distinguishing-features)
+- [Challenges](#challenges-ahead)
+- [Documentation](#documentation)
+- [Contributing](#contributing)
+    - [Issues](#reporting-issues)
+    - [Pull Requests](#submitting-pull-requests)
+    - [Guidelines](#code-guidelines)
+    - [Testing](#testing)
+    - [Docs](#docs)
+    - [Community](#community-interaction)
+    - [Legal](#legal)
+    - [Setup](#environment-setup)
+    - [Review Process](#review-process)
+    - [Acknowledgements](#acknowledgements)
+      
+### Problem Statement
+ExtendScript, the established scripting language in AE, poses certain limitations particularly around sophisticated tasks such as pixel or audio data manipulation. Its capabilities are somewhat confined, often demanding a transition to the more complex C++ SDK for advanced functionalities.
 
-- I don't expect anyone to delve too deep into this, but any sort of "reverse-engineering" or "hacking" to get more info regarding internal AEFX workings would also help
-  - This is how I figured out how to call/create/listen to CSXS events directly from native code. 
+### Why PyShiftAE?
+- **Ease of Use**: Python, being a more intuitive and widely adopted language compared to ExtendScript, lowers the entry barrier for scriptwriters. 
+- **Extended Functionality**: PyShiftAE is not a mere wrapper around ExtendScript; it's a full-fledged library offering novel functionalities and a simplified approach to existing ones.
+- **Community Empowerment**: With PyShiftAE, a broader spectrum of developers including CEP developers and those proficient in Python can effortlessly script in AE, thus democratizing advanced scripting capabilities.
+- **Innovation Unleashed**: Direct integration with APIs, machine learning libraries, and more becomes a reality with PyShiftAE, paving the way for innovative scripts and extensions.
 
-# Documentation 
-Coming soon
+### Impact
+The ripple effect of PyShiftAE in the AE community could be profound. Scriptwriters could venture into more advanced coding territories, and CEP extension authors could craft hybrid extensions blending SDK features via PyShiftAE, thereby catalyzing a wave of innovative solutions in the AE ecosystem.
 
-# Proof of Concept
+### Distinguishing Features
+Unlike existing Python libraries for AE which serve as wrappers around ExtendScript, PyShiftAE stands out as an independent library with its own suite of features. Here's a glimpse of how PyShiftAE can simplify and elevate the scripting experience in AE:
+```
+from PyShiftCore import *
+import traceback
 
-### Simple Attribute Gathering, Command Execution:
- 
-https://github.com/Trentonom0r3/PyShiftAE/assets/130304830/31369ac6-a3a0-40e2-a78a-5a3936c60239
+item = app.project.activeItem
+length = item.duration
 
-### New "frameAtTime" method, usage with cv2 demo:
+if isinstance(item, CompItem):  # Check if item is a CompItem
+    try:
+        for i in range( 1, int( length ) - 1 ):  # Loop through all frames
 
-https://github.com/Trentonom0r3/PyShiftAE/assets/130304830/26afed06-ef81-458c-ba4e-c5bc97af0d1e
+            img = item.frameAtTime(i)  # Get frame
+
+            new_img = some_function() # manipulate the image
+
+	    item.replaceFrameAtTime( new_img, i ) # replace frame at the given time
+
+    except Exception as e:
+        print("Error:", str(e))
+        traceback.print_exc()
+else:
+    print("Active item is not a CompItem")
+```
+
+## Challenges Ahead
+- Memory & Lifetime Management: Ensuring robust state storage while averting memory leaks is a paramount concern.
+- Feature Parity: Retaining all the functionality from ExtendScript, albeit with an enhanced and simplified interface, is a significant challenge.
+- Managing threading/loops:
+   > - Currently, running ```item.frameAtTime(idx)``` in a loop leads to an unresponsive app and ultimately a crash.
+   > - While it works fine on its own in a single run, I'm unsure as to why the loop causes the crash. (I'd assume its memory/lifetime related)
+   > - Could possibly simply be a limitation of the suites being used or AEGPs in general, looking into this.
+   > - ```item.frameAtTime(idx)``` runs by taking the activeItem (typically the comp) and getting the ```AEGP_WorldH``` from the specified time.
+   > 	- It then converts into a custom ImageData struct, passes to python, converts to numpy, and returns. 
+   > - Couple ideas for solutions are;
+   >    - a) Figure out a different combination of suites to use.
+   > 	- b) Create an effect plugin (possibly built into the AEGP?) to attach to layers, and limit ```item.frameAtTime(idx)``` to prevent being called from loops
+  
+- See [TODO](https://github.com/Trentonom0r3/PyShiftAE/blob/main/TODO.md)
+  
+## Documentation 
+- [API-Reference](https://github.com/Trentonom0r3/PyShiftAE/wiki/API-Reference)
+- [CSXS](https://github.com/Trentonom0r3/PyShiftAE/wiki/CSXS-Utils)
+- [Demos](https://github.com/Trentonom0r3/PyShiftAE/wiki/Demos)
+- [Building from source](https://github.com/Trentonom0r3/PyShiftAE/wiki/Building-from-source)
+- [Pre-Compiled .aex Binary](https://github.com/Trentonom0r3/PyShiftAE/blob/main/dist/PyShiftAE.aex)
+  
+### Contributing
+
+Contributions from the community are welcome, and I would be pleased to have them. Please follow this guide for contributing to PyShiftAE.
+
+#### Reporting Issues
+
+- Please make sure to check for existing issues before creating a new one. Your issue might have already been reported and possibly even fixed in the `main` branch.
+- When creating an issue, please provide a clear and descriptive title, and explain the problem in detail. Include any relevant code snippets or error messages.
+
+#### Submitting Pull Requests
+
+- Fork the repository and create a new branch for your feature or bug fix.
+- There's no strict coding style guideline at the moment, but please keep your code clean and well-commented. Following the general structure and commenting style of the existing code would be appreciated. To further this, detailed comments help both myself, and others learn and collaborate better.
+- Submit your pull request against the `main` branch. If there is a `develop` branch or other relevant branches in the future, please redirect your pull request accordingly.
+
+#### Code Guidelines
+
+- Your code should be well-commented with docstrings for classes and methods.
+- Please try to keep your code as clean and straightforward as possible.
+- It would be beneficial to follow common Python conventions and keep a consistent coding style. (On the API exposure side)
+
+#### Testing
+
+- At the moment, there is not a specific testing framework in place. However, I would appreciate if you could provide simple tests or usage examples to demonstrate the functionality of your contribution. Eg: scripts used, video demonstrations, etc;
+
+#### Docs
+
+- You can follow the existing documentation as a format guide.
+- When adding new features, it would be great to include relevant documentation updates alongside your code contributions.
+
+#### Community Interaction
+
+- Discussion around the project will primarily occur here on GitHub. Feel free to ask questions or discuss anything related to the project in the issue tracker.
+- You can get in touch with me directly via the contact information provided on GitHub.
+
+#### Legal
+
+- By contributing, you agree that your contributions will be licensed under the same license as the project (AGPL 3.0).
+- Ensure that you have the right to submit your contribution and that your code does not infringe any other person's or entity's rights.
+
+#### Environment Setup
+
+- The project is currently set up for Microsoft x64, using pybind11 x64 static, linked to Python 3.11 (debug and release). Follow the instructions provided in the [WIKI](https://github.com/Trentonom0r3/PyShiftAE/wiki/Building-from-source) for setting up your development environment.
+
+#### Review Process
+
+- Contributions will be reviewed by the community and maintainers. Constructive feedback will be provided, and once your contribution is accepted, it will be merged into the `main` branch.
+- Given the experimental nature of the project, contributors who provide robust, well-thought-out and well-tested contributions might find themselves reviewing other contributions as well.
+
+#### Acknowledgements
+
+- All contributors will be acknowledged in the project repository. Your contributions, no matter how small, are valuable to us and the community.
 
 
-
-# Usage
-- The files included in this repo currently demonstrate how to use the PlugPlug.Dll from the c++ side in order to send and receive csxs events. 
-- In addition, the src/PyShiftAE directory is the source files for the plugin. 
-You can go to File->Run Script (.py), and run the test script provided from within AE.
-Make sure Python 3.11 x64 is available on PATH.
-
-
-You can actually use the CSXS wrappers for any adobe app, provided you find a way to get the path to PlugPlug.Dll in your app.
-
-You would then make sure the event listener is loaded whenever your plugin is initialized. 
-
-So you'd want to include this;
-
-https://github.com/Trentonom0r3/AE-SDK-CEP-UTILS/blob/main/AEGP/Grabba/Win/CSXSUtils.h
-
-Make sure you add this to your project;
-
-https://github.com/Trentonom0r3/AE-SDK-CEP-UTILS/blob/main/AEGP/Grabba/CSXUtils.cpp
-
-and then the only other thing you would have to adjust would be this function in CSXUtils.cpp, basically just tell it what you want to listen for and what you want it to do when you hear it. It would also be a really good idea to add a condition to ignore whatever you're sending from the plugin itself, otherwise it'll get stuck in an infinite loop.
-
-	
-	void MyEventListener(const Event* const event, void* const context) {
-	    std::cout << "Received event: " << event->type << std::endl;
-	
-	    if (event->data) {
-	        if (strcmp(event->data, "Hello from JSX!") == 0) {
-	            std::cout << "Event data is correct." << std::endl;
-	            int res = SendEvent("com.adobe.csxs.events.MyCustomEvent", "AEFT", "getimg", "Hello from C++");
-	            if (res == kEventErrorCode_Success) {
-	                std::cout << "Event sent successfully." << std::endl;
-	            }
-	            else {
-	                std::cerr << "Failed to send event." << std::endl;
-	            }
-	        }
-	        else {
-	            std::cerr << "Event data is incorrect." << std::endl;
-	        }
-	
-	    }
-	}
-	
-
-I would make a wrapper around it in your main code, and return the strings from the event listener so you don't have to worry about including SDK headers or anything.
-Finally, you can create an event listener in your main code like this;
-
-	
-	char* RegisterEvent(const char* EventType)
-	{
-		std::string path;
-		path = GetPlugPlugPath();
-	
-		LoadDLL(path);
-	
-		int result = RegisterEventListener(EventType);
-	
-		if (result == 1) {
-			return "Success";
-		}
-		else {
-			return "Error";
-		}
-	}
-	
