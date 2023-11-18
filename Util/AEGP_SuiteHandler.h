@@ -255,7 +255,7 @@ private:
 		SPSuitesSuite 					*suites_suite_2P;
 	};
 
-	mutable Suites i_suites;
+	mutable Suites isuites;
 
 	// private methods
 	// I had to make this inline by moving the definition from the .cpp file
@@ -278,7 +278,7 @@ private:
 	void ReleaseAllSuites()
 	{
 		#define	AEGP_SUITE_RELEASE_BOILERPLATE(MEMBER_NAME, kSUITE_NAME, kVERSION_NAME)		\
-			if (i_suites.MEMBER_NAME) {														\
+			if (isuites.MEMBER_NAME) {														\
 				ReleaseSuite(kSUITE_NAME, kVERSION_NAME);									\
 			}
 
@@ -447,11 +447,11 @@ public:
 	#define	AEGP_SUITE_ACCESS_BOILERPLATE(SUITE_NAME, VERSION_NUMBER, SUITE_PREFIX, MEMBER_NAME, kSUITE_NAME, kVERSION_NAME)	\
 		SUITE_PREFIX##SUITE_NAME##VERSION_NUMBER *SUITE_NAME##VERSION_NUMBER() const											\
 	{																															\
-		if (i_suites.MEMBER_NAME == NULL) {																						\
-			i_suites.MEMBER_NAME = (SUITE_PREFIX##SUITE_NAME##VERSION_NUMBER*)													\
+		if (isuites.MEMBER_NAME == NULL) {																						\
+			isuites.MEMBER_NAME = (SUITE_PREFIX##SUITE_NAME##VERSION_NUMBER*)													\
 										LoadSuite(kSUITE_NAME, kVERSION_NAME);													\
 		}																														\
-		return i_suites.MEMBER_NAME;																							\
+		return isuites.MEMBER_NAME;																							\
 	}
 
 	AEGP_SUITE_ACCESS_BOILERPLATE(MarkerSuite, 1, AEGP_, marker_suite1P, kAEGPMarkerSuite, kAEGPMarkerSuiteVersion1);

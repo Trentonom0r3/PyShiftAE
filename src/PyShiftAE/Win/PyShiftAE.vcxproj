@@ -67,7 +67,7 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
     <_ProjectFileVersion>10.0.40219.1</_ProjectFileVersion>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:\Program Files\Adobe\Adobe After Effects 2023\Support Files\Plug-ins\Effects</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:\Program Files\Adobe\Adobe After Effects 2023\Support Files\Plug-ins\Effects\</OutDir>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:\Program Files\Adobe\Adobe After Effects 2023\Support Files\Plug-ins\Effects</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(Platform)\$(Configuration)\</IntDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(Platform)\$(Configuration)\</IntDir>
@@ -100,6 +100,7 @@
     <IncludePath>C:\Users\tjerf\vcpkg\installed\x64-windows-static\include;C:\Program Files\Python311\include;$(IncludePath)</IncludePath>
     <ExternalIncludePath>$(ExternalIncludePath)</ExternalIncludePath>
     <LibraryPath>C:\Program Files\Python311\libs;$(LibraryPath)</LibraryPath>
+    <EnableClangTidyCodeAnalysis>true</EnableClangTidyCodeAnalysis>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <IncludePath>C:\Program Files\Python311\include;C:\Users\tjerf\vcpkg\installed\x64-windows-static\include;$(IncludePath)</IncludePath>
@@ -327,7 +328,15 @@
     </Bscmake>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="..\PyLink.h" />
+    <ClInclude Include="..\CoreLib\App.h" />
+    <ClInclude Include="..\CoreLib\ItemManager.h" />
+    <ClInclude Include="..\CoreLib\Project.h" />
+    <ClInclude Include="..\CoreLib\PyCore.h" />
+    <ClInclude Include="..\CoreSDK\Core.h" />
+    <ClInclude Include="..\CoreSDK\MessageQueue.h" />
+    <ClInclude Include="..\CoreSDK\PT_Err.h" />
+    <ClInclude Include="..\CoreSDK\SuiteManager.h" />
+    <ClInclude Include="..\CoreSDK\TaskUtils.h" />
     <ClInclude Include="..\PyShiftAE.h" />
     <ClInclude Include="..\..\..\Headers\A.h" />
     <ClInclude Include="..\..\..\Headers\AE_AdvEffectSuites.h" />
@@ -348,7 +357,7 @@
     <ClInclude Include="..\..\..\Headers\PF_Masks.h" />
     <ClInclude Include="..\..\..\Headers\PR_Public.h" />
     <ClInclude Include="..\..\..\Util\String_Utils.h" />
-    <ClInclude Include="..\PyShiftCore.h" />
+    <ClInclude Include="..\PyUtils\PyLink.h" />
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="..\PyShiftAE_PiPL.r">
@@ -381,9 +390,13 @@ cl /D "MSWindows" /EP $(IntDir)%(Filename).rrc &gt;               "$(ProjectDir)
   <ItemGroup>
     <ClCompile Include="..\..\..\Util\AEGP_SuiteHandler.cpp" />
     <ClCompile Include="..\..\..\Util\MissingSuiteError.cpp" />
-    <ClCompile Include="..\PyLink.cpp" />
+    <ClCompile Include="..\CoreLib\App.cpp" />
+    <ClCompile Include="..\CoreLib\ItemManager.cpp" />
+    <ClCompile Include="..\CoreLib\Project.cpp" />
+    <ClCompile Include="..\CoreLib\PyCore.cpp" />
+    <ClCompile Include="..\CoreSDK\Core.cpp" />
     <ClCompile Include="..\PyShiftAE.cpp" />
-    <ClCompile Include="..\PyShiftCore.cpp" />
+    <ClCompile Include="..\PyUtils\PyLink.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="PyShiftAE_PiPL.rc" />
