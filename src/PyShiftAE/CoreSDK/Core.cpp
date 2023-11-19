@@ -1,22 +1,31 @@
 #include "Core.h"
 /*
-* In Each Function, Access Suites using;
-* AEGP_SuiteHandler& suites = SuiteManager::GetInstance().GetSuiteHandler();
-* In order to ensure that the suites are safely accessed. 
-* 
-* If you need to access the plugin ID, use;
-* AEGP_PluginID* pluginIDPtr = SuiteManager::GetInstance().GetPluginID();
-*	if (pluginIDPtr != nullptr) {
-*		// Dereference the pointer to get the plugin ID
-*		AEGP_PluginID pluginID = *pluginIDPtr;
-*	Use pluginID in the function call.
-*
-* When writing functions, use the Result<T> class to return a value and an error code.
-* If the function returns void, use Result<void>.
-* 
-* If the function takes an argument, use Result<t> name, args 
-* to pass in arguments, to maintain clarity.
-*/
+ * File: Core.cpp
+ * Description: This file contains the core logic wrappers for the After Effects SDK. It is designed to be simple and heavily abstracted for reusability.
+ *
+ * Guidelines for Contributors:
+ * 1. Simplicity: Functions should be straightforward, performing a single task.
+ * 2. Suite Access: Always access suites via `SuiteManager::GetInstance().GetSuiteHandler()`.
+ * 3. Plugin ID: Retrieve the plugin ID using `SuiteManager::GetInstance().GetPluginID()`. Check for null pointers.
+ * 4. Error Handling: Use the `Result<T>` class for returning both values and error codes.
+ *	 `Result<void>` for functions that do not return a value.
+ *	'Result<T>' is a template class that contains a value of type T and an error code of type A_Err.
+ * 5. Abstraction: Maintain a high level of abstraction. Complex functionalities should be delegated to 'PyCore.cpp'.
+ * 6. Reusability: Write reusable code. Many functions will be used in various combinations in 'PyCore.cpp'.
+ * 7. Do not modify the standard set unless absolutely necessary.
+ * 
+ * Error Handling:
+ * 1. Use the `Result<T>` class for returning both values and error codes.
+ * `Result<void>` for functions that do not return a value.
+ * 2. `Result<T>` is a template class that contains a value of type T and an error code of type A_Err.
+ * 3. The `Result<T>` class is defined in 'Core.h'.
+ * 4. The `Result<T>` class is used to return both values and error codes from functions.
+ * 5. The `Result<T>` class is used to return error codes from functions that do not return a value.
+ * 
+ * See Existing code and header file for examples.
+ *
+ */
+
 Result<void>ReportInfo(std::string info) {
 	A_Err err = A_Err_NONE; // This is the error code that AE will return if something goes wrong
 
@@ -113,7 +122,7 @@ AEGP_DoCommand(
   AEGP_Command  command);*/
 
 
-Result<void> executeCommand(int commandId)
+Result<void> ExecuteCommand(int commandId)
 {
 	AEGP_SuiteHandler& suites = SuiteManager::GetInstance().GetSuiteHandler();
 	A_Err err = A_Err_NONE;
@@ -287,3 +296,146 @@ Result<A_long> getUniqueItemID(Result<AEGP_ItemH> itemH)
 
 }
 
+Result<AEGP_RenderOptionsH> getRenderOptions(Result<AEGP_ItemH> itemH)
+{
+	AEGP_SuiteHandler& suites = SuiteManager::GetInstance().GetSuiteHandler();
+	AEGP_PluginID* pluginIDPtr = SuiteManager::GetInstance().GetPluginID();
+
+	if (pluginIDPtr != nullptr) {
+		// Dereference the pointer to get the plugin ID
+		AEGP_PluginID pluginID = *pluginIDPtr;
+	A_Err err = A_Err_NONE;
+	AEGP_RenderOptionsH roH = NULL;
+	AEGP_ItemH item = itemH.value;
+	ERR(suites.RenderOptionsSuite1()->AEGP_NewFromItem(pluginID, item, &roH));
+
+	Result<AEGP_RenderOptionsH> result;
+	if (err != A_Err_NONE) {
+		result.value = nullptr;
+		throw std::runtime_error("Error getting render options. Error code: " + std::to_string(err));
+	}
+	else {
+		result.value = roH;
+	}
+	result.error = err;
+
+	return result;
+}
+else {
+	throw std::runtime_error("Plugin ID is null");
+}
+	return Result<AEGP_RenderOptionsH>();
+}
+
+Result<AEGP_RenderOptionsH> setTime(Result<AEGP_RenderOptionsH> roH, float time)
+{
+	AEGP_SuiteHandler& suites = SuiteManager::GetInstance().GetSuiteHandler();
+	A_Err err = A_Err_NONE;
+	A_Time timeT;
+	timeT.value = static_cast<A_long>(time * 1000000);  // Convert seconds to microseconds.
+	timeT.scale = 1000000;  // Set the scale factor to 1,000,000.
+	ERR(suites.RenderOptionsSuite1()->AEGP_SetTime(roH.value, timeT));  // Set render time.
+
+	Result<AEGP_RenderOptionsH> result;
+	result.value = roH.value;
+	result.error = err;
+
+	return result;
+}
+
+Result<AEGP_RenderOptionsH> getWorldType(Result<AEGP_RenderOptionsH> roH)
+{
+	AEGP_SuiteHandler& suites = SuiteManager::GetInstance().GetSuiteHandler();
+	A_Err err = A_Err_NONE;
+	AEGP_WorldType type = AEGP_WorldType_NONE;
+	ERR(suites.RenderOptionsSuite1()->AEGP_GetWorldType(roH.value, &type));
+
+	Result<AEGP_RenderOptionsH> result;
+	result.value = roH.value;
+	result.error = err;
+
+	return result;
+}
+
+Result<AEGP_FrameReceiptH> renderAndCheckoutFrame(Result<AEGP_RenderOptionsH> roH)
+{
+	AEGP_SuiteHandler& suites = SuiteManager::GetInstance().GetSuiteHandler();
+	A_Err err = A_Err_NONE;
+	AEGP_FrameReceiptH receiptH = NULL;
+	ERR(suites.RenderSuite2()->AEGP_RenderAndCheckoutFrame(roH.value, NULL, NULL, &receiptH));
+
+	Result<AEGP_FrameReceiptH> result;
+	result.value = receiptH;
+	result.error = err;
+
+	return result;
+}
+
+Result<AEGP_WorldH> getReceiptWorld(Result<AEGP_FrameReceiptH> receiptH)
+{
+	AEGP_SuiteHandler& suites = SuiteManager::GetInstance().GetSuiteHandler();
+	A_Err err = A_Err_NONE;
+	AEGP_WorldH frameH = NULL;
+	ERR(suites.RenderSuite2()->AEGP_GetReceiptWorld(receiptH.value, &frameH));
+
+	Result<AEGP_WorldH> result;
+	result.value = frameH;
+	result.error = err;
+
+	return result;
+}
+
+Result<void> checkinFrame(Result<AEGP_FrameReceiptH> receiptH)
+{
+	AEGP_SuiteHandler& suites = SuiteManager::GetInstance().GetSuiteHandler();
+	A_Err err = A_Err_NONE;
+	ERR(suites.RenderSuite2()->AEGP_CheckinFrame(receiptH.value));
+
+	Result<void> result;
+	result.error = err;
+
+	return result;
+}
+
+Result<PF_Pixel8*> getBaseAddr8(Result<AEGP_WorldH> frameH)
+{
+	AEGP_SuiteHandler& suites = SuiteManager::GetInstance().GetSuiteHandler();
+	A_Err err = A_Err_NONE;
+	PF_Pixel8* baseAddr = nullptr;
+	ERR(suites.WorldSuite3()->AEGP_GetBaseAddr8(frameH.value, &baseAddr));
+
+	Result<PF_Pixel8*> result;
+	result.value = baseAddr;
+	result.error = err;
+
+	return result;
+}
+
+Result<size> getSize(Result<AEGP_WorldH> frameH)
+{
+	AEGP_SuiteHandler& suites = SuiteManager::GetInstance().GetSuiteHandler();
+	A_Err err = A_Err_NONE;
+	int width, height;
+	ERR(suites.WorldSuite3()->AEGP_GetSize(frameH.value, &width, &height));
+
+	Result<size> result;
+	result.value.width = width;
+	result.value.height = height;
+	result.error = err;
+
+	return result;
+}
+
+Result<void> disposeRenderOptions(Result <AEGP_RenderOptionsH> roH)
+{
+	//check in the render options
+	AEGP_SuiteHandler& suites = SuiteManager::GetInstance().GetSuiteHandler();
+	A_Err err = A_Err_NONE;
+	ERR(suites.RenderOptionsSuite1()->AEGP_Dispose(roH.value));
+
+	Result<void> result;
+
+	result.error = err;
+
+	return result;
+}

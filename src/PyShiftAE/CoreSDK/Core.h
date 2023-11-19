@@ -14,6 +14,21 @@
 #include <iostream>
 #include <vector>
 
+/*
+ * File: Core.h
+ * Description: Header file for Core.cpp. Contains template definitions and function prototypes used in Core.cpp.
+ *
+ * Guidelines for Contributors:
+ * 1. Consistency: Maintain consistency with the existing template and function definitions.
+ * 2. Clarity: Ensure that all new templates and functions are clearly documented and easy to understand.
+ * 3. Compatibility: Any additions should be compatible with the existing code structure and logic in Core.cpp.
+ */
+
+struct size {
+	int width;
+	int height;
+};
+
 struct ImageData {
     std::shared_ptr<std::vector<uint8_t>> data;
     int width;
@@ -69,7 +84,7 @@ Result<A_UTF16Char> AppVersion(); //gets app version
 
 Result<AEGP_ProjectH> getProject(); //gets handle to the project (1 per AE session)
 
-Result<void> executeCommand(int commandId); //executes a command by ID
+Result<void> ExecuteCommand(int commandId); //executes a command by ID
 
 
 
@@ -79,9 +94,23 @@ Result<void> executeCommand(int commandId); //executes a command by ID
 Result<AEGP_ItemH> getActiveItem(); //gets the active item (null if multiple selected) (can be any type of item)
 
 
+Result<AEGP_RenderOptionsH> getRenderOptions(Result<AEGP_ItemH> itemH);
 
+Result<AEGP_RenderOptionsH> setTime(Result<AEGP_RenderOptionsH> roH, float time);
 
+Result<AEGP_RenderOptionsH> getWorldType(Result<AEGP_RenderOptionsH> roH);
 
+Result<AEGP_FrameReceiptH> renderAndCheckoutFrame(Result<AEGP_RenderOptionsH> roH);
+
+Result<AEGP_WorldH> getReceiptWorld(Result<AEGP_FrameReceiptH> receiptH);
+
+Result<void> checkinFrame(Result<AEGP_FrameReceiptH> receiptH);
+
+Result<PF_Pixel8*> getBaseAddr8(Result<AEGP_WorldH> frameH);
+
+Result<size> getSize(Result<AEGP_WorldH> frameH);
+
+Result<void> disposeRenderOptions(Result <AEGP_RenderOptionsH> roH);
 
 
 

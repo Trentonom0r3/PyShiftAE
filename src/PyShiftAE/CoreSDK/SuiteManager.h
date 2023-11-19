@@ -3,6 +3,17 @@
 
 #include "AEGP_SuiteHandler.h"
 
+/*
+ * File: SuiteManager.h
+ * Description: Singleton class managing the After Effects suite handler and plugin ID.
+ *
+ * Guidelines for Contributors:
+ * 1. Singleton Pattern: Recognize that SuiteManager is a singleton and should not be instantiated directly.
+ * 2. Suite Handling: Understand how SuiteManager provides access to AE suites.
+ * 3. No Alteration: Do not modify this file. It is crucial for the stable operation of the entire plugin.
+ */
+
+
 class SuiteManager {
 public:
     // Gets the singleton instance of SuiteManager

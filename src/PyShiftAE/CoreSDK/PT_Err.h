@@ -2,6 +2,17 @@
 #ifndef _PT_ERR_H_
 #define _PT_ERR_H_
 
+/*
+ * File: PT_Err.h
+ * Description: Contains macros and definitions for error handling in the After Effects plugin.
+ *
+ * Guidelines for Contributors:
+ * 1. Error Handling: Understand the error handling paradigm used throughout the plugin.
+ * 2. Macro Usage: Familiarize yourself with the macros defined here and their usage in other files.
+ * 3. Consistency: Ensure that any new error handling mechanisms are consistent with the existing ones.
+ * 4. No Modification: This file is central to the plugin's error handling and should not be altered.
+ */
+
 
 #define PT_XTE_START {A_Err _err = A_Err_NONE; try {
 

@@ -4,6 +4,17 @@
 
 #include <tuple>
 
+/*
+ * File: TaskUtils.h
+ * Description: Provides utility functions for enqueuing and managing tasks within the plugin.
+ *
+ * Guidelines for Contributors:
+ * 1. Task Management: Familiarize yourself with how tasks are created, enqueued, and managed.
+ * 2. Asynchronous Processing: Understand the asynchronous nature of the tasks being handled.
+ * 3. Reusability: Write code that is reusable and easily integrated into the existing task management system.
+ * 4. No Alteration: Changes to this file are not advised to maintain the integrity of task processing.
+ */
+
 template<typename Func, typename... Args>
 auto enqueueSyncTask(Func&& func, Args&&... args) {
     using ReturnType = std::invoke_result_t<Func, Args...>;

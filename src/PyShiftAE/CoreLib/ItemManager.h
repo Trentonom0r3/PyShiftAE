@@ -11,6 +11,7 @@ public:
 
     std::string getName();
     void setName(std::string name);
+    ImageData frameAtTime(float time);
 
     std::string name;
 protected:

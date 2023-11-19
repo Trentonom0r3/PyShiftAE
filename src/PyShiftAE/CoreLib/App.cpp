@@ -24,7 +24,7 @@ void App::endUndoGroup() {
 
 void App::executeCommand(int commandId)
 {
-	auto& message = enqueueSyncTask(executeCommand, commandId);
+	auto& message = enqueueSyncTask(ExecuteCommand, commandId);
 	message->wait();
 
 	Result<void> result = message->getResult();

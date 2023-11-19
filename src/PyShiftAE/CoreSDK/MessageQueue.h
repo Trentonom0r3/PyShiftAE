@@ -6,6 +6,18 @@
 #include <queue>
 #include <future>
 
+/*
+ * File: MessageQueue.h
+ * Description: Manages asynchronous message processing within the After Effects plugin environment.
+ *
+ * Guidelines for Contributors:
+ * 1. Understand the Flow: Grasp how messages are enqueued, processed, and dequeued.
+ * 2. Thread Safety: Ensure that any modifications or additions respect the thread-safe nature of the queue.
+ * 3. Interoperability: New messages or modifications should integrate seamlessly with existing asynchronous tasks.
+ * 4. No Alteration: This file should not be changed. Understanding its functionality is key for effective contributions elsewhere.
+ */
+
+
 class IAsyncMessage {
 public:
     virtual ~IAsyncMessage() = default;

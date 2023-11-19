@@ -14,8 +14,41 @@ void bindItem(py::module_& m)
         .def(py::init<const Result<AEGP_ItemH>&>())
         .def_property("name",
             &Item::getName,
-            &Item::setName);
+            &Item::setName)
+        // Binding for frameAtTime with memory management
+        .def("frameAtTime", [](Item& self, float time) -> py::array_t<uint8_t> {
+            // Get the ImageData object from your API
+            ImageData image_data = self.frameAtTime(time);
 
+            // Get the raw pointer to the vector's data
+            uint8_t* raw_data = image_data.data->data();
+            int height = image_data.height;
+            int width = image_data.width;
+            int channels = image_data.channels;
+
+            // Define a std::function with the deleter
+            auto deleter_func = [data = image_data.data](void* /* owner */) {
+                // The shared_ptr data will be released when the NumPy array is deleted
+            };
+
+            // Convert std::function to a function pointer
+            auto capsule_deleter = new std::function<void(void*)>(deleter_func);
+
+            // Use a lambda that calls the function pointer as the deleter
+            auto capsule_deleter_wrapper = [](void* data) {
+                auto func_ptr = reinterpret_cast<std::function<void(void*)>*>(data);
+                (*func_ptr)(nullptr);
+                delete func_ptr;
+            };
+
+            // Create the NumPy array
+            return py::array_t<uint8_t>(
+                { height, width, channels }, // shape
+                { channels * width * sizeof(uint8_t), channels * sizeof(uint8_t), sizeof(uint8_t) }, // strides
+                raw_data, // the data pointer
+                py::capsule(capsule_deleter, "array_data_capsule", capsule_deleter_wrapper) // the capsule with the deleter
+            );
+            });
 }
 
 void bindCompItem(py::module_& m)
