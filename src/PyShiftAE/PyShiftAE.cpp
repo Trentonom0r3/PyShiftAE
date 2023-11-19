@@ -12,9 +12,16 @@
 */
 #include "PyShiftAE.h"
 
+static AEGP_PluginID		PyShiftAE			=	6969L;
 static AEGP_Command			PyShift				=	6769L;
 static A_long				S_idle_count		=	0L;
 static SPBasicSuite			*sP					=	NULL;
+
+std::queue<std::string> scriptExecutionQueue;
+std::mutex scriptQueueMutex; // To ensure thread safety
+std::thread pythonThread;
+std::atomic<bool> pythonThreadRunning = true;
+std::atomic<bool> shouldExitPythonThread = false;
 
 static A_Err
 DeathHook(
@@ -25,19 +32,17 @@ DeathHook(
 	AEGP_SuiteHandler	suites(sP);
 
 	A_char report[AEGP_MAX_ABOUT_STRING_SIZE] = {'\0'};
-	finalize();
-	return err;
-}
+	
+	if (pythonThread.joinable()) {
+		// Signal the Python thread to stop
+		pythonThreadRunning = false;
 
-static	A_Err	
-IdleHook(
-	AEGP_GlobalRefcon	plugin_refconP,	
-	AEGP_IdleRefcon		refconP,		
-	A_long				*max_sleepPL)
-{
-	A_Err	err			= A_Err_NONE;
-	S_idle_count++;
+		shouldExitPythonThread = true; // Signal the thread to exit
+		pythonThread.join(); // Wait for the thread to finish
+	}
 
+	// Finalize the Python interpreter (if not done in the Python thread)
+	//finalize();
 	return err;
 }
 
@@ -62,6 +67,19 @@ UpdateMenuHook(
 }
 
 
+static A_Err IdleHook(AEGP_GlobalRefcon plugin_refconP, AEGP_IdleRefcon refconP, A_long* max_sleepPL) {
+	A_Err err = A_Err_NONE;
+	
+	auto message = MessageQueue::getInstance().dequeue();
+
+	if (message != nullptr) {
+			message->execute();
+			return err;
+	}
+	
+	return err;
+}
+
 static A_Err
 CommandHook(
 	AEGP_GlobalRefcon    plugin_refconPV,        /* >> */
@@ -75,16 +93,9 @@ CommandHook(
 		err2 = A_Err_NONE;
 
 	AEGP_SuiteHandler    suites(sP);
-	std::cout << "CommandHook called" << std::endl;
+
 	if (command == PyShift) {
 		std::cout << "PyShift Command Received" << std::endl;
-		App app(suites);
-
-		//py::gil_scoped_acquire acquire;  // Acquire the GIL
-
-		// Remove this line: py::module m = py::module::import("PyShiftCore");
-		set_app(app);
-
 
 		// Get the main window handle of After Effects
 		HWND ae_hwnd;
@@ -104,21 +115,14 @@ CommandHook(
 
 		// Show the file picker dialog
 		if (GetOpenFileName(&ofn)) {
-			// User selected a file; ofn.lpstrFile contains the file path
 			std::string scriptPath = ofn.lpstrFile;
 
-			// Execute the Python script
-			std::string output = execute_python_script_from_file(scriptPath);
-			if (output.find("Traceback (most recent call last):") != std::string::npos) {
-				std::string error_message = "Python error:\n" + output;
-				suites.UtilitySuite3()->AEGP_ReportInfo(PyShiftAE, error_message.c_str());
+			{
+				std::lock_guard<std::mutex> lock(scriptQueueMutex);
+				scriptExecutionQueue.push(scriptPath);
 			}
-			else {
-				std::string success_message = "Script output:\n" + output;
-				suites.UtilitySuite3()->AEGP_ReportInfo(PyShiftAE, success_message.c_str());
-			}
-
 		}
+
 		else {
 			// User cancelled the dialog or an error occurred
 			DWORD error = CommDlgExtendedError();
@@ -138,6 +142,7 @@ CommandHook(
 	return err;
 }
 
+
 A_Err
 EntryPointFunc(
 	struct SPBasicSuite* pica_basicP,		/* >> */
@@ -146,14 +151,41 @@ EntryPointFunc(
 	AEGP_PluginID			aegp_plugin_id,		/* >> */
 	AEGP_GlobalRefcon* global_refconV)	/* << */
 {
+	std::thread pythonThread([]() {
+		initialize_python_module(); // Initialize the Python interpreter
+
+		while (!shouldExitPythonThread.load()) { // Check the flag in each iteration
+			std::string scriptPath;
+
+			{
+				std::lock_guard<std::mutex> lock(scriptQueueMutex);
+				if (!scriptExecutionQueue.empty()) {
+					scriptPath = scriptExecutionQueue.front();
+					scriptExecutionQueue.pop();
+				}
+			}
+
+			if (!scriptPath.empty()) {
+				execute_python_script_from_file(scriptPath); // Execute the script
+			}
+		}
+		if (shouldExitPythonThread) {
+			finalize(); // Finalize the Python interpreter
+		}
+		});
+	pythonThread.detach(); // Detach the thread so it can run in the background
 	PyShiftAE = aegp_plugin_id;
 
 	A_Err 					err = A_Err_NONE,
 							err2 = A_Err_NONE;
 
 	sP = pica_basicP;
+	//initialize interpreter on the messagequeue thread
+	// In EntryPointFunc
+	SuiteManager::GetInstance().InitializeSuiteHandler(sP);
+	AEGP_SuiteHandler& suites = SuiteManager::GetInstance().GetSuiteHandler();
+	SuiteManager::GetInstance().SetPluginID(&PyShiftAE);
 
-	AEGP_SuiteHandler suites(pica_basicP);
 	ERR(suites.CommandSuite1()->AEGP_GetUniqueCommand(&PyShift));
 
 	ERR(suites.CommandSuite1()->AEGP_InsertMenuCommand(PyShift,
@@ -172,8 +204,6 @@ EntryPointFunc(
 	ERR(suites.RegisterSuite5()->AEGP_RegisterUpdateMenuHook(PyShiftAE, UpdateMenuHook, NULL));
 
 	ERR(suites.RegisterSuite5()->AEGP_RegisterIdleHook(PyShiftAE, IdleHook, NULL));
-
-	initialize_python_module();
 	if (err) { // not !err, err!
 		ERR2(suites.UtilitySuite3()->AEGP_ReportInfo(PyShiftAE, "PyShiftAE : Could not register command hook."));
 	}

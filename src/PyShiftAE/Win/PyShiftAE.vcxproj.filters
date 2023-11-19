@@ -15,6 +15,15 @@
     <Filter Include="Supporting Code">
       <UniqueIdentifier>{8beaf83a-c0ff-4de3-9165-e79e4ff269f9}</UniqueIdentifier>
     </Filter>
+    <Filter Include="CoreSDK">
+      <UniqueIdentifier>{967bd3b1-7ba5-4b68-9c60-a69805939dab}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="CoreLib">
+      <UniqueIdentifier>{efcd63b0-9267-4215-b834-ee10a8af538a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="PyUtils">
+      <UniqueIdentifier>{5aafb1c7-8f0e-4347-bdf0-3329faf70652}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\PyShiftAE.h">
@@ -77,11 +86,35 @@
     <ClInclude Include="..\..\..\Util\String_Utils.h">
       <Filter>Headers\AE</Filter>
     </ClInclude>
-    <ClInclude Include="..\PyShiftCore.h">
-      <Filter>Headers</Filter>
+    <ClInclude Include="..\CoreSDK\Core.h">
+      <Filter>CoreSDK</Filter>
     </ClInclude>
-    <ClInclude Include="..\PyLink.h">
-      <Filter>Headers</Filter>
+    <ClInclude Include="..\CoreSDK\MessageQueue.h">
+      <Filter>CoreSDK</Filter>
+    </ClInclude>
+    <ClInclude Include="..\CoreSDK\PT_Err.h">
+      <Filter>CoreSDK</Filter>
+    </ClInclude>
+    <ClInclude Include="..\CoreSDK\SuiteManager.h">
+      <Filter>CoreSDK</Filter>
+    </ClInclude>
+    <ClInclude Include="..\CoreSDK\TaskUtils.h">
+      <Filter>CoreSDK</Filter>
+    </ClInclude>
+    <ClInclude Include="..\CoreLib\App.h">
+      <Filter>CoreLib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\CoreLib\ItemManager.h">
+      <Filter>CoreLib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\CoreLib\Project.h">
+      <Filter>CoreLib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\CoreLib\PyCore.h">
+      <Filter>CoreLib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\PyUtils\PyLink.h">
+      <Filter>PyUtils</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -92,8 +125,24 @@
     <ClCompile Include="..\..\..\Util\MissingSuiteError.cpp">
       <Filter>Supporting Code</Filter>
     </ClCompile>
-    <ClCompile Include="..\PyShiftCore.cpp" />
-    <ClCompile Include="..\PyLink.cpp" />
+    <ClCompile Include="..\CoreSDK\Core.cpp">
+      <Filter>CoreSDK</Filter>
+    </ClCompile>
+    <ClCompile Include="..\CoreLib\App.cpp">
+      <Filter>CoreLib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\CoreLib\ItemManager.cpp">
+      <Filter>CoreLib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\CoreLib\Project.cpp">
+      <Filter>CoreLib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\CoreLib\PyCore.cpp">
+      <Filter>CoreLib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\PyUtils\PyLink.cpp">
+      <Filter>PyUtils</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="..\PyShiftAE_PiPL.r">

@@ -33,7 +33,7 @@
 AEGP_SuiteHandler::AEGP_SuiteHandler(const SPBasicSuite *pica_basicP) :
 	i_pica_basicP(pica_basicP)
 {
-	AEFX_CLR_STRUCT(i_suites);
+	AEFX_CLR_STRUCT(isuites);
 
 	if (!i_pica_basicP) {						//can't construct w/out basic suite, everything else is demand loaded
 		MissingSuiteError();
