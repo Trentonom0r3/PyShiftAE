@@ -4,7 +4,7 @@ PyShiftAE is an experimental, Open Source library designed to transcend the boun
 # ChangeLog
 - [11.19.23] 
     - Removed ```frameAtTime``` and ```replaceFrameAtTime``` methods.
-        - These will be reimplmented in a different way using other subclasses. 
+        - These will be reimplemented in a different way using other subclasses. 
     - Full Refactor to Separate Python Thread.
     - Refactored into ```CoreSDK```, ```CoreLib```, and ```PyUtils``` folders.
         - ```CoreSDK``` contains the base wrappers for the AE SDK. 
