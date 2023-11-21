@@ -25,6 +25,34 @@
  * See Existing code and header file for examples.
  *
  */
+std::string convertUTF16ToUTF8(const A_UTF16Char* utf16String) {
+	if (utf16String == nullptr) {
+		return "";
+	}
+
+	int utf8Length = WideCharToMultiByte(CP_UTF8, 0, reinterpret_cast<const wchar_t*>(utf16String), -1, nullptr, 0, nullptr, nullptr);
+	if (utf8Length <= 0) {
+		return "";
+	}
+
+	std::vector<char> utf8String(utf8Length);
+	WideCharToMultiByte(CP_UTF8, 0, reinterpret_cast<const wchar_t*>(utf16String), -1, utf8String.data(), utf8Length, nullptr, nullptr);
+	return std::string(utf8String.begin(), utf8String.end() - 1);
+}
+
+std::vector<A_UTF16Char> convertUTF8ToUTF16(const std::string& utf8String) {
+	int utf16Length = MultiByteToWideChar(CP_UTF8, 0, utf8String.c_str(), -1, nullptr, 0);
+	if (utf16Length <= 0) {
+		return std::vector<A_UTF16Char>();
+	}
+
+	std::vector<wchar_t> utf16Buffer(utf16Length);
+	MultiByteToWideChar(CP_UTF8, 0, utf8String.c_str(), -1, utf16Buffer.data(), utf16Length);
+
+	std::vector<A_UTF16Char> utf16String(utf16Buffer.begin(), utf16Buffer.end());
+	return utf16String;
+}
+
 
 Result<void>ReportInfo(std::string info) {
 	A_Err err = A_Err_NONE; // This is the error code that AE will return if something goes wrong
@@ -196,18 +224,8 @@ Result<std::string>getItemName(Result<AEGP_ItemH> itemH) {
 		PT_ETX(suites.ItemSuite9()->AEGP_GetItemName(pluginID, item, &unicode_nameMH));
 	}
 	if (unicode_nameMH) {
-		// Lock the memory handle to get the string pointer
 		PT_ETX(suites.MemorySuite1()->AEGP_LockMemHandle(unicode_nameMH, (void**)&unicode_nameP));
-
-		// Calculate the length of the resulting UTF-8 string
-		int utf8Length = WideCharToMultiByte(CP_UTF8, 0, (LPCWCH)unicode_nameP, -1, NULL, 0, NULL, NULL);
-		if (utf8Length > 0) {
-			std::vector<char> utf8String(utf8Length);
-			// Convert UTF-16 to UTF-8
-			WideCharToMultiByte(CP_UTF8, 0, (LPCWCH)unicode_nameP, -1, &utf8String[0], utf8Length, NULL, NULL);
-			// Assign to name, excluding the null terminator
-			name.assign(utf8String.begin(), utf8String.end() - 1);
-		}
+		name = convertUTF16ToUTF8(unicode_nameP);
 		std::cout << name << std::endl;
 		// Unlock and dispose of the memory handle
 		PT_ETX(suites.MemorySuite1()->AEGP_UnlockMemHandle(unicode_nameMH));
@@ -227,35 +245,9 @@ Result<void>setItemName(Result<AEGP_ItemH> itemH, const std::string& name) {
 	AEGP_SuiteHandler& suites = SuiteManager::GetInstance().GetSuiteHandler();
 	AEGP_ItemH item = itemH.value;
 	// Calculate the length of the resulting UTF-16 string
-	int utf16Length = MultiByteToWideChar(CP_UTF8, 0, name.c_str(), -1, NULL, 0);
-	if (utf16Length <= 0) {
-		Result<void> errorResult;
-		errorResult.error = static_cast<A_Err>(GetLastError());
-		return errorResult; // Return an error result if conversion fails
-	}
-
-	// Create a buffer to hold the UTF-16 string
-	std::vector<wchar_t> unicode_name(utf16Length);
-
-	// Convert UTF-8 to UTF-16
-	int conversionResult = MultiByteToWideChar(CP_UTF8, 0, name.c_str(), -1, &unicode_name[0], utf16Length);
-	if (conversionResult == 0) {
-		Result<void> errorResult;
-		errorResult.error = static_cast<A_Err>(GetLastError());
-		return errorResult; // Return an error result if conversion fails
-	}
-
-	// Ensure that the last character is a null terminator, as expected for UTF-16 strings
-	if (unicode_name[utf16Length - 1] != L'\0') {
-		Result<void> errorResult;
-		errorResult.error = A_Err_STRUCT; // Use an appropriate error code
-		return errorResult; // Return an error if the string is not properly null-terminated
-	}
-
-	if (item == nullptr) {
-		Result<void> errorResult;
-		errorResult.error = A_Err_STRUCT; // Use an appropriate error code
-		return errorResult; // Return an error if the item is null
+	std::vector<A_UTF16Char> unicode_name = convertUTF8ToUTF16(name);
+	if (unicode_name.empty()) {
+		return Result<void>(A_Err_STRUCT); // Handle conversion error
 	}
 	A_Err err = A_Err_NONE;
 	// Call the AE SDK function to set the item name
@@ -435,6 +427,157 @@ Result<void> disposeRenderOptions(Result <AEGP_RenderOptionsH> roH)
 
 	Result<void> result;
 
+	result.error = err;
+
+	return result;
+}
+
+
+Result<int> getNumLayers(Result<AEGP_CompH> compH)
+{
+	AEGP_SuiteHandler& suites = SuiteManager::GetInstance().GetSuiteHandler();
+	A_Err err = A_Err_NONE;
+	A_long num_layers = 0;
+	AEGP_CompH comp = compH.value;
+	ERR(suites.LayerSuite9()->AEGP_GetCompNumLayers(comp, &num_layers));
+
+	Result<int> result;
+	result.value = num_layers;
+	result.error = err;
+
+	return result;
+}
+
+Result<AEGP_CompH> getCompFromItem(Result<AEGP_ItemH> itemH)
+{
+	AEGP_SuiteHandler& suites = SuiteManager::GetInstance().GetSuiteHandler();
+	A_Err err = A_Err_NONE;
+	AEGP_CompH compH = NULL;
+	AEGP_ItemH item = itemH.value;
+	ERR(suites.CompSuite4()->AEGP_GetCompFromItem(item, &compH));
+
+	Result<AEGP_CompH> result;
+	result.value = compH;
+	result.error = err;
+
+	return result;
+}
+
+Result<int> getLayerIndex(Result<AEGP_LayerH> layerH)
+{
+	AEGP_SuiteHandler& suites = SuiteManager::GetInstance().GetSuiteHandler();
+	A_Err err = A_Err_NONE;
+	A_long layer_index = 0;
+	AEGP_LayerH layer = layerH.value;
+	ERR(suites.LayerSuite9()->AEGP_GetLayerIndex(layer, &layer_index));
+	if (err != A_Err_NONE) {
+		throw std::runtime_error("Error getting layer index. Error code: " + std::to_string(err));
+	}
+	Result<int> result;
+	result.value = layer_index;
+	result.error = err;
+
+	return result;
+}
+
+
+Result<std::string> getLayerName(Result<AEGP_LayerH> layerH) {
+	AEGP_SuiteHandler& suites = SuiteManager::GetInstance().GetSuiteHandler();
+	AEGP_MemHandle utf_layer_nameMH = NULL;
+	A_UTF16Char* utf_layer_nameP = NULL;
+	std::string layerName;
+	A_Err err = A_Err_NONE;
+
+	PT_XTE_START{
+		if (!layerH.value) {
+			throw A_Err_STRUCT;
+		}
+		AEGP_PluginID* pluginIDPtr = SuiteManager::GetInstance().GetPluginID();
+		if (pluginIDPtr) {
+			AEGP_PluginID pluginID = *pluginIDPtr;
+			PT_ETX(suites.LayerSuite9()->AEGP_GetLayerName(pluginID, layerH.value, &utf_layer_nameMH, nullptr));
+		}
+		if (utf_layer_nameMH) {
+			PT_ETX(suites.MemorySuite1()->AEGP_LockMemHandle(utf_layer_nameMH, (void**)&utf_layer_nameP));
+			layerName = convertUTF16ToUTF8(utf_layer_nameP);
+			PT_ETX(suites.MemorySuite1()->AEGP_UnlockMemHandle(utf_layer_nameMH));
+			PT_ETX(suites.MemorySuite1()->AEGP_FreeMemHandle(utf_layer_nameMH));
+		}
+
+	Result<std::string> result;
+	result.value = layerName;
+	result.error = err;
+	return result;
+	}
+	PT_XTE_CATCH_RETURN_ERR;
+}
+
+
+Result<std::string> getLayerSourceName(Result<AEGP_LayerH> layerH) {
+	AEGP_SuiteHandler& suites = SuiteManager::GetInstance().GetSuiteHandler();
+	AEGP_MemHandle utf_source_nameMH = NULL;
+	A_UTF16Char* utf_source_nameP = NULL;
+	std::string sourceName;
+	A_Err err = A_Err_NONE;
+
+	PT_XTE_START{
+		if (!layerH.value) {
+			throw A_Err_STRUCT;
+		}
+		AEGP_PluginID* pluginIDPtr = SuiteManager::GetInstance().GetPluginID();
+		if (pluginIDPtr) {
+			AEGP_PluginID pluginID = *pluginIDPtr;
+			PT_ETX(suites.LayerSuite9()->AEGP_GetLayerName(pluginID, layerH.value, nullptr, &utf_source_nameMH));
+		}
+		if (utf_source_nameMH) {
+			PT_ETX(suites.MemorySuite1()->AEGP_LockMemHandle(utf_source_nameMH, (void**)&utf_source_nameP));
+			sourceName = convertUTF16ToUTF8(utf_source_nameP);
+			PT_ETX(suites.MemorySuite1()->AEGP_UnlockMemHandle(utf_source_nameMH));
+			PT_ETX(suites.MemorySuite1()->AEGP_FreeMemHandle(utf_source_nameMH));
+		}
+
+	Result<std::string> result;
+	result.value = sourceName;
+	result.error = err;
+	return result;
+	}
+	PT_XTE_CATCH_RETURN_ERR;
+}
+
+
+Result<void> setLayerName(Result<AEGP_LayerH> layerH, const std::string& name) {
+	AEGP_SuiteHandler& suites = SuiteManager::GetInstance().GetSuiteHandler();
+	AEGP_LayerH item = layerH.value;
+	// Calculate the length of the resulting UTF-16 string
+	std::vector<A_UTF16Char> unicode_name = convertUTF8ToUTF16(name);
+	if (unicode_name.empty()) {
+		return Result<void>(A_Err_STRUCT); // Handle conversion error
+	}
+	A_Err err = A_Err_NONE;
+	// Call the AE SDK function to set the item name
+	err = suites.LayerSuite9()->AEGP_SetLayerName(item, reinterpret_cast<const A_UTF16Char*>(unicode_name.data()));
+	if (err != A_Err_NONE) {
+		Result<void> errorResult;
+		errorResult.error = err;
+		return errorResult; // Return an error result if AEGP_SetItemName fails
+	}
+
+	// If we reach this point, it means everything went well
+	Result<void> successResult;
+	successResult.error = A_Err_NONE;
+	return successResult;
+}
+
+Result<AEGP_LayerH> getLayerFromComp(Result<AEGP_CompH> compH, int index)
+{
+	AEGP_SuiteHandler& suites = SuiteManager::GetInstance().GetSuiteHandler();
+	A_Err err = A_Err_NONE;
+	AEGP_LayerH layerH = NULL;
+	AEGP_CompH comp = compH.value;
+	ERR(suites.LayerSuite9()->AEGP_GetCompLayerByIndex(comp, index, &layerH));
+
+	Result<AEGP_LayerH> result;
+	result.value = layerH;
 	result.error = err;
 
 	return result;

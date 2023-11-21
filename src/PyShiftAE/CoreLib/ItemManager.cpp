@@ -146,3 +146,136 @@ ImageData Item::frameAtTime(float time) {
 }
 
 
+std::vector<Layer> CompItem::getLayers()
+{
+	auto item = this->itemHandle_;
+	if (item.value == NULL) {
+		throw std::runtime_error("No active item");
+		return std::vector<Layer>{};
+	}
+	auto& message = enqueueSyncTask(getCompFromItem, item);
+	message->wait();
+
+	Result<AEGP_CompH> result = message->getResult();
+
+	if (result.error != A_Err_NONE) {
+		throw std::runtime_error("Error getting comp from item");
+		return std::vector<Layer>{};
+	}
+
+	auto& message2 = enqueueSyncTask(getNumLayers, result);
+	message2->wait();
+
+	Result<int> result2 = message2->getResult();
+
+	if (result2.error != A_Err_NONE) {
+		throw std::runtime_error("Error getting number of layers");
+		return std::vector<Layer>{};
+	}
+
+	int numLayers = result2.value;
+
+	std::vector<Layer> layers;
+
+	for (int i = 0; i < numLayers; i++) { 
+		auto index = i;
+		auto& message3 = enqueueSyncTask(getLayerFromComp, result, index);
+		message3->wait();
+
+		Result<AEGP_LayerH> result3 = message3->getResult();
+
+		if (result3.error != A_Err_NONE) {
+			throw std::runtime_error("Error getting layer from comp");
+			return std::vector<Layer>{};
+		}
+
+		layers.push_back(Layer(result3));
+	}
+
+	return layers;
+
+}
+
+int CompItem::NumLayers() {
+	auto item = this->itemHandle_;
+	if (item.value == NULL) {
+		throw std::runtime_error("No active item");
+		return 0;
+	}
+	auto& message = enqueueSyncTask(getCompFromItem, item);
+	message->wait();
+
+	Result<AEGP_CompH> result = message->getResult();
+
+	if (result.error != A_Err_NONE) {
+		throw std::runtime_error("Error getting comp from item");
+		return 0;
+	}
+
+	auto& message2 = enqueueSyncTask(getNumLayers, result);
+	message2->wait();
+
+	Result<int> result2 = message2->getResult();
+
+	if (result2.error != A_Err_NONE) {
+		throw std::runtime_error("Error getting number of layers");
+		return 0;
+	}
+
+	return result2.value;
+}
+
+std::string Layer::GetLayerName()
+{
+	auto layer = this->layerHandle_;
+	if (layer.value == NULL) {
+		throw std::runtime_error("No active layer");
+		return std::string{};
+	}
+	auto& message = enqueueSyncTask(getLayerName, layer);
+	message->wait();
+
+	Result<std::string> result = message->getResult();
+	return result.value;
+}
+
+std::string Layer::GetSourceName()
+{
+	auto layer = this->layerHandle_;
+	if (layer.value == NULL) {
+		throw std::runtime_error("No active layer");
+		return std::string{};
+	}
+	auto& message = enqueueSyncTask(getLayerSourceName, layer);
+	message->wait();
+
+	Result<std::string> result = message->getResult();
+	return result.value;
+}
+
+void Layer::SetLayerName(std::string name)
+{
+	auto layer = this->layerHandle_;
+	if (layer.value == NULL) {
+		throw std::runtime_error("No active layer");
+	}
+	auto& message = enqueueSyncTask(setLayerName, layer, name);
+	message->wait();
+
+	Result<void> result = message->getResult();
+	return;
+}
+
+int Layer::index()
+{
+	auto layer = this->layerHandle_;
+	if (layer.value == NULL) {
+		throw std::runtime_error("No active layer");
+		return 0;
+	}
+	auto& message = enqueueSyncTask(getLayerIndex, layer);
+	message->wait();
+
+	Result<int> result = message->getResult();
+	return result.value;
+}

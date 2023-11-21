@@ -1,6 +1,7 @@
 // TaskUtils.h
 #pragma once
 #include "MessageQueue.h"
+#include "SuiteManager.h"
 
 #include <tuple>
 
@@ -28,6 +29,9 @@ auto enqueueSyncTask(Func&& func, Args&&... args) {
     // Enqueue the message and return it
     // Ensure that `queue` is accessible and properly declared
     MessageQueue::getInstance().enqueue(message);
+
+    AEGP_SuiteHandler& suites = SuiteManager::GetInstance().GetSuiteHandler();
+    suites.UtilitySuite6()->AEGP_CauseIdleRoutinesToBeCalled();
     return message;
 }
 

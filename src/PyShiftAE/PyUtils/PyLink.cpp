@@ -2,6 +2,7 @@
 #include "PyLink.h"
 
 PYBIND11_EMBEDDED_MODULE(PyShiftCore, m) {
+    bindLayer(m);
     bindItem(m);
     bindCompItem(m);
     bindFootageItem(m);

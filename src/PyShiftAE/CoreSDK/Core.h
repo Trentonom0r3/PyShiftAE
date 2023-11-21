@@ -73,6 +73,7 @@ struct Result<void> {
     explicit Result(A_Err err = A_Err_NONE) : error(err) {}
 };
 
+
 //APP RELATED FUNCS
 Result<void> ReportInfo(std::string info); //Use to report Information in a dialog box
 
@@ -92,7 +93,6 @@ Result<void> ExecuteCommand(int commandId); //executes a command by ID
 // PROJECT RELATED FUNCS
 
 Result<AEGP_ItemH> getActiveItem(); //gets the active item (null if multiple selected) (can be any type of item)
-
 
 Result<AEGP_RenderOptionsH> getRenderOptions(Result<AEGP_ItemH> itemH);
 
@@ -124,3 +124,22 @@ Result<void> setItemName(Result<AEGP_ItemH> itemH, const std::string& name); //s
 
 Result<A_long> getUniqueItemID(Result<AEGP_ItemH> itemH); //gets the unique, unchanging ID for an item
 
+
+
+//COMP RELATED FUNCS
+Result<int> getNumLayers(Result<AEGP_CompH> compH);
+
+Result<AEGP_CompH> getCompFromItem(Result<AEGP_ItemH> itemH);
+
+
+
+//LAYER RELATED FUNCS
+Result<int> getLayerIndex(Result<AEGP_LayerH> layerH);
+
+Result<std::string> getLayerName(Result<AEGP_LayerH> layerH);
+
+Result<std::string> getLayerSourceName(Result<AEGP_LayerH> layerH);
+
+Result<void> setLayerName(Result<AEGP_LayerH> layerH, const std::string& name);
+
+Result<AEGP_LayerH> getLayerFromComp(Result<AEGP_CompH> compH, int index);

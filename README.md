@@ -2,6 +2,14 @@
 PyShiftAE is an experimental, Open Source library designed to transcend the boundaries of the built-in ExtendScript library in Adobe After Effects (AE), heralding a new era of scripting possibilities in AE. By offering a Python library as an alternative to ExtendScript, PyShiftAE not only enriches the existing feature set but simplifies and amplifies the scripting experience.
 
 # ChangeLog
+- [11.21.23]
+    - Added ```layer/layers``` attributes to ```CompItem```.
+    - Added basic methods (name, index) to ```layer/layers```.
+        - Can access as standard python list (for layer in layers, layer[0], etc)
+    - Adjusted ```app.reportInfo``` to work with str, int, float, etc.
+    - Updated Documentation with **TODO** attributes and methods. 
+    - Updated Task_Utils.h to send ```AEGP_CauseIdleRoutinesToBeCalled()``` when enqueueing a message, leading to faster execution.
+    
 - [11.19.23] 
     - Removed ```frameAtTime``` and ```replaceFrameAtTime``` methods.
         - These will be reimplemented in a different way using other subclasses. 

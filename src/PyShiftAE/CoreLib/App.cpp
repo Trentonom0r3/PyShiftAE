@@ -30,7 +30,7 @@ void App::executeCommand(int commandId)
 	Result<void> result = message->getResult();
 }
 
-void App::reportInfo(std::string info) {
+void App::reportInfo(std::string info) { //should modify to accept string, int, float, etc.
 	auto& message = enqueueSyncTask(ReportInfo, info);
 	message->wait();
 
