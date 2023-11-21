@@ -8,6 +8,17 @@
 *
 *
 */
+void bindLayer(py::module_& m)
+{
+	py::class_<Layer, std::shared_ptr<Layer>>(m, "Layer")
+		.def(py::init<const Result<AEGP_LayerH>&>())
+		.def_property("name",
+            			&Layer::GetLayerName,
+            			&Layer::SetLayerName)
+		.def_property_readonly("sourceName", &Layer::GetSourceName)
+		.def_property_readonly("index", &Layer::index);
+}
+
 void bindItem(py::module_& m)
 {
     py::class_<Item, std::shared_ptr<Item>>(m, "Item")
@@ -54,7 +65,11 @@ void bindItem(py::module_& m)
 void bindCompItem(py::module_& m)
 {
     py::class_<CompItem, Item, std::shared_ptr<CompItem>>(m, "CompItem")
-        .def(py::init<Result<AEGP_ItemH>>());
+        .def(py::init<Result<AEGP_ItemH>>())
+        .def_property_readonly("layer", &CompItem::getLayers, py::return_value_policy::reference)
+        .def_property_readonly("layers", &CompItem::getLayers, py::return_value_policy::reference)
+        .def_property_readonly("numLayers", &CompItem::NumLayers);
+
 }
 
 void bindFootageItem(py::module_& m)
@@ -86,7 +101,12 @@ void bindApp(py::module_& m)
         .def_readwrite("project", &App::project)
         .def("beginUndoGroup", &App::beginUndoGroup, py::arg("undo_name") = "Default Undo Group Name")
         .def("endUndoGroup", &App::endUndoGroup)
-        .def("reportInfo", &App::reportInfo, py::arg("info") = "Hello World");
+        .def("reportInfo", [](App& self, py::object info) {
+        // Convert the Python object to a string
+            std::ostringstream oss;
+            oss << info;
+            self.reportInfo(oss.str());
+            }, py::arg("info") = "Hello World");
 
     // Create an instance of App and set it as an attribute of the module
     auto appInstance = std::make_shared<App>();

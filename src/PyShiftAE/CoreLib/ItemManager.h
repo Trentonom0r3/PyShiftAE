@@ -3,6 +3,25 @@
 #include "../CoreSDK/Core.h"
 
 
+class Layer {
+public:
+    explicit Layer(const Result<AEGP_LayerH>& layerHandle) : layerHandle_(layerHandle) {}
+
+    std::string GetLayerName();
+    std::string GetSourceName();
+    void SetLayerName(std::string name);
+    int index();
+
+
+
+protected:
+    Result<AEGP_LayerH> layerHandle_;
+    int index_;
+    std::string name_;
+    std::string sourceName_;
+};
+
+
 //PyCore.h"
 class Item {
 public:
@@ -24,10 +43,8 @@ public:
     explicit CompItem(const Result<AEGP_ItemH>& itemHandle) : Item(itemHandle) {}
     virtual ~CompItem() = default;
 
-    //ImageData frameAtTime(float time);
-    //void replaceFrameAtTime(ImageData& new_img, float time);
-
-   // int numLayers;
+   std::vector<Layer> getLayers();
+   int NumLayers();
    // float frameRate;
 
 };
