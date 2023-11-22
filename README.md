@@ -70,6 +70,7 @@ The ripple effect of PyShiftAE in the AE community could be profound. Scriptwrit
 - [Demos](https://github.com/Trentonom0r3/PyShiftAE/wiki/Demos)
 - [Building from source](https://github.com/Trentonom0r3/PyShiftAE/wiki/Building-from-source)
 - [Pre-Compiled .aex Binary](https://github.com/Trentonom0r3/PyShiftAE/blob/main/dist/PyShiftAE.aex)
+  - MUST have Python 3.11 installed to path.
   
 ### Contributing
 
