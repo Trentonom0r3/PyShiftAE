@@ -5,7 +5,7 @@ PyShiftAE is an experimental, Open Source library designed to transcend the boun
 All Updates should be assumed to come with updated documentation, and updated binary .aex file located in ```dist```, unless otherwise specified. 
 ChangeLog will contain a brief description of changes. See Wiki API docs for more info. 
 - [11.22.23]
-    - Added ```addLayer``` method to ```CompItem````. 
+    - Added ```addLayer``` method to ```CompItem```. 
     - Added ```addFolder```, ```addFootage```, and ```addComp``` to ```Project```.
     - Adjust ```index``` attribute of ```Layer``` to be read-write. Changing this adjust other layers as well.
 - [11.21.23]
