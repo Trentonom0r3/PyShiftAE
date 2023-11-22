@@ -78,7 +78,7 @@ Represents a composition item, which is a collection of layers.
   - `numLayers`: (read-only) The number of layers in the composition.
 
 - **Methods:**
-  - `addLayer(name: str = "New Layer", path: str = NULL, index: int = -1)`: Adds a new layer to the composition with specified parameters.
+  - `addLayer(name: str = "New Layer", path: str = NULL, index: int = -1)`: Adds a new layer to the composition with specified parameters. Added to the top-most layer position, unless index is specified. 
 
 - **Example Usage:**
   ```python
