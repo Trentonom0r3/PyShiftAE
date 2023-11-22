@@ -25,6 +25,7 @@
  * See Existing code and header file for examples.
  *
  */
+
 std::string convertUTF16ToUTF8(const A_UTF16Char* utf16String) {
 	if (utf16String == nullptr) {
 		return "";
@@ -52,6 +53,7 @@ std::vector<A_UTF16Char> convertUTF8ToUTF16(const std::string& utf8String) {
 	std::vector<A_UTF16Char> utf16String(utf16Buffer.begin(), utf16Buffer.end());
 	return utf16String;
 }
+
 
 
 Result<void>ReportInfo(std::string info) {
@@ -432,6 +434,121 @@ Result<void> disposeRenderOptions(Result <AEGP_RenderOptionsH> roH)
 	return result;
 }
 
+Result<void> Addcomp(std::string name, int width, int height, float frameRate, int durationSecs, float pixelAspectRatio, Result<AEGP_ItemH> parentFolder) {
+	AEGP_SuiteHandler& suites = SuiteManager::GetInstance().GetSuiteHandler();
+	A_Err err = A_Err_NONE;
+	
+	AEGP_CompH new_compH;
+	const A_char* nameZ = const_cast<A_char*>(name.c_str());
+
+	// Create pixel aspect ratio
+	A_Ratio pixel_aspect_ratio = { static_cast<A_long>(pixelAspectRatio * 100), 100 };
+
+	// Create duration
+	A_Time duration;
+	duration.value = durationSecs * 100; // Assuming durationSecs is in seconds and you want to convert to a time scale of 100
+	duration.scale = 100;
+
+	// Create frame rate
+	A_Ratio frame_rate = { static_cast<A_long>(frameRate * 100), 100 };
+	
+	if (parentFolder.value == NULL) {
+		ERR(suites.CompSuite4()->AEGP_CreateComp(NULL, nameZ, width, height, &pixel_aspect_ratio, &duration, &frame_rate, &new_compH));
+	}
+	else {
+		ERR(suites.CompSuite4()->AEGP_CreateComp(parentFolder.value, nameZ, width, height, &pixel_aspect_ratio, &duration, &frame_rate, &new_compH));
+	}
+
+	if (err != A_Err_NONE) {
+		Result<void> errorResult;
+		errorResult.error = err;
+		return errorResult; // Return an error result if AEGP_CreateComp fails
+	}
+
+	// If we reach this point, it means everything went well
+	Result<void> successResult;
+	successResult.error = A_Err_NONE;
+	return successResult;
+}
+
+Result<AEGP_FootageH> createFootage(const std::string& path)
+{
+	AEGP_SuiteHandler& suites = SuiteManager::GetInstance().GetSuiteHandler();
+	A_Err err = A_Err_NONE;
+	AEGP_FootageH footageH;
+	AEGP_PluginID* pluginIDPtr = SuiteManager::GetInstance().GetPluginID();
+	std::vector<A_UTF16Char> unicode_name = convertUTF8ToUTF16(path);
+	if (unicode_name.empty()) {
+		return Result<AEGP_FootageH>(A_Err_STRUCT); // Handle conversion error
+	}
+	A_UTF16Char* pathZ = reinterpret_cast<A_UTF16Char*>(unicode_name.data());
+
+
+	if (pluginIDPtr != nullptr) {
+		// Dereference the pointer to get the plugin ID
+		AEGP_PluginID pluginID = *pluginIDPtr;
+		// Replace ERR with PT_ETX macro to check and throw error if not A_Err_NONE
+
+		ERR(suites.FootageSuite5()->AEGP_NewFootage(pluginID, pathZ, NULL, NULL, AEGP_InterpretationStyle_DIALOG_OK, NULL, &footageH));
+	}
+	if (err != A_Err_NONE) {
+		Result<AEGP_FootageH> errorResult;
+		errorResult.error = err;
+		return errorResult; // Return an error result if AEGP_NewFootage fails
+	}
+
+	// If we reach this point, it means everything went well
+	Result<AEGP_FootageH> successResult;
+	successResult.value = footageH;
+	successResult.error = A_Err_NONE;
+	return successResult;
+}
+
+Result<void> disposeFootage(Result<AEGP_FootageH> footageH)
+{
+	AEGP_SuiteHandler& suites = SuiteManager::GetInstance().GetSuiteHandler();
+	A_Err err = A_Err_NONE;
+	ERR(suites.FootageSuite5()->AEGP_DisposeFootage(footageH.value));
+
+	Result<void> result;
+	result.error = err;
+
+	return result;
+}
+
+Result<AEGP_ItemH> getProjectRootFolder()
+{
+	AEGP_SuiteHandler& suites = SuiteManager::GetInstance().GetSuiteHandler();
+	A_Err err = A_Err_NONE;
+	AEGP_ItemH root_folderH = NULL;
+	AEGP_ProjectH projH = NULL;
+	ERR(suites.ProjSuite6()->AEGP_GetProjectByIndex(0, &projH));
+	ERR(suites.ProjSuite6()->AEGP_GetProjectRootFolder(projH, &root_folderH));
+
+	Result<AEGP_ItemH> result;
+	result.value = root_folderH;
+	result.error = err;
+
+	return result;
+}
+
+
+Result<AEGP_ItemH> addFootageToProject(Result<AEGP_FootageH> footageH, Result<AEGP_ItemH> parentFolderH)
+{
+	AEGP_SuiteHandler& suites = SuiteManager::GetInstance().GetSuiteHandler();
+	A_Err err = A_Err_NONE;
+	AEGP_ItemH parent_folderH = parentFolderH.value;
+	AEGP_ItemH new_footageH = NULL;
+	AEGP_FootageH footage = footageH.value;
+	ERR(suites.FootageSuite5()->AEGP_AddFootageToProject(footage, parent_folderH, &new_footageH));
+
+	Result<AEGP_ItemH> result;
+	result.value = new_footageH;
+	result.error = err;
+
+	return result;
+
+}
 
 Result<int> getNumLayers(Result<AEGP_CompH> compH)
 {
@@ -461,6 +578,38 @@ Result<AEGP_CompH> getCompFromItem(Result<AEGP_ItemH> itemH)
 	result.error = err;
 
 	return result;
+}
+
+Result<void> createFolderItem(const std::string& name, Result<AEGP_ItemH> parentFolderH)
+{
+	AEGP_SuiteHandler& suites = SuiteManager::GetInstance().GetSuiteHandler();
+	A_Err err = A_Err_NONE;
+	AEGP_ItemH parent_folderH = parentFolderH.value;
+	AEGP_ItemH new_folderH = NULL;
+	std::vector<A_UTF16Char> unicode_name = convertUTF8ToUTF16(name);
+	if (unicode_name.empty()) {
+		return Result<void>(A_Err_STRUCT); // Handle conversion error
+	}
+	A_UTF16Char* nameZ = reinterpret_cast<A_UTF16Char*>(unicode_name.data());
+	AEGP_ProjectH projH = NULL;
+	AEGP_PluginID* pluginIDPtr = SuiteManager::GetInstance().GetPluginID();
+
+	if (pluginIDPtr != nullptr) {
+		// Dereference the pointer to get the plugin ID
+		AEGP_PluginID pluginID = *pluginIDPtr;
+		// Replace ERR with PT_ETX macro to check and throw error if not A_Err_NONE
+		ERR(suites.ItemSuite9()->AEGP_CreateNewFolder(nameZ,parent_folderH, &new_folderH));
+	}
+	if (err != A_Err_NONE) {
+		Result<void> errorResult;
+		errorResult.error = err;
+		return errorResult; // Return an error result if AEGP_SetItemName fails
+	}
+
+	// If we reach this point, it means everything went well
+	Result<void> successResult;
+	successResult.error = A_Err_NONE;
+	return successResult;
 }
 
 Result<int> getLayerIndex(Result<AEGP_LayerH> layerH)
@@ -581,4 +730,74 @@ Result<AEGP_LayerH> getLayerFromComp(Result<AEGP_CompH> compH, int index)
 	result.error = err;
 
 	return result;
+}
+
+Result<void> changeLayerIndex(Result<AEGP_LayerH> layerH, int index)
+{
+	AEGP_SuiteHandler& suites = SuiteManager::GetInstance().GetSuiteHandler();
+	A_Err err = A_Err_NONE;
+	AEGP_LayerH layer = layerH.value;
+	A_long layer_index = index;
+	ERR(suites.LayerSuite9()->AEGP_ReorderLayer(layer, layer_index));
+	if (err != A_Err_NONE) {
+		throw std::runtime_error("Error changing layer index. Error code: " + std::to_string(err));
+		return Result<void>();
+	}
+
+	Result<void> result;
+	result.error = err;
+
+	return result;
+}
+
+Result<bool> isAddLayerValid(Result<AEGP_ItemH> itemH, Result<AEGP_CompH> compH)
+{
+	AEGP_SuiteHandler& suites = SuiteManager::GetInstance().GetSuiteHandler();
+	A_Err err = A_Err_NONE;
+	A_Boolean valid = FALSE;
+	AEGP_ItemH item = itemH.value;
+	AEGP_CompH comp = compH.value;
+	ERR(suites.LayerSuite9()->AEGP_IsAddLayerValid(item, comp, &valid));
+
+	Result<bool> result;
+	result.value = valid;
+	result.error = err;
+
+	return result;
+}
+
+Result<AEGP_LayerH> AddLayer(Result<AEGP_ItemH> itemH, Result<AEGP_CompH> compH)
+{
+	AEGP_SuiteHandler& suites = SuiteManager::GetInstance().GetSuiteHandler();
+	A_Err err = A_Err_NONE;
+	AEGP_ItemH item = itemH.value;
+	AEGP_CompH comp = compH.value;
+	AEGP_LayerH newItem;
+	ERR(suites.LayerSuite9()->AEGP_AddLayer(item, comp, &newItem));
+	if (err != A_Err_NONE) {
+		throw std::runtime_error("Error adding layer. Error code: " + std::to_string(err));
+		return Result<AEGP_LayerH>();
+	}
+
+	Result<AEGP_LayerH> result;
+	result.value = newItem;
+	result.error = err;
+
+	return result;
+}
+
+Result<AEGP_ItemH> getLayerSourceItem(Result<AEGP_LayerH> layerH)
+{
+	AEGP_SuiteHandler& suites = SuiteManager::GetInstance().GetSuiteHandler();
+	A_Err err = A_Err_NONE;
+	AEGP_ItemH source_itemH = NULL;
+	AEGP_LayerH layer = layerH.value;
+	ERR(suites.LayerSuite9()->AEGP_GetLayerSourceItem(layer, &source_itemH));
+
+	Result<AEGP_ItemH> result;
+	result.value = source_itemH;
+	result.error = err;
+
+	return result;
+
 }

@@ -1,67 +1,112 @@
+
 # PyShiftAE Documentation
-Unlike a LOT of ExtendScript, EVERYTHING will be documented here.
+
 ## Module: PyShiftCore
 
 ### Class: `App`
-- **Attributes:**
-  - `project` (read-only): The current project.
-- **Methods:**
-  - `beginUndoGroup(undo_name: str = "Default Undo Group Name")`: Begins a new undo group with the specified name.
-  - `endUndoGroup()`: Ends the current undo group.
-  - `executeCommand(commandId: int)`: Executes a command with the specified command ID.
-  - `reportInfo(info: str)`: Displays an alert box displaying the given string.
 
-   - **TODO:**
-    - **Methods:**
-      - `startQuietErrors()`: Silences Errors. Must be balanced with `endQuietErrors`
-      - `endQuietErrors()`: Re-enables errors.
-      - `writeToConsole(info: str)` : writes to the OS Console.
-      - `newProject()`: Creates a new project. NOTE: Will close the current project without saving it first!
-      - `openProject(file_path: str)` : Opens a project given path to the .aep file.
-      - `sendEvent(event: str, host: str, sender: str, message: str)` : Sends a CSXS event.
-      - `addEventListener(event: str)` : Adds a CSXS event Listener to the python script. 
-      - `removeEventListener(event: str)` : Removes a CSXS Event Listener.
+The `App` class represents the main application interface, providing access to projects and global application functions.
+
+- **Attributes:**
+  - `project`: (read/write) The current project being manipulated within the application.
+
+- **Methods:**
+  - `beginUndoGroup(undo_name: str = "Default Undo Group Name")`: Begins a new undo group with a given name. Useful for grouping a set of operations that can be undone together.
+  - `endUndoGroup()`: Ends the currently active undo group. Should be called after the completion of operations started with `beginUndoGroup`.
+  - `reportInfo(info: str)`: Displays an information dialog with a given string. Useful for debugging and user notifications.
+
+- **Example Usage:**
+  ```python
+  from PyShiftCore import *
+
+  app.beginUndoGroup("My Undo Group")
+  # Perform some operations here
+  app.endUndoGroup()
+  app.reportInfo("Operations Completed")
+  ```
 
 ### Class: `Project`
-- **Attributes:**
-  - `activeItem` (read-only): The active item in the project.
 
-   - **TODO:**
-    - **Attributes:**
-      - `name` (read-only): The name of the project. 
-      - `path` (read-only): The path to the .aep file for the project.
-      - `root` (read-only): The root of the project, treated as a folder.
-      - `bitDepth` (read-write): The Project's Bit Depth.
-      - **Methods:**
-        - `save(file_path: str = None)`: Saves the project. If `file_path` is provided, saves the project to the specified path. If `file_path` is not provided, saves the project to its current location or prompts for a location if the project is new and unsaved. The `file_path` parameter is optional.
+Represents a project within the application, providing methods to interact with various project elements like compositions, footage, and folders.
+
+- **Attributes:**
+  - `activeItem`: (read-only) The currently active item in the project.
+  - `name`: (read/write) The name of the project.
+  - `path`: (read/write) The file path of the project.
+
+- **Methods:**
+  - `addFolder(name: str = "New Folder")`: Adds a new folder to the project with the specified name.
+  - `addComp(name: str, width: int, height: int, frameRate: float, duration: int, aspectRatio: float)`: Adds a new composition to the project with specified parameters.
+  - `addFootage(path: str)`: Adds new footage to the project from a specified file path.
+
+- **Example Usage:**
+  ```python
+  from PyShiftCore import *
+
+  proj = app.project  # get the project
+
+  proj.addFolder("My Folder")  # add a folder to the project bin
+  proj.addComp("My Composition", 1920, 1080, 24.0, 10, 1.0)  # add a composition to the project bin
+  proj.addFootage("C:\path\to\footage.mov")  # adds footage to the project bin
+  ```
 
 ### Class: `Item`
-- **Attributes:**
-  - `name` (read-write): The name of the item.
-  - `type` (read-only): The Item Type. (Comp, Footage, Folder)
 
-### Class: `FootageItem` (Inherits from `Item`)
-- **Attributes:**
+Abstract base class for various types of items in a project, such as compositions, footage, and folders.
 
-### Class: `FolderItem` (Inherits from `Item`)
 - **Attributes:**
+  - `name`: (read/write) The name of the item.
 
-### Class: `CompItem` (Inherits from `Item`)
-- **Attributes:**
-  - `layer` or `layers` (read-write): A list of all layer objects in comp. Access using `layer[0]` or `layers`, the latter of which returns a list which can then be accessed via `for layer in layers`. 
-
-   - **TODO:**
-     - **Attributes:**
-    - `selectedLayers` (read-write) : A list of selected layers in the comp.
+- **Methods:**
+  - `frameAtTime(time: float) -> py::array_t<uint8_t>`: Returns a frame at a specified time as a NumPy array.
 
 ### Class: `Layer`
+
+Represents a layer within a composition, providing methods to access and modify layer properties.
+
 - **Attributes:**
-  - `name` (read-write): The name of the layer. 
-  - `index` (read-only): The index of the layer.
-  - `sourceName` (read-only): The Source name of the layer.
-  
-     - **TODO:**
-      - **Attributes:**
-      - `quality` (read-write): The layer's quality setting. 
-      - `duration` (read-write): Duration of the layer. 
-      
+  - `name`: (read/write) The name of the layer.
+  - `index`: (read/write) The index of the layer within its composition. Changing the index can reorder layers.
+  - `sourceName`: (read-only) The source name of the layer.
+
+### Class: `CompItem` (Inherits from `Item`)
+
+Represents a composition item, which is a collection of layers.
+
+- **Attributes:**
+  - `layers`: (read-only) A list of all layer objects in the composition.
+  - `numLayers`: (read-only) The number of layers in the composition.
+
+- **Methods:**
+  - `addLayer(name: str = "New Layer", path: str = NULL, index: int = -1)`: Adds a new layer to the composition with specified parameters.
+
+- **Example Usage:**
+  ```python
+  from PyShiftCore import *
+
+  comp = app.project.activeItem  # check for the activeItem
+
+  if isinstance(item, CompItem):  # if comp is actually a composition
+      comp.addLayer("name", "C:\\", "2)
+
+  layers = comp.layers  # get the list of layers
+
+  for layer in layers:  
+      app.reportInfo(layer.name)
+      layer.index = -1  # read-write. Change this to reorder the layers. 
+
+  else:
+      app.reportInfo("Select a Composition first!")
+
+  ```
+
+### Class: `FootageItem` (Inherits from `Item`)
+
+Represents a footage item in a project.
+
+### Class: `FolderItem` (Inherits from `Item`)
+
+Represents a folder item in a project, allowing organization of various items.
+
+- **Methods:**
+  - `addFolder(name: str = "New Folder")`: Adds a new folder to the project.

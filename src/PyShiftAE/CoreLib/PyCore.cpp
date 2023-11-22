@@ -16,7 +16,10 @@ void bindLayer(py::module_& m)
             			&Layer::GetLayerName,
             			&Layer::SetLayerName)
 		.def_property_readonly("sourceName", &Layer::GetSourceName)
-		.def_property_readonly("index", &Layer::index);
+        .def_property("index",
+            			&Layer::index,
+            			&Layer::changeIndex);
+
 }
 
 void bindItem(py::module_& m)
@@ -68,7 +71,9 @@ void bindCompItem(py::module_& m)
         .def(py::init<Result<AEGP_ItemH>>())
         .def_property_readonly("layer", &CompItem::getLayers, py::return_value_policy::reference)
         .def_property_readonly("layers", &CompItem::getLayers, py::return_value_policy::reference)
-        .def_property_readonly("numLayers", &CompItem::NumLayers);
+        .def_property_readonly("numLayers", &CompItem::NumLayers)
+        .def("addLayer", &CompItem::addLayer, py::arg("name") = "New Layer", py::arg("path") = NULL, py::arg("index") = -1);
+
 
 }
 
@@ -81,7 +86,8 @@ void bindFootageItem(py::module_& m)
 void bindFolderItem(py::module_& m)
 {
     py::class_<FolderItem, Item, std::shared_ptr<FolderItem>>(m, "FolderItem")
-        .def(py::init<Result<AEGP_ItemH>>());
+        .def(py::init<Result<AEGP_ItemH>>())
+        .def("addFolder", &FolderItem::addFolder, py::arg("name") = "New Folder");
 
 }
 
@@ -91,7 +97,12 @@ void bindProject(py::module_& m)
         .def(py::init<>())
         .def_property_readonly("activeItem", &Project::ActiveItem, py::return_value_policy::reference)
         .def_readwrite("name", &Project::name)
-        .def_readwrite("path", &Project::path);
+        .def_readwrite("path", &Project::path)
+        .def("addFolder", &Project::addFolder, py::arg("name") = "New Folder")
+        .def("addComp", &Project::addComp, py::arg("name") = "New Comp", py::arg("width") = 1920,
+            py::arg("height") = 1080, py::arg("frameRate") = 24.0, py::arg("duration") = 10,
+            py::arg("aspectRatio") = 1.0)
+        .def("addFootage", &Project::addFootage, py::arg("path") = "C:\\");
 }
 
 void bindApp(py::module_& m)

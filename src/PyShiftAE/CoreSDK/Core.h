@@ -13,6 +13,8 @@
 #include <stdexcept>
 #include <iostream>
 #include <vector>
+#include <algorithm>
+
 
 /*
  * File: Core.h
@@ -73,7 +75,6 @@ struct Result<void> {
     explicit Result(A_Err err = A_Err_NONE) : error(err) {}
 };
 
-
 //APP RELATED FUNCS
 Result<void> ReportInfo(std::string info); //Use to report Information in a dialog box
 
@@ -112,7 +113,17 @@ Result<size> getSize(Result<AEGP_WorldH> frameH);
 
 Result<void> disposeRenderOptions(Result <AEGP_RenderOptionsH> roH);
 
+Result<void> Addcomp(std::string name, int width,
+                    int height, float frameRate, int durationSecs,
+                    float pixelAspectRatio, Result<AEGP_ItemH> parentFolder);
 
+Result<AEGP_FootageH> createFootage(const std::string& path);
+
+Result<void> disposeFootage(Result<AEGP_FootageH> footageH);
+
+Result<AEGP_ItemH> getProjectRootFolder();
+
+Result<AEGP_ItemH> addFootageToProject(Result<AEGP_FootageH> footageH, Result<AEGP_ItemH> parentFolderH);
 
 
 // ITEM(GENERAL) RELATED FUNCS
@@ -133,6 +144,9 @@ Result<AEGP_CompH> getCompFromItem(Result<AEGP_ItemH> itemH);
 
 
 
+//FOLDER ITEM RELATED FUNCs
+Result<void> createFolderItem(const std::string& name, Result<AEGP_ItemH> parentFolderH = NULL);
+
 //LAYER RELATED FUNCS
 Result<int> getLayerIndex(Result<AEGP_LayerH> layerH);
 
@@ -143,3 +157,11 @@ Result<std::string> getLayerSourceName(Result<AEGP_LayerH> layerH);
 Result<void> setLayerName(Result<AEGP_LayerH> layerH, const std::string& name);
 
 Result<AEGP_LayerH> getLayerFromComp(Result<AEGP_CompH> compH, int index);
+
+Result<void> changeLayerIndex(Result<AEGP_LayerH> layerH, int index);
+
+Result<bool> isAddLayerValid(Result<AEGP_ItemH> itemH, Result<AEGP_CompH> compH);
+
+Result<AEGP_LayerH> AddLayer(Result<AEGP_ItemH> itemH, Result<AEGP_CompH> compH);
+
+Result<AEGP_ItemH> getLayerSourceItem(Result<AEGP_LayerH> layerH);
