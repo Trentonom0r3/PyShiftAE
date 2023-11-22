@@ -196,6 +196,7 @@ std::vector<Layer> CompItem::getLayers()
 
 }
 
+
 int CompItem::NumLayers() {
 	auto item = this->itemHandle_;
 	if (item.value == NULL) {
@@ -223,6 +224,81 @@ int CompItem::NumLayers() {
 	}
 
 	return result2.value;
+}
+
+void CompItem::addLayer(std::string name, std::string path, int index)
+{
+	auto item = this->itemHandle_;
+	if (item.value == NULL) {
+		throw std::runtime_error("No active item");
+	}
+
+	auto& getComp = enqueueSyncTask(getCompFromItem, item);
+	getComp->wait();
+
+	Result<AEGP_CompH> compH = getComp->getResult();
+
+	auto& createfootage = enqueueSyncTask(createFootage, path);
+	createfootage->wait();
+
+	Result<AEGP_FootageH> createFootage = createfootage->getResult();
+
+	auto& getroot = enqueueSyncTask(getProjectRootFolder);
+	getroot->wait();
+
+	Result<AEGP_ItemH> Root = getroot->getResult();
+
+	auto& addtoproj = enqueueSyncTask(addFootageToProject, createFootage, Root);
+	addtoproj->wait();
+
+	Result<AEGP_ItemH> footageItem = addtoproj->getResult();
+
+	auto& isValid = enqueueSyncTask(isAddLayerValid, footageItem, compH);
+	isValid->wait();
+
+	Result<bool> isvalid = isValid->getResult();
+
+	if (isvalid.value == false) {
+		throw std::runtime_error("Error adding layer");
+		return;
+	}
+
+	if (isvalid.error != A_Err_NONE) {
+		throw std::runtime_error("Error adding layer");
+		return;
+	}
+
+	auto& addedLayer = enqueueSyncTask(AddLayer, footageItem, compH);
+	addedLayer->wait();
+
+	Result<AEGP_LayerH> newLayer = addedLayer->getResult();
+
+	if (newLayer.error != A_Err_NONE) {
+		throw std::runtime_error("Error adding layer");
+		return;
+	}
+
+	auto& changeName = enqueueSyncTask(setLayerName, newLayer, name);
+	changeName->wait();
+
+	Result<void> result = changeName->getResult();
+
+	if (result.error != A_Err_NONE) {
+		throw std::runtime_error("Error changing layer name");
+		return;
+	}
+
+	if (int(index) != -1) {
+		auto& message6 = enqueueSyncTask(changeLayerIndex, newLayer, index);
+		message6->wait();
+
+		Result<void> result6 = message6->getResult();
+
+		if (result6.error != A_Err_NONE) {
+			throw std::runtime_error("Error changing layer index");
+			return;
+		}
+	}
 }
 
 std::string Layer::GetLayerName()
@@ -278,4 +354,31 @@ int Layer::index()
 
 	Result<int> result = message->getResult();
 	return result.value;
+}
+
+//Swaps the index of the layer with the layer at the given index
+void Layer::changeIndex(int index)
+{
+	auto layer = this->layerHandle_;
+	if (layer.value == NULL) {
+		throw std::runtime_error("No active layer");
+	}
+	auto& message = enqueueSyncTask(changeLayerIndex, layer, index);
+	message->wait();
+
+	Result<void> result = message->getResult();
+	return;
+}
+
+void FolderItem::addFolder(std::string name)
+{
+	auto item = this->itemHandle_;
+	if (item.value == NULL) {
+		throw std::runtime_error("No active item");
+	}
+	auto& message = enqueueSyncTask(createFolderItem, name, item);
+	message->wait();
+
+	Result<void> result = message->getResult();
+	return;
 }

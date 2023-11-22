@@ -11,8 +11,7 @@ public:
     std::string GetSourceName();
     void SetLayerName(std::string name);
     int index();
-
-
+    void changeIndex(int index);    
 
 protected:
     Result<AEGP_LayerH> layerHandle_;
@@ -20,7 +19,6 @@ protected:
     std::string name_;
     std::string sourceName_;
 };
-
 
 //PyCore.h"
 class Item {
@@ -46,6 +44,7 @@ public:
    std::vector<Layer> getLayers();
    int NumLayers();
    // float frameRate;
+   void addLayer(std::string name, std::string path = NULL, int index = -1);
 
 };
 
@@ -64,4 +63,5 @@ public:
     explicit FolderItem(const Result<AEGP_ItemH>& itemHandle) : Item(itemHandle) {}
     virtual ~FolderItem() = default;
 
+    void addFolder(std::string name);
 };
