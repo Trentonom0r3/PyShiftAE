@@ -1,7 +1,6 @@
 #pragma once
 #include "../CoreSDK/TaskUtils.h"
-#include "../CoreSDK/Core.h"
-
+#include "../CoreSDK/Utils.h"
 
 class Layer {
 public:
@@ -28,7 +27,6 @@ public:
 
     std::string getName();
     void setName(std::string name);
-    ImageData frameAtTime(float time);
 
     std::string name;
 protected:
@@ -45,7 +43,7 @@ public:
    int NumLayers();
    // float frameRate;
    void addLayer(std::string name, std::string path = NULL, int index = -1);
-
+   ImageData frameAtTime(float time);
 };
 
 

@@ -1,6 +1,6 @@
 #pragma once
 #include "../CoreSDK/TaskUtils.h"
-#include "../CoreSDK/Core.h"
+#include "../CoreSDK/Utils.h"
 #include "ItemManager.h"
 
 //Project class definition

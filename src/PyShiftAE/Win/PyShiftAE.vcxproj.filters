@@ -116,6 +116,39 @@
     <ClInclude Include="..\PyUtils\PyLink.h">
       <Filter>PyUtils</Filter>
     </ClInclude>
+    <ClInclude Include="..\CoreSDK\CollectionSuites.h">
+      <Filter>CoreSDK</Filter>
+    </ClInclude>
+    <ClInclude Include="..\CoreSDK\CompSuites.h">
+      <Filter>CoreSDK</Filter>
+    </ClInclude>
+    <ClInclude Include="..\CoreSDK\FootageSuites.h">
+      <Filter>CoreSDK</Filter>
+    </ClInclude>
+    <ClInclude Include="..\CoreSDK\ItemSuites.h">
+      <Filter>CoreSDK</Filter>
+    </ClInclude>
+    <ClInclude Include="..\CoreSDK\LayerSuites.h">
+      <Filter>CoreSDK</Filter>
+    </ClInclude>
+    <ClInclude Include="..\CoreSDK\ProjectSuites.h">
+      <Filter>CoreSDK</Filter>
+    </ClInclude>
+    <ClInclude Include="..\CoreSDK\RenderSuites.h">
+      <Filter>CoreSDK</Filter>
+    </ClInclude>
+    <ClInclude Include="..\CoreSDK\RenderOptionsSuites.h">
+      <Filter>CoreSDK</Filter>
+    </ClInclude>
+    <ClInclude Include="..\CoreSDK\WorldSuites.h">
+      <Filter>CoreSDK</Filter>
+    </ClInclude>
+    <ClInclude Include="..\CoreSDK\UtilitySuites.h">
+      <Filter>CoreSDK</Filter>
+    </ClInclude>
+    <ClInclude Include="..\CoreSDK\Utils.h">
+      <Filter>CoreSDK</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\Util\AEGP_SuiteHandler.cpp">
@@ -142,6 +175,36 @@
     </ClCompile>
     <ClCompile Include="..\PyUtils\PyLink.cpp">
       <Filter>PyUtils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\CoreSDK\CollectionSuites.cpp">
+      <Filter>CoreSDK</Filter>
+    </ClCompile>
+    <ClCompile Include="..\CoreSDK\CompSuites.cpp">
+      <Filter>CoreSDK</Filter>
+    </ClCompile>
+    <ClCompile Include="..\CoreSDK\FootageSuites.cpp">
+      <Filter>CoreSDK</Filter>
+    </ClCompile>
+    <ClCompile Include="..\CoreSDK\ItemSuites.cpp">
+      <Filter>CoreSDK</Filter>
+    </ClCompile>
+    <ClCompile Include="..\CoreSDK\LayerSuites.cpp">
+      <Filter>CoreSDK</Filter>
+    </ClCompile>
+    <ClCompile Include="..\CoreSDK\ProjectSuites.cpp">
+      <Filter>CoreSDK</Filter>
+    </ClCompile>
+    <ClCompile Include="..\CoreSDK\RenderSuites.cpp">
+      <Filter>CoreSDK</Filter>
+    </ClCompile>
+    <ClCompile Include="..\CoreSDK\RenderOptionsSuites.cpp">
+      <Filter>CoreSDK</Filter>
+    </ClCompile>
+    <ClCompile Include="..\CoreSDK\WorldSuites.cpp">
+      <Filter>CoreSDK</Filter>
+    </ClCompile>
+    <ClCompile Include="..\CoreSDK\UtilitySuites.cpp">
+      <Filter>CoreSDK</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

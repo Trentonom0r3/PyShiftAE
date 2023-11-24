@@ -27,10 +27,10 @@ void Item::setName(std::string name) {
 /*
 * This is really only useful for single frame grabs. Should not be ran in a loop.
 * TODO: Add methods for accessing source files, then manipulating those. 
-* This will be done in the other Item classes.
+* This will be done in other classes.
 *
 */
-ImageData Item::frameAtTime(float time) {
+ImageData CompItem::frameAtTime(float time) {
 	//get the active item
 	auto item = this->itemHandle_;
 	if (item.value == NULL) {

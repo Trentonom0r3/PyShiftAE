@@ -58,7 +58,8 @@ Abstract base class for various types of items in a project, such as composition
   - `name`: (read/write) The name of the item.
 
 - **Methods:**
-  - `frameAtTime(time: float) -> py::array_t<uint8_t>`: Returns a frame at a specified time as a NumPy array.
+  - `frameAtTime(time: float) -> py::array_t<uint8_t>`: Returns a frame at a specified time as a NumPy array. NOTE: Using in a loop is SLOW.
+    This Method is best for getting thumbnails or something of that sort.
 
 ### Class: `Layer`
 
@@ -86,7 +87,7 @@ Represents a composition item, which is a collection of layers.
 
   comp = app.project.activeItem  # check for the activeItem
 
-  if isinstance(item, CompItem):  # if comp is actually a composition
+  if isinstance(comp, CompItem):  # if comp is actually a composition
       comp.addLayer("name", "C:\\", "2)
 
   layers = comp.layers  # get the list of layers
