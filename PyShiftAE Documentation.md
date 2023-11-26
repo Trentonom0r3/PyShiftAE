@@ -96,8 +96,12 @@ Represents a composition item, which is a collection of layers.
   - `frameRate`: (read-write) The frame rate of the CompItem.
 
 - **Methods:**
+<<<<<<< HEAD
   - `addLayer(name: str = "New Layer", path: str = NULL, index: int = -1)`: Adds a new layer to the composition with specified parameters.
   - `addSolid(name: str = "New Solid", width: float = 0, height: float = 0, red: float = 0, green: float = 0, blue: float = 0, alpha: float = 0, float: duration = 0)` : Adds a new Solid to the comp with the specified parameters. 
+=======
+  - `addLayer(name: str = "New Layer", path: str = NULL, index: int = -1)`: Adds a new layer to the composition with specified parameters. Added to the top-most layer position, unless index is specified. 
+>>>>>>> main
 
 - **Example Usage:**
   ```python
@@ -106,7 +110,11 @@ Represents a composition item, which is a collection of layers.
   comp = app.project.activeItem  # check for the activeItem
 
   if isinstance(comp, CompItem):  # if comp is actually a composition
+<<<<<<< HEAD
       comp.addLayer("name", "C:\\", 2)
+=======
+      comp.addLayer("name", "C:\\", "2)
+>>>>>>> main
 
   layers = comp.layers  # get the list of layers
 

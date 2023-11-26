@@ -2,6 +2,12 @@
 PyShiftAE is an experimental, Open Source library designed to transcend the boundaries of the built-in ExtendScript library in Adobe After Effects (AE), heralding a new era of scripting possibilities in AE. By offering a Python library as an alternative to ExtendScript, PyShiftAE not only enriches the existing feature set but simplifies and amplifies the scripting experience.
 
 # ChangeLog
+All Updates should be assumed to come with updated documentation, and updated binary .aex file located in ```dist```, unless otherwise specified. 
+ChangeLog will contain a brief description of changes. See Wiki API docs for more info. 
+- [11.22.23]
+    - Added ```addLayer``` method to ```CompItem```. 
+    - Added ```addFolder```, ```addFootage```, and ```addComp``` to ```Project```.
+    - Adjusted ```index``` attribute of ```Layer``` to be read-write. Changing this adjust other layers as well.
 - [11.21.23]
     - Added ```layer/layers``` attributes to ```CompItem```.
     - Added basic methods (name, index) to ```layer/layers```.
@@ -12,7 +18,7 @@ PyShiftAE is an experimental, Open Source library designed to transcend the boun
     
 - [11.19.23] 
     - Removed ```frameAtTime``` and ```replaceFrameAtTime``` methods.
-        - These will be reimplmented in a different way using other subclasses. 
+        - These will be reimplemented in a different way using other subclasses. 
     - Full Refactor to Separate Python Thread.
     - Refactored into ```CoreSDK```, ```CoreLib```, and ```PyUtils``` folders.
         - ```CoreSDK``` contains the base wrappers for the AE SDK. 
@@ -64,6 +70,7 @@ The ripple effect of PyShiftAE in the AE community could be profound. Scriptwrit
 - [Demos](https://github.com/Trentonom0r3/PyShiftAE/wiki/Demos)
 - [Building from source](https://github.com/Trentonom0r3/PyShiftAE/wiki/Building-from-source)
 - [Pre-Compiled .aex Binary](https://github.com/Trentonom0r3/PyShiftAE/blob/main/dist/PyShiftAE.aex)
+  - MUST have Python 3.11 installed to path.
   
 ### Contributing
 
