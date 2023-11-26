@@ -69,3 +69,36 @@ Result<AEGP_ItemH> Project::addFootage(std::string path)
 
 	return result3;
 }
+
+std::string Project::getName()
+{
+	auto proj = this->projH_;
+	auto& message = enqueueSyncTask(GetProjectName, proj);
+	message->wait();
+
+	Result<std::string> result = message->getResult();
+
+	return result.value;
+
+}
+
+std::string Project::getPath()
+{
+	auto proj = this->projH_;
+	auto& message = enqueueSyncTask(GetProjectPath, proj);
+	message->wait();
+
+	Result<std::string> result = message->getResult();
+
+	return result.value;
+}
+
+void Project::saveAs(std::string path)
+{
+	auto proj = this->projH_;
+	auto& message = enqueueSyncTask(SaveProjectAs, proj, path);
+	message->wait();
+
+	Result<void> result = message->getResult();
+}
+

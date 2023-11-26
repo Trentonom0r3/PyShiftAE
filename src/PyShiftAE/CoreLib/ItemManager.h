@@ -1,7 +1,6 @@
 #pragma once
 #include "../CoreSDK/TaskUtils.h"
-#include "../CoreSDK/Core.h"
-
+#include "../CoreSDK/Utils.h"
 
 class Layer {
 public:
@@ -12,6 +11,18 @@ public:
     void SetLayerName(std::string name);
     int index();
     void changeIndex(int index);    
+    Layer duplicate();
+    float layerTime(); //gets the current time in layer time 
+    float layerCompTime(); //gets the current time in comp time
+    float inPoint(); //gets the in point in layer time
+    float compInPoint(); //gets the in point in comp time
+    float duration(); //gets the duration in layer time
+    float compDuration(); //gets the duration in comp time
+    std::string getQuality();
+    void setQuality(std::string quality);
+    void deleteLayer(); //deletes the layer
+    float getOffset();
+    void setOffset(float offset);
 
 protected:
     Result<AEGP_LayerH> layerHandle_;
@@ -28,9 +39,12 @@ public:
 
     std::string getName();
     void setName(std::string name);
-    ImageData frameAtTime(float time);
-
+    float getWidth();
+    float getHeight();
     std::string name;
+    float getCurrentTime();
+    float getDuration();
+    void deleteItem();
 protected:
     Result<AEGP_ItemH> itemHandle_;
 };
@@ -41,11 +55,19 @@ public:
     explicit CompItem(const Result<AEGP_ItemH>& itemHandle) : Item(itemHandle) {}
     virtual ~CompItem() = default;
 
-   std::vector<Layer> getLayers();
-   int NumLayers();
+    std::vector<Layer> getLayers();
+    int NumLayers();
    // float frameRate;
-   void addLayer(std::string name, std::string path = NULL, int index = -1);
-
+    void addLayer(std::string name, std::string path = NULL, int index = -1);
+    float getFrameRate();
+    void setFrameRate(float frameRate);
+    float getDuration();
+    void setDuration(float duration);
+    void setWidth(float width);
+    CompItem duplicate();
+    void setHeight(float height);
+    Layer CompItem::newSolid(std::string name, float width, float height,float red, float green, float blue, float alpha,
+    float duration);
 };
 
 

@@ -27,14 +27,14 @@
  */
 
 struct size {
-	int width;
-	int height;
+	float width;
+    float height;
 };
 
 struct ImageData {
     std::shared_ptr<std::vector<uint8_t>> data;
-    int width;
-    int height;
+    float width;
+    float height;
     int channels;
 
     // Default constructor
@@ -45,7 +45,7 @@ struct ImageData {
         : data(std::move(d)), width(w), height(h), channels(c) {}
 
     // Constructor with initialization
-    ImageData(int w, int h, int c) : width(w), height(h), channels(c) {
+    ImageData(float w, float h, int c) : width(w), height(h), channels(c) {
         data = std::make_shared<std::vector<uint8_t>>(w * h * c);
     }
 };
@@ -75,93 +75,22 @@ struct Result<void> {
     explicit Result(A_Err err = A_Err_NONE) : error(err) {}
 };
 
-//APP RELATED FUNCS
-Result<void> ReportInfo(std::string info); //Use to report Information in a dialog box
-
-Result<void> StartUndoGroup(std::string undo_name); //Starts undo group, pass string of custom name
-
-Result<void> EndUndoGroup(); //Ends undo group, no args
-
-Result<A_UTF16Char> AppVersion(); //gets app version
-
-Result<AEGP_ProjectH> getProject(); //gets handle to the project (1 per AE session)
-
-Result<void> ExecuteCommand(int commandId); //executes a command by ID
+/*
 
 
+Note that A_Time values are rationals 
+and thus do not map exactly into floating point 
+so you may end up with off-by-one frame issues 
+depending on how the floating point time values are used.
+If you need precision then I suggest doing your time operations directly with rationals.
 
+*/
+A_Time ConvertFloatToATime(float seconds, float frameRate);
 
-// PROJECT RELATED FUNCS
+float ConvertATimeToFloat(const A_Time& aTime);
 
-Result<AEGP_ItemH> getActiveItem(); //gets the active item (null if multiple selected) (can be any type of item)
+std::string convertUTF16ToUTF8(const A_UTF16Char* utf16String);
 
-Result<AEGP_RenderOptionsH> getRenderOptions(Result<AEGP_ItemH> itemH);
+std::vector<A_UTF16Char> convertUTF8ToUTF16(const std::string& utf8String);
 
-Result<AEGP_RenderOptionsH> setTime(Result<AEGP_RenderOptionsH> roH, float time);
-
-Result<AEGP_RenderOptionsH> getWorldType(Result<AEGP_RenderOptionsH> roH);
-
-Result<AEGP_FrameReceiptH> renderAndCheckoutFrame(Result<AEGP_RenderOptionsH> roH);
-
-Result<AEGP_WorldH> getReceiptWorld(Result<AEGP_FrameReceiptH> receiptH);
-
-Result<void> checkinFrame(Result<AEGP_FrameReceiptH> receiptH);
-
-Result<PF_Pixel8*> getBaseAddr8(Result<AEGP_WorldH> frameH);
-
-Result<size> getSize(Result<AEGP_WorldH> frameH);
-
-Result<void> disposeRenderOptions(Result <AEGP_RenderOptionsH> roH);
-
-Result<void> Addcomp(std::string name, int width,
-                    int height, float frameRate, int durationSecs,
-                    float pixelAspectRatio, Result<AEGP_ItemH> parentFolder);
-
-Result<AEGP_FootageH> createFootage(const std::string& path);
-
-Result<void> disposeFootage(Result<AEGP_FootageH> footageH);
-
-Result<AEGP_ItemH> getProjectRootFolder();
-
-Result<AEGP_ItemH> addFootageToProject(Result<AEGP_FootageH> footageH, Result<AEGP_ItemH> parentFolderH);
-
-
-// ITEM(GENERAL) RELATED FUNCS
-Result<AEGP_ItemType> getItemType(Result<AEGP_ItemH> itemH); //gets the type of ItemH
-
-Result<std::string> getItemName(Result<AEGP_ItemH> itemH); //gets the name of ItemH
-
-Result<void> setItemName(Result<AEGP_ItemH> itemH, const std::string& name); //sets the name of ItemH
-
-Result<A_long> getUniqueItemID(Result<AEGP_ItemH> itemH); //gets the unique, unchanging ID for an item
-
-
-
-//COMP RELATED FUNCS
-Result<int> getNumLayers(Result<AEGP_CompH> compH);
-
-Result<AEGP_CompH> getCompFromItem(Result<AEGP_ItemH> itemH);
-
-
-
-//FOLDER ITEM RELATED FUNCs
-Result<void> createFolderItem(const std::string& name, Result<AEGP_ItemH> parentFolderH = NULL);
-
-//LAYER RELATED FUNCS
-Result<int> getLayerIndex(Result<AEGP_LayerH> layerH);
-
-Result<std::string> getLayerName(Result<AEGP_LayerH> layerH);
-
-Result<std::string> getLayerSourceName(Result<AEGP_LayerH> layerH);
-
-Result<void> setLayerName(Result<AEGP_LayerH> layerH, const std::string& name);
-
-Result<AEGP_LayerH> getLayerFromComp(Result<AEGP_CompH> compH, int index);
-
-Result<void> changeLayerIndex(Result<AEGP_LayerH> layerH, int index);
-
-Result<bool> isAddLayerValid(Result<AEGP_ItemH> itemH, Result<AEGP_CompH> compH);
-
-Result<AEGP_LayerH> AddLayer(Result<AEGP_ItemH> itemH, Result<AEGP_CompH> compH);
-
-Result<AEGP_ItemH> getLayerSourceItem(Result<AEGP_LayerH> layerH);
+AEGP_ProjBitDepth ConvertToProjBitDepth(const std::string& bitDepthStr);
