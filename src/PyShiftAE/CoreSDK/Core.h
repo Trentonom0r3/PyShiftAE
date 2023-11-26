@@ -27,14 +27,14 @@
  */
 
 struct size {
-	int width;
-	int height;
+	float width;
+    float height;
 };
 
 struct ImageData {
     std::shared_ptr<std::vector<uint8_t>> data;
-    int width;
-    int height;
+    float width;
+    float height;
     int channels;
 
     // Default constructor
@@ -45,7 +45,7 @@ struct ImageData {
         : data(std::move(d)), width(w), height(h), channels(c) {}
 
     // Constructor with initialization
-    ImageData(int w, int h, int c) : width(w), height(h), channels(c) {
+    ImageData(float w, float h, int c) : width(w), height(h), channels(c) {
         data = std::make_shared<std::vector<uint8_t>>(w * h * c);
     }
 };
@@ -75,8 +75,17 @@ struct Result<void> {
     explicit Result(A_Err err = A_Err_NONE) : error(err) {}
 };
 
+/*
 
-A_Time ConvertFloatToATime(float timeInSeconds);
+
+Note that A_Time values are rationals 
+and thus do not map exactly into floating point 
+so you may end up with off-by-one frame issues 
+depending on how the floating point time values are used.
+If you need precision then I suggest doing your time operations directly with rationals.
+
+*/
+A_Time ConvertFloatToATime(float seconds, float frameRate);
 
 float ConvertATimeToFloat(const A_Time& aTime);
 

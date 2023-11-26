@@ -16,8 +16,9 @@ public:
                          int height, float frameRate, int duration, float aspectRatio);
     Result<AEGP_ItemH> addFootage(std::string path);
 
-    std::string name;
-    std::string path;
+    std::string getName();
+    std::string getPath();
+    void saveAs(std::string path);
 
 private:
     std::shared_ptr<Item> activeItem;

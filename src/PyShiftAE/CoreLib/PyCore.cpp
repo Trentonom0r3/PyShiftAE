@@ -8,6 +8,7 @@
 *
 *
 */
+
 void bindLayer(py::module_& m)
 {
 	py::class_<Layer, std::shared_ptr<Layer>>(m, "Layer")
@@ -16,6 +17,16 @@ void bindLayer(py::module_& m)
             			&Layer::GetLayerName,
             			&Layer::SetLayerName)
 		.def_property_readonly("sourceName", &Layer::GetSourceName)
+        .def_property_readonly("time", &Layer::layerTime) //ADD TO DOCS
+        .def_property_readonly("compTime", &Layer::layerCompTime) //ADD TO DOCS
+        .def_property_readonly("inPoint", &Layer::inPoint) //ADD TO DOCS
+        .def_property_readonly("compInPoint", &Layer::compInPoint) //ADD TO DOCS
+        .def_property_readonly("duration", &Layer::duration) //ADD TO DOCS 
+        .def_property_readonly("compDuration", &Layer::compDuration) //ADD TO DOCS
+        .def_property("quality", &Layer::getQuality, &Layer::setQuality) //ADD TO DOCS
+        .def_property("offset", &Layer::getOffset, &Layer::setOffset) //ADD TO DOCS
+        .def("delete", &Layer::deleteLayer) //ADD TO DOCS
+        .def("duplicate", &Layer::duplicate) //ADD TO DOCS
         .def_property("index",
             			&Layer::index,
             			&Layer::changeIndex);
@@ -26,6 +37,8 @@ void bindItem(py::module_& m)
 {
     py::class_<Item, std::shared_ptr<Item>>(m, "Item")
         .def(py::init<const Result<AEGP_ItemH>&>())
+        .def_property_readonly("width", &Item::getWidth) //ADD TO DOCS
+        .def_property_readonly("height", &Item::getHeight)//ADD TO DOCS
         .def_property("name",
             &Item::getName,
             &Item::setName);
@@ -38,43 +51,16 @@ void bindCompItem(py::module_& m)
         .def_property_readonly("layer", &CompItem::getLayers, py::return_value_policy::reference)
         .def_property_readonly("layers", &CompItem::getLayers, py::return_value_policy::reference)
         .def_property_readonly("numLayers", &CompItem::NumLayers)
+        .def_property("width", &Item::getWidth, &CompItem::setWidth)//ADD TO DOCS
+        .def_property("height", &Item::getHeight, &CompItem::setHeight)//ADD TO DOCS
+        .def_property("duration", &CompItem::getDuration, &CompItem::setDuration)//ADD TO DOCS
+        .def("addSolid", &CompItem::newSolid, py::arg("name") = "New Solid", py::arg("width") = 0,//ADD TO DOCS
+            py::arg("height") = 0, py::arg("red") = 0, py::arg("green") = 0, py::arg("blue") = 0, py::arg("alpha") = 0, py::arg("duration") = 0)
+        .def_property("frameRate",//ADD TO DOCS
+            &CompItem::getFrameRate,
+            &CompItem::setFrameRate)
         .def("addLayer", &CompItem::addLayer, py::arg("name") = "New Layer",
-                            py::arg("path") = NULL, py::arg("index") = -1)
-        // Binding for frameAtTime with memory management
-        .def("frameAtTime", [](CompItem& self, float time) -> py::array_t<uint8_t> {
-        // Get the ImageData object from your API
-        ImageData image_data = self.frameAtTime(time);
-
-        // Get the raw pointer to the vector's data
-        uint8_t* raw_data = image_data.data->data();
-        int height = image_data.height;
-        int width = image_data.width;
-        int channels = image_data.channels;
-
-        // Define a std::function with the deleter
-        auto deleter_func = [data = image_data.data](void* /* owner */) {
-            // The shared_ptr data will be released when the NumPy array is deleted
-        };
-
-        // Convert std::function to a function pointer
-        auto capsule_deleter = new std::function<void(void*)>(deleter_func);
-
-        // Use a lambda that calls the function pointer as the deleter
-        auto capsule_deleter_wrapper = [](void* data) {
-            auto func_ptr = reinterpret_cast<std::function<void(void*)>*>(data);
-            (*func_ptr)(nullptr);
-            delete func_ptr;
-        };
-
-        // Create the NumPy array
-        return py::array_t<uint8_t>(
-            { height, width, channels }, // shape
-            { channels * width * sizeof(uint8_t), channels * sizeof(uint8_t), sizeof(uint8_t) }, // strides
-            raw_data, // the data pointer
-            py::capsule(capsule_deleter, "array_data_capsule", capsule_deleter_wrapper) // the capsule with the deleter
-        );
-            });
-
+            py::arg("path") = NULL, py::arg("index") = -1);
 
 }
 
@@ -97,8 +83,9 @@ void bindProject(py::module_& m)
     py::class_<Project, std::shared_ptr<Project>>(m, "Project")
         .def(py::init<>())
         .def_property_readonly("activeItem", &Project::ActiveItem, py::return_value_policy::reference)
-        .def_readwrite("name", &Project::name)
-        .def_readwrite("path", &Project::path)
+        .def_property_readonly("name", &Project::getName)
+        .def_property_readonly("path", &Project::getPath)
+        .def("saveAs", &Project::saveAs, py::arg("path")) //ADD TO DOCS
         .def("addFolder", &Project::addFolder, py::arg("name") = "New Folder")
         .def("addComp", &Project::addComp, py::arg("name") = "New Comp", py::arg("width") = 1920,
             py::arg("height") = 1080, py::arg("frameRate") = 24.0, py::arg("duration") = 10,

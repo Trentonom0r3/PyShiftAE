@@ -24,127 +24,232 @@ void Item::setName(std::string name) {
 	Result<void> result = message->getResult();
 }
 
-/*
-* This is really only useful for single frame grabs. Should not be ran in a loop.
-* TODO: Add methods for accessing source files, then manipulating those. 
-* This will be done in other classes.
-*
-*/
-ImageData CompItem::frameAtTime(float time) {
-	//get the active item
+float Item::getWidth()
+{
 	auto item = this->itemHandle_;
 	if (item.value == NULL) {
-		throw std::runtime_error("No active item");
-		return ImageData{};
-	}
-	//get the render options for the active item
-	auto& message = enqueueSyncTask(getRenderOptions, item);
+			throw std::runtime_error("No active item");
+			return 0.0f;
+		}
+		auto& message = enqueueSyncTask(GetItemDimensions, item);
 	message->wait();
 
-	//get the result of the render options
-	Result<AEGP_RenderOptionsH> result = message->getResult();
+	Result<size> result = message->getResult();
 
 	if (result.error != A_Err_NONE) {
-		throw std::runtime_error("Error getting render options");
-		return ImageData{};
-	}
-	//set the time of the render options
-	auto& message2 = enqueueSyncTask(setTime, result, time);
-	message2->wait();
+			throw std::runtime_error("Error getting item dimensions");
+			return 0.0f;
+		}
 
-	Result<AEGP_RenderOptionsH> result2 = message2->getResult();
-
-	if (result2.error != A_Err_NONE) {
-		throw std::runtime_error("Error setting time");
-		return ImageData{};
-	}
-	//render and checkout the frame
-	auto& message3 = enqueueSyncTask(renderAndCheckoutFrame, result2);
-	message3->wait();
-
-	Result<AEGP_FrameReceiptH> result3 = message3->getResult();
-
-	if (result3.error != A_Err_NONE) {
-		throw std::runtime_error("Error rendering and checking out frame");
-		return ImageData{};
-	}
-	//get the world from the frame receipt
-	auto& message4 = enqueueSyncTask(getReceiptWorld, result3);
-	message4->wait();
-
-	Result<AEGP_WorldH> result4 = message4->getResult();
-
-	if (result4.error != A_Err_NONE) {
-		throw std::runtime_error("Error getting receipt world");
-		return ImageData{};
-	}
-	//get the base address of the world
-	auto& message5 = enqueueSyncTask(getBaseAddr8, result4);
-	message5->wait();
-
-	Result<PF_Pixel8*> result5 = message5->getResult();
-
-	if (result5.error != A_Err_NONE) {
-		throw std::runtime_error("Error getting base address");
-		return ImageData{};
-	}
-	//get the size of the world
-	auto& message6 = enqueueSyncTask(getSize, result4);
-	message6->wait();
-
-	Result<size> result6 = message6->getResult();
-
-	if (result6.error != A_Err_NONE) {
-		throw std::runtime_error("Error getting size");
-		return ImageData{};
-	}
-	//check in the frame
-	auto& message7 = enqueueSyncTask(checkinFrame, result3);
-	message7->wait();
-
-	Result<void> result7 = message7->getResult();
-
-	if (result7.error != A_Err_NONE) {
-		throw std::runtime_error("Error checking in frame");
-		return ImageData{};
-	}
-	//dispose the render options
-	auto& message8 = enqueueSyncTask(disposeRenderOptions, result2);
-	message8->wait();
-
-	Result<void> result8 = message8->getResult();
-
-	if (result8.error != A_Err_NONE) {
-		throw std::runtime_error("Error disposing render options");
-		return ImageData{};
-	}
-	// Determine the total size of the image data in bytes.
-	size_t dataSize = result6.value.width * result6.value.height * 4;  // Assumes 4 bytes per pixel.
-
-	// Create a vector to hold the image data.
-	std::vector<uint8_t> img(dataSize);
-
-	// Manually copy the data from baseAddr to img.
-	std::memcpy(img.data(), result5.value, dataSize);
-
-	// Convert ARGB (BGRA in memory on little-endian machines) to RGBA.
-
-	for (size_t i = 0; i < dataSize; i += 4) {
-		// Swap the blue (B) and the alpha (A).
-		std::swap(img[i], img[i + 3]);
-		// Swap the green (G) and blue (B).
-		std::swap(img[i + 1], img[i + 2]);
-	}
-
-	// Create an ImageData object to hold the image data and dimensions.
-
-	std::shared_ptr<std::vector<uint8_t>> img_data_ptr = std::make_shared<std::vector<uint8_t>>(std::move(img));
-
-	ImageData image_data{ img_data_ptr, result6.value.width, result6.value.height, 4 };
-
-	return image_data;  // Return the populated ImageData object.
+	return result.value.width;
 }
 
+float Item::getHeight()
+{
+	auto item = this->itemHandle_;
+	if (item.value == NULL) {
+			throw std::runtime_error("No active item");
+			return 0.0f;
+		}
+		auto& message = enqueueSyncTask(GetItemDimensions, item);
+	message->wait();
+
+	Result<size> result = message->getResult();
+
+	if (result.error != A_Err_NONE) {
+			throw std::runtime_error("Error getting item dimensions");
+			return 0.0f;
+		}
+
+	return result.value.height;
+}
+
+float CompItem::getFrameRate()
+{
+auto item = this->itemHandle_;
+	if (item.value == NULL) {
+		throw std::runtime_error("No active item");
+		return 0;
+	}
+	auto& message = enqueueSyncTask(getCompFromItem, item);
+	message->wait();
+
+	Result<AEGP_CompH> result = message->getResult();
+
+	if (result.error != A_Err_NONE) {
+		throw std::runtime_error("Error getting comp from item");
+		return 0;
+	}
+
+	auto& message2 = enqueueSyncTask(GetCompFramerate, result);
+	message2->wait();
+
+	Result<float> result2 = message2->getResult();
+
+	if (result2.error != A_Err_NONE) {
+		throw std::runtime_error("Error getting frame rate");
+		return 0;
+	}
+
+	return result2.value;
+}
+
+void CompItem::setFrameRate(float frameRate)
+{
+auto item = this->itemHandle_;
+	if (item.value == NULL) {
+		throw std::runtime_error("No active item");
+	}
+	auto& message = enqueueSyncTask(getCompFromItem, item);
+	message->wait();
+
+	Result<AEGP_CompH> result = message->getResult();
+
+	if (result.error != A_Err_NONE) {
+		throw std::runtime_error("Error getting comp from item");
+		return;
+	}
+
+	auto& message2 = enqueueSyncTask(SetCompFramerate, result, frameRate);
+	message2->wait();
+
+	Result<void> result2 = message2->getResult();
+
+	if (result2.error != A_Err_NONE) {
+		throw std::runtime_error("Error setting frame rate");
+		return;
+	}
+}
+
+float CompItem::getDuration()
+{
+auto item = this->itemHandle_;
+	if (item.value == NULL) {
+		throw std::runtime_error("No active item");
+		return 0;
+	}
+	auto& message = enqueueSyncTask(getCompFromItem, item);
+	message->wait();
+
+	Result<AEGP_CompH> result = message->getResult();
+
+	if (result.error != A_Err_NONE) {
+		throw std::runtime_error("Error getting comp from item");
+		return 0;
+	}
+
+	auto& message2 = enqueueSyncTask(GetCompWorkAreaDuration, result);
+	message2->wait();
+
+	Result<float> result2 = message2->getResult();
+
+	if (result2.error != A_Err_NONE) {
+		throw std::runtime_error("Error getting duration");
+		return 0;
+	}
+
+	return result2.value;
+}
+
+void CompItem::setDuration(float duration)
+{
+auto item = this->itemHandle_;
+	if (item.value == NULL) {
+		throw std::runtime_error("No active item");
+	}
+	auto& message = enqueueSyncTask(getCompFromItem, item);
+	message->wait();
+
+	Result<AEGP_CompH> result = message->getResult();
+
+	if (result.error != A_Err_NONE) {
+		throw std::runtime_error("Error getting comp from item");
+		return;
+	}
+
+	auto& message2 = enqueueSyncTask(SetCompDuration, result, duration);
+	message2->wait();
+
+	Result<void> result2 = message2->getResult();
+
+	if (result2.error != A_Err_NONE) {
+		throw std::runtime_error("Error setting duration");
+		return;
+	}
+}
+
+void CompItem::setWidth(float width)
+{
+auto item = this->itemHandle_;
+	if (item.value == NULL) {
+		throw std::runtime_error("No active item");
+	}
+	auto& message = enqueueSyncTask(getCompFromItem, item);
+	message->wait();
+
+	Result<AEGP_CompH> result = message->getResult();
+
+	if (result.error != A_Err_NONE) {
+		throw std::runtime_error("Error getting comp from item");
+		return;
+	}
+
+	float height = this->getHeight();
+	auto& message2 = enqueueSyncTask(SetCompDimensions, result, width, height);
+	message2->wait();
+
+	Result<void> result2 = message2->getResult();
+
+	if (result2.error != A_Err_NONE) {
+		throw std::runtime_error("Error setting width");
+		return;
+	}
+}
+
+void CompItem::setHeight(float height)
+{
+auto item = this->itemHandle_;
+	if (item.value == NULL) {
+		throw std::runtime_error("No active item");
+	}
+	auto& message = enqueueSyncTask(getCompFromItem, item);
+	message->wait();
+
+	Result<AEGP_CompH> result = message->getResult();
+
+	if (result.error != A_Err_NONE) {
+		throw std::runtime_error("Error getting comp from item");
+		return;
+	}
+
+	auto& message2 = enqueueSyncTask(SetCompDimensions, result, this->getWidth(), height);
+	message2->wait();
+
+	Result<void> result2 = message2->getResult();
+
+	if (result2.error != A_Err_NONE) {
+		throw std::runtime_error("Error setting height");
+		return;
+	}
+}
+
+Layer CompItem::newSolid(std::string name, float width, float height,float red, float green, float blue, float alpha,
+						float duration)
+{
+	auto item = this->itemHandle_;
+
+	auto& message = enqueueSyncTask(getCompFromItem, item);
+	message->wait();
+
+	Result<AEGP_CompH> result = message->getResult();
+
+	auto& message2 = enqueueSyncTask(CreateSolidInComp, name, width, height, red, green, blue, alpha, result, duration);
+	message2->wait();
+
+	Result<AEGP_LayerH> result2 = message2->getResult();
+
+	return Layer(result2);
+}
 
 std::vector<Layer> CompItem::getLayers()
 {
@@ -369,6 +474,203 @@ void Layer::changeIndex(int index)
 	Result<void> result = message->getResult();
 	return;
 }
+
+Layer Layer::duplicate()
+{
+	auto layer = this->layerHandle_;
+	if (layer.value == NULL) {
+		throw std::runtime_error("No active layer");
+		return Layer(Result<AEGP_LayerH>{});
+	}
+	auto& message = enqueueSyncTask(DuplicateLayer, layer);
+	message->wait();
+
+	Result<AEGP_LayerH> result = message->getResult();
+	return Layer(result);
+}
+
+float Layer::layerTime()
+{
+	auto layer = this->layerHandle_;
+	if (layer.value == NULL) {
+		throw std::runtime_error("No active layer");
+		return 0.0f;
+	}
+	AEGP_LTimeMode time_mode = AEGP_LTimeMode_LayerTime;
+	auto& message = enqueueSyncTask(GetLayerCurrentTime, layer, time_mode);
+	message->wait();
+
+	Result<float> result = message->getResult();
+	return result.value;
+}
+
+float Layer::layerCompTime()
+{
+	auto layer = this->layerHandle_;
+	if (layer.value == NULL) {
+		throw std::runtime_error("No active layer");
+		return 0.0f;
+	}
+	AEGP_LTimeMode time_mode = AEGP_LTimeMode_CompTime;
+	auto& message = enqueueSyncTask(GetLayerCurrentTime, layer, time_mode);
+	message->wait();
+
+	Result<float> result = message->getResult();
+	return result.value;
+}
+
+float Layer::inPoint()
+{
+	auto layer = this->layerHandle_;
+	if (layer.value == NULL) {
+		throw std::runtime_error("No active layer");
+		return 0.0f;
+	}
+	AEGP_LTimeMode time_mode = AEGP_LTimeMode_LayerTime;
+	auto& message = enqueueSyncTask(GetLayerInPoint, layer, time_mode);
+	message->wait();
+
+	Result<float> result = message->getResult();
+	return result.value;
+}
+
+float Layer::compInPoint()
+{
+	auto layer = this->layerHandle_;
+	if (layer.value == NULL) {
+		throw std::runtime_error("No active layer");
+		return 0.0f;
+	}
+	AEGP_LTimeMode time_mode = AEGP_LTimeMode_CompTime;
+	auto& message = enqueueSyncTask(GetLayerInPoint, layer, time_mode);
+	message->wait();
+
+	Result<float> result = message->getResult();
+	return result.value;
+}
+
+float Layer::duration()
+{
+	auto layer = this->layerHandle_;
+	if (layer.value == NULL) {
+		throw std::runtime_error("No active layer");
+		return 0.0f;
+	}
+	AEGP_LTimeMode time_mode = AEGP_LTimeMode_LayerTime;
+	auto& message = enqueueSyncTask(GetLayerDuration, layer, time_mode);
+	message->wait();
+
+	Result<float> result = message->getResult();
+	return result.value;
+}
+
+float Layer::compDuration()
+{
+	auto layer = this->layerHandle_;
+	if (layer.value == NULL) {
+		throw std::runtime_error("No active layer");
+		return 0.0f;
+	}
+	AEGP_LTimeMode time_mode = AEGP_LTimeMode_CompTime;
+	auto& message = enqueueSyncTask(GetLayerDuration, layer, time_mode);
+	message->wait();
+
+	Result<float> result = message->getResult();
+	return result.value;
+}
+
+std::string Layer::getQuality()
+{
+	auto layer = this->layerHandle_;
+	if (layer.value == NULL) {
+		throw std::runtime_error("No active layer");
+		return std::string{};
+	}
+	auto& message = enqueueSyncTask(GetLayerQuality, layer);
+	message->wait();
+
+	Result<std::string> result = message->getResult();
+	return result.value;
+}
+
+void Layer::setQuality(std::string quality)
+{
+	auto layer = this->layerHandle_;
+	if (layer.value == NULL) {
+		throw std::runtime_error("No active layer");
+	}
+	auto& message = enqueueSyncTask(SetLayerQuality, layer, quality);
+	message->wait();
+
+	Result<void> result = message->getResult();
+	return;
+}
+
+void Layer::deleteLayer()
+{
+	auto layer = this->layerHandle_;
+	if (layer.value == NULL) {
+		throw std::runtime_error("No active layer");
+	}
+	auto& message = enqueueSyncTask(DeleteLayer, layer);
+	message->wait();
+
+	Result<void> result = message->getResult();
+	return;
+}
+
+float Layer::getOffset()
+{
+	auto layer = this->layerHandle_;
+	if (layer.value == NULL) {
+		throw std::runtime_error("No active layer");
+		return 0;
+	}
+	auto& message = enqueueSyncTask(GetLayerOffset, layer);
+	message->wait();
+
+	Result<float> result = message->getResult();
+	return result.value;
+}
+
+void Layer::setOffset(float offset)
+{
+	auto layer = this->layerHandle_;
+	if (layer.value == NULL) {
+		throw std::runtime_error("No active layer");
+	}
+	// get parent comp
+	auto& message = enqueueSyncTask(GetLayerParentComp, layer);
+	message->wait();
+
+	Result<AEGP_CompH> result = message->getResult();
+
+	if (result.error != A_Err_NONE) {
+		throw std::runtime_error("Error getting parent comp");
+		return;
+	}
+
+	//get comp frame rate
+	auto& message2 = enqueueSyncTask(GetCompFramerate, result);
+	message2->wait();
+
+	Result<float> result2 = message2->getResult();
+
+	if (result2.error != A_Err_NONE) {
+		throw std::runtime_error("Error getting frame rate");
+		return;
+	}
+
+	float frameRate = result2.value;
+	auto& fmessage = enqueueSyncTask(SetLayerOffset, layer, offset, frameRate);
+	fmessage->wait();
+
+	Result<void> fresult = fmessage->getResult();
+	return;
+}
+
+
+
 
 void FolderItem::addFolder(std::string name)
 {

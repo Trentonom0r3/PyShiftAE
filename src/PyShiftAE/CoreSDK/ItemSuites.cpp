@@ -28,8 +28,13 @@ Result<AEGP_ItemType> getItemType(Result<AEGP_ItemH> item)
 	A_Err err = A_Err_NONE;
 	AEGP_ItemType item_type = AEGP_ItemType_NONE; // Initialize to AEGP_ItemType_NONE in case AEGP_GetItemType fails
 	AEGP_ItemH itemH = item.value;
+	if (!itemH) {
+		throw A_Err_STRUCT; // throw an error if item is null
+	}
 	ERR(suites.ItemSuite9()->AEGP_GetItemType(itemH, &item_type));
-
+	if (err != A_Err_NONE) {
+		throw std::runtime_error("Error getting item type. Error code: " + std::to_string(err));
+	}
 	Result<AEGP_ItemType> result;
 	result.value = item_type; // Set the value to the item type
 	result.error = err;       // Set the error
@@ -45,7 +50,9 @@ Result<std::string>getItemName(Result<AEGP_ItemH> itemH) {
 	std::string name;
 	A_Err err = A_Err_NONE;
 	AEGP_ItemH item = itemH.value;
-
+	if (!item) {
+		throw A_Err_STRUCT; // throw an error if item is null
+	}
 	PT_XTE_START // start of try block
 	{
 		if (!item) {
@@ -66,6 +73,9 @@ Result<std::string>getItemName(Result<AEGP_ItemH> itemH) {
 		// Unlock and dispose of the memory handle
 		PT_ETX(suites.MemorySuite1()->AEGP_UnlockMemHandle(unicode_nameMH));
 		PT_ETX(suites.MemorySuite1()->AEGP_FreeMemHandle(unicode_nameMH));
+	}
+	if (err != A_Err_NONE) {
+		throw std::runtime_error("Error getting item name. Error code: " + std::to_string(err));
 	}
 	std::cout << name << std::endl;
 	Result<std::string> result;
@@ -108,6 +118,10 @@ Result<A_long> getUniqueItemID(Result<AEGP_ItemH> itemH)
 	A_long value = 0;
 	A_long* item_id = &value;
 	AEGP_ItemH item = itemH.value;
+	if (!item) {
+		throw A_Err_STRUCT; // throw an error if item is null
+	}
+
 	ERR(suites.ItemSuite9()->AEGP_GetItemID(item, item_id));
 
 	Result<A_long> result;
@@ -130,7 +144,10 @@ Result<void> createFolderItem(const std::string& name, Result<AEGP_ItemH> parent
 	AEGP_SuiteHandler& suites = SuiteManager::GetInstance().GetSuiteHandler();
 	A_Err err = A_Err_NONE;
 	AEGP_ItemH parent_folderH = parentFolderH.value;
-	AEGP_ItemH new_folderH = NULL;
+	if (!parent_folderH) {
+		throw A_Err_STRUCT; // throw an error if parent folder is null
+	}
+	AEGP_ItemH new_folderH;
 	std::vector<A_UTF16Char> unicode_name = convertUTF8ToUTF16(name);
 	if (unicode_name.empty()) {
 		return Result<void>(A_Err_STRUCT); // Handle conversion error
@@ -157,167 +174,248 @@ Result<void> createFolderItem(const std::string& name, Result<AEGP_ItemH> parent
 	return successResult;
 }
 
-Result<AEGP_ItemH> GetFirstProjItem(AEGP_ProjectH projectH) {
+Result<AEGP_ItemH> GetFirstProjItem(Result<AEGP_ProjectH> projectH) {
 	A_Err err = A_Err_NONE;
-	AEGP_ItemH itemH = nullptr;
+	AEGP_ItemH itemH;
+	AEGP_ProjectH project = projectH.value;
+	if (!project) {
+		throw A_Err_STRUCT; // throw an error if project is null
+	}
 	AEGP_SuiteHandler& suites = SuiteManager::GetInstance().GetSuiteHandler();
 
-	err = suites.ItemSuite9()->AEGP_GetFirstProjItem(projectH, &itemH);
+	err = suites.ItemSuite9()->AEGP_GetFirstProjItem(project, &itemH);
 
 	Result<AEGP_ItemH> result(itemH, err);
 	return result;
 }
 
-Result<AEGP_ItemH> GetNextProjItem(AEGP_ProjectH projectH, AEGP_ItemH currentItem) {
+Result<AEGP_ItemH> GetNextProjItem(Result<AEGP_ProjectH> projectH, Result<AEGP_ItemH> currentItemH) {
 	A_Err err = A_Err_NONE;
-	AEGP_ItemH nextItemH = nullptr;
+	AEGP_ItemH nextItemH;
+	AEGP_ProjectH project = projectH.value;
+	if (!project) {
+	throw A_Err_STRUCT; // throw an error if project is null
+	}
+	AEGP_ItemH currentItem = currentItemH.value;
+	if (!currentItem) {
+	throw A_Err_STRUCT; // throw an error if item is null
+	}
+
 	AEGP_SuiteHandler& suites = SuiteManager::GetInstance().GetSuiteHandler();
 
-	err = suites.ItemSuite9()->AEGP_GetNextProjItem(projectH, currentItem, &nextItemH);
+	err = suites.ItemSuite9()->AEGP_GetNextProjItem(project, currentItem, &nextItemH);
 
 	Result<AEGP_ItemH> result(nextItemH, err);
 	return result;
 }
 
-Result<bool> IsItemSelected(AEGP_ItemH itemH) {
+Result<bool> IsItemSelected(Result<AEGP_ItemH> itemH) {
 	A_Err err = A_Err_NONE;
 	A_Boolean isSelected = FALSE;
 	AEGP_SuiteHandler& suites = SuiteManager::GetInstance().GetSuiteHandler();
+	AEGP_ItemH item = itemH.value;
+	if (!item) {
+		throw A_Err_STRUCT; // throw an error if item is null
+	}
 
-	err = suites.ItemSuite9()->AEGP_IsItemSelected(itemH, &isSelected);
+	err = suites.ItemSuite9()->AEGP_IsItemSelected(item, &isSelected);
 
 	Result<bool> result(static_cast<bool>(isSelected), err);
 	return result;
 }
 
-Result<void> SelectItem(AEGP_ItemH itemH, bool select, bool deselectOthers) {
+Result<void> SelectItem(Result<AEGP_ItemH> itemH, bool select, bool deselectOthers) {
 	A_Err err = A_Err_NONE;
 	AEGP_SuiteHandler& suites = SuiteManager::GetInstance().GetSuiteHandler();
-
-	err = suites.ItemSuite9()->AEGP_SelectItem(itemH, static_cast<A_Boolean>(select), static_cast<A_Boolean>(deselectOthers));
+	AEGP_ItemH item = itemH.value;
+	if (!item) {
+		throw A_Err_STRUCT; // throw an error if item is null
+	}
+	err = suites.ItemSuite9()->AEGP_SelectItem(item, static_cast<A_Boolean>(select), static_cast<A_Boolean>(deselectOthers));
 
 	Result<void> result(err);
 	return result;
 }
 
-Result<AEGP_ItemFlags> GetItemFlags(AEGP_ItemH itemH) {
+Result<AEGP_ItemFlags> GetItemFlags(Result<AEGP_ItemH> itemH) {
 	A_Err err = A_Err_NONE;
 	AEGP_ItemFlags itemFlags;
 	AEGP_SuiteHandler& suites = SuiteManager::GetInstance().GetSuiteHandler();
-
-	err = suites.ItemSuite9()->AEGP_GetItemFlags(itemH, &itemFlags);
+	AEGP_ItemH item = itemH.value;
+	if (!item) {
+		throw A_Err_STRUCT; // throw an error if item is null
+	}
+	err = suites.ItemSuite9()->AEGP_GetItemFlags(item, &itemFlags);
 
 	Result<AEGP_ItemFlags> result(itemFlags, err);
 	return result;
 }
 
-Result<void> SetItemUseProxy(AEGP_ItemH itemH, bool useProxy) {
+Result<void> SetItemUseProxy(Result<AEGP_ItemH> itemH, bool useProxy) {
 	A_Err err = A_Err_NONE;
 	AEGP_SuiteHandler& suites = SuiteManager::GetInstance().GetSuiteHandler();
-
-	err = suites.ItemSuite9()->AEGP_SetItemUseProxy(itemH, static_cast<A_Boolean>(useProxy));
+	AEGP_ItemH item = itemH.value;
+	if (!item) {
+		throw A_Err_STRUCT; // throw an error if item is null
+	}
+	err = suites.ItemSuite9()->AEGP_SetItemUseProxy(item, static_cast<A_Boolean>(useProxy));
 
 	Result<void> result(err);
 	return result;
 }
 
-Result<AEGP_ItemH> GetItemParentFolder(AEGP_ItemH itemH) {
+Result<AEGP_ItemH> GetItemParentFolder(Result<AEGP_ItemH> itemH) {
 	A_Err err = A_Err_NONE;
 	AEGP_ItemH parentItemH = nullptr;
 	AEGP_SuiteHandler& suites = SuiteManager::GetInstance().GetSuiteHandler();
-
-	err = suites.ItemSuite9()->AEGP_GetItemParentFolder(itemH, &parentItemH);
+	AEGP_ItemH item = itemH.value;
+	if (!item) {
+		throw A_Err_STRUCT; // throw an error if item is null
+	}
+	err = suites.ItemSuite9()->AEGP_GetItemParentFolder(item, &parentItemH);
 
 	Result<AEGP_ItemH> result(parentItemH, err);
 	return result;
 }
 
-Result<void> SetItemParentFolder(AEGP_ItemH itemH, AEGP_ItemH parentFolderH) {
+Result<void> SetItemParentFolder(Result<AEGP_ItemH> itemH, Result<AEGP_ItemH> parentFolderH) {
 	A_Err err = A_Err_NONE;
 	AEGP_SuiteHandler& suites = SuiteManager::GetInstance().GetSuiteHandler();
+	AEGP_ItemH item = itemH.value;
+	if (!item) {
+		throw A_Err_STRUCT; // throw an error if item is null
+	}
+	AEGP_ItemH parentFolder = parentFolderH.value;
+	if (!parentFolder) {
+		throw A_Err_STRUCT; // throw an error if parent folder is null
+	}
 
-	err = suites.ItemSuite9()->AEGP_SetItemParentFolder(itemH, parentFolderH);
+	err = suites.ItemSuite9()->AEGP_SetItemParentFolder(item, parentFolder);
 
 	Result<void> result(err);
 	return result;
 }
 
-Result<float> GetItemDuration(AEGP_ItemH itemH) {
+Result<float> GetItemDuration(Result<AEGP_ItemH> itemH) {
 	A_Err err = A_Err_NONE;
 	A_Time duration;
 	AEGP_SuiteHandler& suites = SuiteManager::GetInstance().GetSuiteHandler();
-
-	err = suites.ItemSuite9()->AEGP_GetItemDuration(itemH, &duration);
+	AEGP_ItemH item = itemH.value;
+	if (!item) {
+		throw A_Err_STRUCT; // throw an error if item is null
+	}
+	err = suites.ItemSuite9()->AEGP_GetItemDuration(item, &duration);
 
 	float durationInSeconds = ConvertATimeToFloat(duration);
 	Result<float> result(durationInSeconds, err);
 	return result;
 }
 
-Result<float> GetItemCurrentTime(AEGP_ItemH itemH) {
+Result<float> GetItemCurrentTime(Result<AEGP_ItemH> itemH) {
 	A_Err err = A_Err_NONE;
 	A_Time currTime;
 	AEGP_SuiteHandler& suites = SuiteManager::GetInstance().GetSuiteHandler();
-
-	err = suites.ItemSuite9()->AEGP_GetItemCurrentTime(itemH, &currTime);
+	AEGP_ItemH item = itemH.value;
+	if (!item) {
+		throw A_Err_STRUCT; // throw an error if item is null
+	}
+	err = suites.ItemSuite9()->AEGP_GetItemCurrentTime(item, &currTime);
 
 	float currTimeInSeconds = ConvertATimeToFloat(currTime);
 	Result<float> result(currTimeInSeconds, err);  // Assuming the time is in a format that can be directly cast to float
 	return result;
 }
 
-Result<std::pair<long, long>> GetItemDimensions(AEGP_ItemH itemH) {
+Result<size> GetItemDimensions(Result<AEGP_ItemH> itemH) {
 	A_Err err = A_Err_NONE;
 	A_long width = 0, height = 0;
 	AEGP_SuiteHandler& suites = SuiteManager::GetInstance().GetSuiteHandler();
+	AEGP_ItemH item = itemH.value;
+	if (!item) {
+		throw A_Err_STRUCT; // throw an error if item is null
+	}
+	err = suites.ItemSuite9()->AEGP_GetItemDimensions(item, &width, &height);
 
-	err = suites.ItemSuite9()->AEGP_GetItemDimensions(itemH, &width, &height);
+	float widthInPixels = static_cast<float>(width);
+	float heightInPixels = static_cast<float>(height);
+	size dimensions;
+	dimensions.width = widthInPixels;
+	dimensions.height = heightInPixels;
+	Result<size> result(dimensions, err);
 
-	Result<std::pair<long, long>> result(std::make_pair(width, height), err);
+
 	return result;
+
 }
 
-Result<float> GetItemPixelAspectRatio(AEGP_ItemH itemH) {
+Result<float> GetItemPixelAspectRatio(Result<AEGP_ItemH>itemH) {
 	A_Err err = A_Err_NONE;
 	A_Ratio ratio;
 	AEGP_SuiteHandler& suites = SuiteManager::GetInstance().GetSuiteHandler();
-
-	err = suites.ItemSuite9()->AEGP_GetItemPixelAspectRatio(itemH, &ratio);
+	AEGP_ItemH item = itemH.value;
+	if (!item) {
+		throw A_Err_STRUCT; // throw an error if item is null
+	}
+	err = suites.ItemSuite9()->AEGP_GetItemPixelAspectRatio(item, &ratio);
 
 	Result<float> result(static_cast<float>(ratio.num) / ratio.den, err); // Assuming ratio is a fraction
 	return result;
 }
 
-Result<void> DeleteItem(AEGP_ItemH itemH) {
+Result<void> DeleteItem(Result<AEGP_ItemH> itemH) {
 	A_Err err = A_Err_NONE;
 	AEGP_SuiteHandler& suites = SuiteManager::GetInstance().GetSuiteHandler();
-
-	err = suites.ItemSuite9()->AEGP_DeleteItem(itemH);
+	AEGP_ItemH item = itemH.value;
+	if (!item) {
+		throw A_Err_STRUCT; // throw an error if item is null
+	}
+	err = suites.ItemSuite9()->AEGP_DeleteItem(item);
 
 	Result<void> result(err);
 	return result;
 }
 
 
-Result<void> SetItemCurrentTime(AEGP_ItemH itemH, float time) {
-	A_Err err = A_Err_NONE;
-	A_Time newTime = ConvertFloatToATime(time);
+Result<void> SetItemCurrentTime(Result<AEGP_ItemH> itemH, float time) {
 	AEGP_SuiteHandler& suites = SuiteManager::GetInstance().GetSuiteHandler();
+	A_Time newTime;
+	A_Err err = A_Err_NONE;
+	AEGP_CompH compH;
+	AEGP_ItemH item = itemH.value;
 
-	err = suites.ItemSuite9()->AEGP_SetItemCurrentTime(itemH, &newTime);
+	if (!item) {
+		throw A_Err_STRUCT; // throw an error if item is null
+	}
+
+	ERR(suites.CompSuite11()->AEGP_GetCompFromItem(item, &compH));
+
+	if (err == A_Err_NONE && compH) {
+		A_FpLong frameRate;
+		err = suites.CompSuite11()->AEGP_GetCompFramerate(compH, &frameRate);
+		newTime = ConvertFloatToATime(time, frameRate);
+		err = suites.CompSuite11()->AEGP_SetCompDisplayStartTime(compH, &newTime);
+	}
+	else {
+		A_FpLong frameRate = 0;
+		newTime = ConvertFloatToATime(time, frameRate);
+		err = suites.ItemSuite9()->AEGP_SetItemCurrentTime(item, &newTime);
+	}
 
 	Result<void> result(err);
 	return result;
 }
 
-Result<std::string> GetItemComment(AEGP_ItemH itemH) {
+Result<std::string> GetItemComment(Result<AEGP_ItemH> itemH) {
 	A_Err err = A_Err_NONE;
 	AEGP_MemHandle unicodeNameMH;
 	A_UTF16Char* unicodeNameP;
 	std::string comment;
 	AEGP_SuiteHandler& suites = SuiteManager::GetInstance().GetSuiteHandler();
-
-	err = suites.ItemSuite9()->AEGP_GetItemComment(itemH, &unicodeNameMH);
+	AEGP_ItemH item = itemH.value;
+	if (!item) {
+		throw A_Err_STRUCT; // throw an error if item is null
+	}
+	err = suites.ItemSuite9()->AEGP_GetItemComment(item, &unicodeNameMH);
 	if (err == A_Err_NONE && unicodeNameMH) {
 		suites.MemorySuite1()->AEGP_LockMemHandle(unicodeNameMH, (void**)&unicodeNameP);
 		comment = convertUTF16ToUTF8(unicodeNameP); // Assuming convertUTF16ToUTF8 is implemented
@@ -329,43 +427,55 @@ Result<std::string> GetItemComment(AEGP_ItemH itemH) {
 	return result;
 }
 
-Result<void> SetItemComment(AEGP_ItemH itemH, const std::string& comment) {
+Result<void> SetItemComment(Result<AEGP_ItemH> itemH, const std::string& comment) {
 	A_Err err = A_Err_NONE;
 	AEGP_SuiteHandler& suites = SuiteManager::GetInstance().GetSuiteHandler();
-
-	err = suites.ItemSuite9()->AEGP_SetItemComment(itemH, reinterpret_cast<const A_UTF16Char*>(comment.c_str()));
+	AEGP_ItemH item = itemH.value;
+	if (!item) {
+		throw A_Err_STRUCT; // throw an error if item is null
+	}
+	err = suites.ItemSuite9()->AEGP_SetItemComment(item, reinterpret_cast<const A_UTF16Char*>(comment.c_str()));
 
 	Result<void> result(err);
 	return result;
 }
 
-Result<AEGP_LabelID> GetItemLabel(AEGP_ItemH itemH) {
+Result<AEGP_LabelID> GetItemLabel(Result<AEGP_ItemH> itemH) {
 	A_Err err = A_Err_NONE;
 	AEGP_LabelID label;
 	AEGP_SuiteHandler& suites = SuiteManager::GetInstance().GetSuiteHandler();
-
-	err = suites.ItemSuite9()->AEGP_GetItemLabel(itemH, &label);
+	AEGP_ItemH item = itemH.value;
+	if (!item) {
+		throw A_Err_STRUCT; // throw an error if item is null
+	}
+	err = suites.ItemSuite9()->AEGP_GetItemLabel(item, &label);
 
 	Result<AEGP_LabelID> result(label, err);
 	return result;
 }
 
-Result<void> SetItemLabel(AEGP_ItemH itemH, AEGP_LabelID label) { //INVESTIGATE FURTHER
+Result<void> SetItemLabel(Result<AEGP_ItemH> itemH, AEGP_LabelID label) { //INVESTIGATE FURTHER
 	A_Err err = A_Err_NONE;
 	AEGP_SuiteHandler& suites = SuiteManager::GetInstance().GetSuiteHandler();
-
-	err = suites.ItemSuite9()->AEGP_SetItemLabel(itemH, label);
+	AEGP_ItemH item = itemH.value;
+	if (!item) {
+		throw A_Err_STRUCT; // throw an error if item is null
+	}
+	err = suites.ItemSuite9()->AEGP_SetItemLabel(item, label);
 
 	Result<void> result(err);
 	return result;
 }
 
-Result<AEGP_ItemViewP> GetItemMRUView(AEGP_ItemH itemH) {
+Result<AEGP_ItemViewP> GetItemMRUView(Result<AEGP_ItemH> itemH) {
 	A_Err err = A_Err_NONE;
 	AEGP_ItemViewP mruView;
 	AEGP_SuiteHandler& suites = SuiteManager::GetInstance().GetSuiteHandler();
-
-	err = suites.ItemSuite9()->AEGP_GetItemMRUView(itemH, &mruView);
+	AEGP_ItemH item = itemH.value;
+	if (!item) {
+		throw A_Err_STRUCT; // throw an error if item is null
+	}
+	err = suites.ItemSuite9()->AEGP_GetItemMRUView(item, &mruView);
 
 	Result<AEGP_ItemViewP> result(mruView, err);
 	return result;

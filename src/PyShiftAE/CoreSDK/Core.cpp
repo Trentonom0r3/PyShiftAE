@@ -26,21 +26,28 @@
  *
  */
 
-
-
-A_Time ConvertFloatToATime(float timeInSeconds) {
+ // Convert seconds to A_Time considering the frame rate
+A_Time ConvertFloatToATime(float seconds, float frameRate) {
 	A_Time aTime;
-	aTime.value = static_cast<A_long>(timeInSeconds * 100);  // Assuming 100 as a scale for conversion
-	aTime.scale = 100;
+	float timescale = frameRate * 100;  // Scale based on frame rate
+	aTime.value = static_cast<A_long>(seconds * timescale);
+	aTime.scale = static_cast<A_u_long>(timescale);
 	return aTime;
 }
 
+// Convert A_Time to float (seconds)
 float ConvertATimeToFloat(const A_Time& aTime) {
 	if (aTime.scale == 0) {
 		throw std::runtime_error("Scale cannot be zero in A_Time conversion.");
 	}
 	return static_cast<float>(aTime.value) / static_cast<float>(aTime.scale);
 }
+
+// Convert frame number to A_Time
+A_Time ConvertFrameToATime(int frameNumber, float frameRate) {
+	return ConvertFloatToATime(static_cast<float>(frameNumber) / frameRate, frameRate);
+}
+
 
 std::string convertUTF16ToUTF8(const A_UTF16Char* utf16String) {
 	if (utf16String == nullptr) {

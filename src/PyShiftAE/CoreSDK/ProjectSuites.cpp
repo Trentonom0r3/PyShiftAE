@@ -41,11 +41,18 @@ Result<void> ExecuteCommand(int commandId)
 	return result;
 }
 
-Result<std::string> GetProjectName(AEGP_ProjectH projH) {
+Result<std::string> GetProjectName(Result<AEGP_ProjectH> projH) {
 	A_Err err = A_Err_NONE;
 	char nameZ[AEGP_MAX_PROJ_NAME_SIZE + 1];
 	AEGP_SuiteHandler& suites = SuiteManager::GetInstance().GetSuiteHandler();
-	err = suites.ProjSuite6()->AEGP_GetProjectName(projH, nameZ);
+	AEGP_ProjectH proj = projH.value;
+	if (proj == nullptr) {
+		Result<std::string> result;
+		result.value = "";
+		result.error = err;
+		return result;
+	}
+	err = suites.ProjSuite6()->AEGP_GetProjectName(proj, nameZ);
 
 	Result<std::string> result;
 	if (err != A_Err_NONE) {
@@ -58,14 +65,21 @@ Result<std::string> GetProjectName(AEGP_ProjectH projH) {
 	return result;
 }
 
-Result<std::string> GetProjectPath(AEGP_ProjectH projH) {
+Result<std::string> GetProjectPath(Result<AEGP_ProjectH> projH) {
 	A_Err err = A_Err_NONE;
 	AEGP_MemHandle unicode_pathMH = nullptr;
 	A_UTF16Char* unicode_pathP = nullptr;
 	std::string path;
+	AEGP_ProjectH proj = projH.value;
+	if (proj == nullptr) {
+		Result<std::string> result;
+		result.value = "";
+		result.error = err;
+		return result;
+	}
 	AEGP_SuiteHandler& suites = SuiteManager::GetInstance().GetSuiteHandler();
 
-	err = suites.ProjSuite6()->AEGP_GetProjectPath(projH, &unicode_pathMH);
+	err = suites.ProjSuite6()->AEGP_GetProjectPath(proj, &unicode_pathMH);
 	if (err == A_Err_NONE && unicode_pathMH) {
 		suites.MemorySuite1()->AEGP_LockMemHandle(unicode_pathMH, (void**)&unicode_pathP);
 		path = convertUTF16ToUTF8(unicode_pathP);  // Assuming convertUTF16ToUTF8 is already implemented
@@ -77,28 +91,39 @@ Result<std::string> GetProjectPath(AEGP_ProjectH projH) {
 	return result;
 }
 
-Result<void> SaveProjectToPath(AEGP_ProjectH projH, const std::string& path) {
+Result<void> SaveProjectToPath(Result<AEGP_ProjectH> projH, const std::string& path) {
 	A_Err err = A_Err_NONE;
 	AEGP_SuiteHandler& suites = SuiteManager::GetInstance().GetSuiteHandler();
-
-	err = suites.ProjSuite6()->AEGP_SaveProjectToPath(projH, reinterpret_cast<const A_UTF16Char*>(path.c_str()));
+	AEGP_ProjectH proj = projH.value;
+if (proj == nullptr) {
+		Result<void> result;
+		result.error = err;
+		return result;
+	}
+	err = suites.ProjSuite6()->AEGP_SaveProjectToPath(proj, reinterpret_cast<const A_UTF16Char*>(path.c_str()));
 
 	Result<void> result(err);
 	return result;
 }
 
-Result<AEGP_TimeDisplay3> GetProjectTimeDisplay(AEGP_ProjectH projH) {
+Result<AEGP_TimeDisplay3> GetProjectTimeDisplay(Result<AEGP_ProjectH> projH) {
 	A_Err err = A_Err_NONE;
 	AEGP_TimeDisplay3 time_display;
 	AEGP_SuiteHandler& suites = SuiteManager::GetInstance().GetSuiteHandler();
-
-	err = suites.ProjSuite6()->AEGP_GetProjectTimeDisplay(projH, &time_display);
+	AEGP_ProjectH proj = projH.value;
+	if (proj == nullptr) {
+Result<AEGP_TimeDisplay3> result;
+		result.value = time_display;
+		result.error = err;
+		return result;
+	}
+	err = suites.ProjSuite6()->AEGP_GetProjectTimeDisplay(proj, &time_display);
 
 	Result<AEGP_TimeDisplay3> result(time_display, err);
 	return result;
 }
 
-Result<void> SetProjectTimeDisplay2(AEGP_ProjectH projH,
+Result<void> SetProjectTimeDisplay2(Result<AEGP_ProjectH> projH,
 	const std::string& displayType,
 	int timebase,
 	bool nonDropFrame,
@@ -122,29 +147,46 @@ Result<void> SetProjectTimeDisplay2(AEGP_ProjectH projH,
 	// Now call the SDK function to set the time display
 	A_Err err = A_Err_NONE;
 	AEGP_SuiteHandler& suites = SuiteManager::GetInstance().GetSuiteHandler();
-	err = suites.ProjSuite6()->AEGP_SetProjectTimeDisplay(projH, reinterpret_cast<AEGP_TimeDisplay3*>(&timeDisplay));
+	AEGP_ProjectH proj = projH.value;
+	if (proj == nullptr) {
+		Result<void> result;
+		result.error = err;
+		return result;
+	}
+	err = suites.ProjSuite6()->AEGP_SetProjectTimeDisplay(proj, reinterpret_cast<AEGP_TimeDisplay3*>(&timeDisplay));
 
 	Result<void> result(err);
 	return result;
 }
 
 
-Result<bool> IsProjectDirty(AEGP_ProjectH projH) {
+Result<bool> IsProjectDirty(Result<AEGP_ProjectH> projH) {
 	A_Err err = A_Err_NONE;
 	A_Boolean is_dirty = FALSE;
 	AEGP_SuiteHandler& suites = SuiteManager::GetInstance().GetSuiteHandler();
-
-	err = suites.ProjSuite6()->AEGP_ProjectIsDirty(projH, &is_dirty);
+	AEGP_ProjectH proj = projH.value;
+	if (proj == nullptr) {
+Result<bool> result;
+		result.value = false;
+		result.error = err;
+		return result;
+	}
+	err = suites.ProjSuite6()->AEGP_ProjectIsDirty(proj, &is_dirty);
 
 	Result<bool> result(static_cast<bool>(is_dirty), err);
 	return result;
 }
 
-Result<void> SaveProjectAs(AEGP_ProjectH projH, const std::string& path) {
+Result<void> SaveProjectAs(Result<AEGP_ProjectH> projH, const std::string& path) {
 	A_Err err = A_Err_NONE;
 	AEGP_SuiteHandler& suites = SuiteManager::GetInstance().GetSuiteHandler();
-
-	err = suites.ProjSuite6()->AEGP_SaveProjectAs(projH, reinterpret_cast<const A_UTF16Char*>(path.c_str()));
+	AEGP_ProjectH proj = projH.value;
+	if (proj == nullptr) {
+		Result<void> result;
+		result.error = err;
+		return result;
+	}
+	err = suites.ProjSuite6()->AEGP_SaveProjectAs(proj, reinterpret_cast<const A_UTF16Char*>(path.c_str()));
 
 	Result<void> result(err);
 	return result;
@@ -172,12 +214,18 @@ Result<AEGP_ProjectH> OpenProjectFromPath(const std::string& path) {
 	return result;
 }
 
-Result<std::string> GetProjectBitDepth(AEGP_ProjectH projH) {
+Result<std::string> GetProjectBitDepth(Result<AEGP_ProjectH> projH) {
 	A_Err err = A_Err_NONE;
 	AEGP_ProjBitDepth bit_depth;
 	AEGP_SuiteHandler& suites = SuiteManager::GetInstance().GetSuiteHandler();
-
-	err = suites.ProjSuite6()->AEGP_GetProjectBitDepth(projH, &bit_depth);
+	AEGP_ProjectH proj = projH.value;
+	if (proj == nullptr) {
+		Result<std::string> result;
+		result.value = "";
+		result.error = err;
+		return result;
+	}
+	err = suites.ProjSuite6()->AEGP_GetProjectBitDepth(proj, &bit_depth);
 
 	std::string bitDepthStr;
 	if (bit_depth == AEGP_ProjBitDepth_8) bitDepthStr = "8";
@@ -190,11 +238,17 @@ Result<std::string> GetProjectBitDepth(AEGP_ProjectH projH) {
 }
 
 
-Result<void> SetProjectBitDepth(AEGP_ProjectH projH, std::string bit_depth) {
+Result<void> SetProjectBitDepth(Result<AEGP_ProjectH> projH, std::string bit_depth) {
 	A_Err err = A_Err_NONE;
 	AEGP_SuiteHandler& suites = SuiteManager::GetInstance().GetSuiteHandler();
 	AEGP_ProjBitDepth bitDepth = ConvertToProjBitDepth(bit_depth);
-	err = suites.ProjSuite6()->AEGP_SetProjectBitDepth(projH, bitDepth);
+	AEGP_ProjectH proj = projH.value;
+if (proj == nullptr) {
+		Result<void> result;
+		result.error = err;
+		return result;
+	}
+	err = suites.ProjSuite6()->AEGP_SetProjectBitDepth(proj, bitDepth);
 
 	Result<void> result(err);
 	return result;
