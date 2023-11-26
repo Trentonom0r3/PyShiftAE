@@ -76,8 +76,8 @@ Represents a layer within a composition, providing methods to access and modify 
   - `compInPoint` : (read-only) The in-point of the layer in the composition's time coordinate system.
   - `duration` : (read-only) The duration of the layer.
   - `compDuration` : (read-only) The duration of the layer in the composition's time coordinate system.
-  - `quality` : (read/write) The quality setting of the layer.
-  - `offset` : (read/write) The time offset of the layer. Options of "wireframe", "draft", or "best".
+  - `quality` : (read/write) The quality setting of the layer. Options of "wireframe", "draft", or "best". 
+  - `offset` : (read/write) The time offset of the layer.
 
 - **Methods:**
   - `delete()` : Deletes the layer from the composition.
