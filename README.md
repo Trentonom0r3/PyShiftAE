@@ -14,7 +14,6 @@ ChangeLog will contain a brief description of changes. See Wiki API docs for mor
     
     - Slight modification to `quality` attribute, now takes global attributes of "WIREFRAME", "DRAFT", or "BEST". 
         - ex; layer.quality = BEST
-
 - [11.26.23]
     - Added several attributes and methods to ```Layer``` class. See Docs. 
     - Added ```saveAs``` to ```Project``` Class.
