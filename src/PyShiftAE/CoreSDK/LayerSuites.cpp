@@ -259,16 +259,16 @@ Result<std::string> GetLayerQuality(Result<AEGP_LayerH> layerH)
 
 	std::string qualitystr;
 	if (quality == AEGP_LayerQual_WIREFRAME) {
-		qualitystr = "wireframe";
+		qualitystr = "WIREFRAME";
 	}
 	else if (quality == AEGP_LayerQual_DRAFT) {
-		qualitystr = "draft";
+		qualitystr = "DRAFT";
 	}
 	else if (quality == AEGP_LayerQual_BEST) {
-		qualitystr = "best";
+		qualitystr = "BEST";
 	}
 	else {
-		throw std::runtime_error("Error getting layer quality. Invalid quality: " + quality);
+		qualitystr = "NONE";
 	}
 
 	Result<std::string> result;
@@ -278,7 +278,7 @@ Result<std::string> GetLayerQuality(Result<AEGP_LayerH> layerH)
 	return result;
 }
 
-Result<void> SetLayerQuality(Result<AEGP_LayerH> layerH, std::string qualitystr)
+Result<void> SetLayerQuality(Result<AEGP_LayerH> layerH, int qualityint)
 {
 	AEGP_SuiteHandler& suites = SuiteManager::GetInstance().GetSuiteHandler();
 	A_Err err = A_Err_NONE;
@@ -287,18 +287,7 @@ Result<void> SetLayerQuality(Result<AEGP_LayerH> layerH, std::string qualitystr)
 	if (!layer) {
 		throw A_Err_STRUCT;
 	}
-	if (qualitystr == "wireframe") {
-		quality = AEGP_LayerQual_WIREFRAME;
-	}
-	else if (qualitystr == "draft") {
-		quality = AEGP_LayerQual_DRAFT;
-	}
-	else if (qualitystr == "best") {
-		quality = AEGP_LayerQual_BEST;
-	}
-	else {
-		throw std::runtime_error("Error setting layer quality. Invalid quality: " + quality);
-	}
+	quality = static_cast<AEGP_LayerQuality>(qualityint);
 
 	ERR(suites.LayerSuite9()->AEGP_SetLayerQuality(layer, quality));
 
@@ -317,7 +306,7 @@ Result<AEGP_LayerFlags> GetLayerFlags(Result<AEGP_LayerH> layerH) //DEAL WITH TH
 	if (!layer) {
 		throw A_Err_STRUCT;
 	}
-	ERR(suites.LayerSuite9()->AEGP_GetLayerFlags(layer, &flags));
+	ERR(suites.LayerSuite9()->AEGP_GetLayerFlags(layer, &flags)); //bitwise combination need to make func to split.
 
 	Result<AEGP_LayerFlags> result;
 	result.value = flags;
@@ -326,7 +315,7 @@ Result<AEGP_LayerFlags> GetLayerFlags(Result<AEGP_LayerH> layerH) //DEAL WITH TH
 	return result;
 }
 
-Result<void> SetLayerFlag(Result<AEGP_LayerH> layerH, AEGP_LayerFlags flag, A_Boolean value)  //DEAL WITH THIS LATER
+Result<void> SetLayerFlag(Result<AEGP_LayerH> layerH, LayerFlag flag, A_Boolean value)  //DEAL WITH THIS LATER
 {
 	AEGP_SuiteHandler& suites = SuiteManager::GetInstance().GetSuiteHandler();
 	A_Err err = A_Err_NONE;
@@ -388,9 +377,19 @@ Result<float> GetLayerCurrentTime(Result<AEGP_LayerH> layerH, AEGP_LTimeMode tim
 		throw A_Err_STRUCT;
 	}
 	ERR(suites.LayerSuite9()->AEGP_GetLayerCurrentTime(layer, time_mode, &time));
-
+	AEGP_CompH compH;
+	ERR(suites.LayerSuite9()->AEGP_GetLayerParentComp(layer, &compH));
+	if (err != A_Err_NONE) {
+		throw std::runtime_error("Error getting layer current time. Error code: " + std::to_string(err));
+	}
+	A_FpLong timeH;
+	ERR(suites.CompSuite11()->AEGP_GetCompFramerate(compH, &timeH));
+	if (err != A_Err_NONE) {
+		throw std::runtime_error("Error getting layer current time. Error code: " + std::to_string(err));
+	}
+	float frameRate = ConvertATimeToFloat(time, timeH);
 	Result<float> result;
-	result.value = ConvertATimeToFloat(time);
+	result.value = frameRate;
 	result.error = err;
 
 	return result;
@@ -407,8 +406,19 @@ Result<float> GetLayerInPoint(Result<AEGP_LayerH> layerH, AEGP_LTimeMode time_mo
 	}
 	ERR(suites.LayerSuite9()->AEGP_GetLayerInPoint(layer, time_mode, &time));
 
+	AEGP_CompH compH;
+	ERR(suites.LayerSuite9()->AEGP_GetLayerParentComp(layer, &compH));
+	if (err != A_Err_NONE) {
+		throw std::runtime_error("Error getting layer current time. Error code: " + std::to_string(err));
+	}
+	A_FpLong timeH;
+	ERR(suites.CompSuite11()->AEGP_GetCompFramerate(compH, &timeH));
+	if (err != A_Err_NONE) {
+		throw std::runtime_error("Error getting layer current time. Error code: " + std::to_string(err));
+	}
+	float inPoint = ConvertATimeToFloat(time, timeH);
 	Result<float> result;
-	result.value = ConvertATimeToFloat(time);
+	result.value = inPoint;
 	result.error = err;
 
 	return result;
@@ -424,10 +434,22 @@ Result<float> GetLayerDuration(Result<AEGP_LayerH> layerH, AEGP_LTimeMode time_m
 		throw A_Err_STRUCT;
 	}
 	ERR(suites.LayerSuite9()->AEGP_GetLayerDuration(layer, time_mode, &time));
+	AEGP_CompH compH;
+	ERR(suites.LayerSuite9()->AEGP_GetLayerParentComp(layer, &compH));
+	if (err != A_Err_NONE) {
+		throw std::runtime_error("Error getting layer current time. Error code: " + std::to_string(err));
+	}
+	A_FpLong timeH;
+	ERR(suites.CompSuite11()->AEGP_GetCompFramerate(compH, &timeH));
+	if (err != A_Err_NONE) {
+		throw std::runtime_error("Error getting layer current time. Error code: " + std::to_string(err));
+	}
+	float duration = ConvertATimeToFloat(time, timeH);
 
 	Result<float> result;
-	result.value = ConvertATimeToFloat(time);
+	result.value = duration;
 	result.error = err;
+
 
 	return result;
 }
@@ -463,8 +485,20 @@ Result<float> GetLayerOffset(Result<AEGP_LayerH> layerH)
 	}
 	ERR(suites.LayerSuite9()->AEGP_GetLayerOffset(layer, &offset));
 
+	AEGP_CompH compH;
+	ERR(suites.LayerSuite9()->AEGP_GetLayerParentComp(layer, &compH));
+	if (err != A_Err_NONE) {
+		throw std::runtime_error("Error getting layer current time. Error code: " + std::to_string(err));
+	}
+	A_FpLong timeH;
+	ERR(suites.CompSuite11()->AEGP_GetCompFramerate(compH, &timeH));
+	if (err != A_Err_NONE) {
+		throw std::runtime_error("Error getting layer current time. Error code: " + std::to_string(err));
+	}
+	float offsetH = ConvertATimeToFloat(offset, timeH);
+
 	Result<float> result;
-	result.value = ConvertATimeToFloat(offset);
+	result.value = offsetH;
 	result.error = err;
 
 	return result;
@@ -696,8 +730,20 @@ Result<float> ConvertCompToLayerTime(Result<AEGP_LayerH> layerH, float comp_time
 	A_Time comp_timeA = ConvertFloatToATime(comp_time, 1);
 	ERR(suites.LayerSuite9()->AEGP_ConvertCompToLayerTime(layer, &comp_timeA, &layer_time));
 
+	AEGP_CompH compH;
+	ERR(suites.LayerSuite9()->AEGP_GetLayerParentComp(layer, &compH));
+	if (err != A_Err_NONE) {
+		throw std::runtime_error("Error getting layer current time. Error code: " + std::to_string(err));
+	}
+	A_FpLong timeH;
+	ERR(suites.CompSuite11()->AEGP_GetCompFramerate(compH, &timeH));
+	if (err != A_Err_NONE) {
+		throw std::runtime_error("Error getting layer current time. Error code: " + std::to_string(err));
+	}
+	float layerTime = ConvertATimeToFloat(layer_time, timeH);
+
 	Result<float> result;
-	result.value = ConvertATimeToFloat(layer_time);
+	result.value = layerTime;
 	result.error = err;
 
 	return result;
@@ -716,8 +762,20 @@ Result<float> ConvertLayerToCompTime(Result<AEGP_LayerH> layerH, float layer_tim
 
 	ERR(suites.LayerSuite9()->AEGP_ConvertLayerToCompTime(layer, &layer_timeA, &comp_time));
 
+	AEGP_CompH compH;
+	ERR(suites.LayerSuite9()->AEGP_GetLayerParentComp(layer, &compH));
+	if (err != A_Err_NONE) {
+		throw std::runtime_error("Error getting layer current time. Error code: " + std::to_string(err));
+	}
+	A_FpLong timeH;
+	ERR(suites.CompSuite11()->AEGP_GetCompFramerate(compH, &timeH));
+	if (err != A_Err_NONE) {
+		throw std::runtime_error("Error getting layer current time. Error code: " + std::to_string(err));
+	}
+	float compTime = ConvertATimeToFloat(comp_time, timeH);
+
 	Result<float> result;
-	result.value = ConvertATimeToFloat(comp_time);
+	result.value = compTime;
 	result.error = err;
 
 	return result;

@@ -36,3 +36,10 @@ void App::reportInfo(std::string info) { //should modify to accept string, int, 
 
 	Result<void> result = message->getResult();
 }
+
+void printToPanel(std::string messageH)
+{
+	auto& message = enqueueSyncTask(printToInfoPanel, messageH);
+	message->wait();
+
+}

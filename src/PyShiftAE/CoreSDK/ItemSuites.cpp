@@ -305,10 +305,20 @@ Result<float> GetItemDuration(Result<AEGP_ItemH> itemH) {
 		throw A_Err_STRUCT; // throw an error if item is null
 	}
 	err = suites.ItemSuite9()->AEGP_GetItemDuration(item, &duration);
-
-	float durationInSeconds = ConvertATimeToFloat(duration);
-	Result<float> result(durationInSeconds, err);
-	return result;
+	AEGP_CompH compH;
+	ERR(suites.CompSuite11()->AEGP_GetCompFromItem(item, &compH));
+	if (err == A_Err_NONE && compH) {
+		A_FpLong frameRate;
+		err = suites.CompSuite11()->AEGP_GetCompFramerate(compH, &frameRate);
+		float durationInSeconds = ConvertATimeToFloat(duration, frameRate);
+		Result<float> result(durationInSeconds, err);
+		return result;
+	}
+	else {
+		float durationInSeconds = ConvertATimeToFloat(duration, 0);
+		Result<float> result(durationInSeconds, err);
+		return result;
+	}
 }
 
 Result<float> GetItemCurrentTime(Result<AEGP_ItemH> itemH) {
@@ -320,10 +330,20 @@ Result<float> GetItemCurrentTime(Result<AEGP_ItemH> itemH) {
 		throw A_Err_STRUCT; // throw an error if item is null
 	}
 	err = suites.ItemSuite9()->AEGP_GetItemCurrentTime(item, &currTime);
-
-	float currTimeInSeconds = ConvertATimeToFloat(currTime);
-	Result<float> result(currTimeInSeconds, err);  // Assuming the time is in a format that can be directly cast to float
-	return result;
+	AEGP_CompH compH;
+	ERR(suites.CompSuite11()->AEGP_GetCompFromItem(item, &compH));
+	if (err == A_Err_NONE && compH) {
+		A_FpLong frameRate;
+		err = suites.CompSuite11()->AEGP_GetCompFramerate(compH, &frameRate);
+		float currTimeInSeconds = ConvertATimeToFloat(currTime, frameRate);
+		Result<float> result(currTimeInSeconds, err);
+		return result;
+	}
+	else {
+		float currTimeInSeconds = ConvertATimeToFloat(currTime, 0);
+		Result<float> result(currTimeInSeconds, err);
+		return result;
+	}
 }
 
 Result<size> GetItemDimensions(Result<AEGP_ItemH> itemH) {

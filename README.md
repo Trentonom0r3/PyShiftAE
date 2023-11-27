@@ -4,6 +4,21 @@ PyShiftAE is an experimental, Open Source library designed to transcend the boun
 # ChangeLog
 All Updates should be assumed to come with updated documentation, and updated binary .aex file located in ```dist```, unless otherwise specified. 
 ChangeLog will contain a brief description of changes. See Wiki API docs for more info. 
+
+- [11.27.23]
+    - Added `effects_active`, `frame_blending`, `locked`, `shy`,
+    `collapse`, `auto_orient_rotation`, `adjustment_layer`, `time_remapping`, 
+    `layer_is_3d`, `look_at_camera`, `look_at_poi`, `solo`, `markers_locked`,
+    `null_layer`, `hide_locked_masks`, `guide_layer`, `advanced_frame_blending`, 
+    `sublayers_render_separately`, and `environment_layer` read-write attributes to ```Layer``` class.
+    
+    - Slight modification to `quality` attribute, now takes global attributes of "WIREFRAME", "DRAFT", or "BEST". 
+        - ex; layer.quality = BEST
+
+- [11.26.23]
+    - Added several attributes and methods to ```Layer``` class. See Docs. 
+    - Added ```saveAs``` to ```Project``` Class.
+    - Added ```newSolid``` to ```CompItem``` Class. 
 - [11.22.23]
     - Added ```addLayer``` method to ```CompItem```. 
     - Added ```addFolder```, ```addFootage```, and ```addComp``` to ```Project```.

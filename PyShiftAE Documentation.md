@@ -70,15 +70,37 @@ Represents a layer within a composition, providing methods to access and modify 
   - `name`: (read/write) The name of the layer.
   - `index`: (read/write) The index of the layer within its composition. Changing the index can reorder layers.
   - `sourceName`: (read-only) The source name of the layer.
-  - `time` : (read-only) The current time of the layer in the layer's time coordinate system.
-  - `compTime` : (read-only) The current time of the layer in the composition's time coordinate system.
-  - `inPoint` : (read-only) The in-point of the layer in the layer's time coordinate system.
-  - `compInPoint` : (read-only) The in-point of the layer in the composition's time coordinate system.
-  - `duration` : (read-only) The duration of the layer.
-  - `compDuration` : (read-only) The duration of the layer in the composition's time coordinate system.
-  - `quality` : (read/write) The quality setting of the layer.
-  - `offset` : (read/write) The time offset of the layer. Options of "wireframe", "draft", or "best".
-
+  - `time` : (read-only) The current time of the layer in the layer's time coordinate system. (in seconds) 
+  - `compTime` : (read-only) The current time of the layer in the composition's time coordinate system.  (in seconds)
+  - `inPoint` : (read-only) The in-point of the layer in the layer's time coordinate system.  (in seconds) `
+  - `compInPoint` : (read-only) The in-point of the layer in the composition's time coordinate system.  (in seconds)
+  - `duration` : (read-only) The duration of the layer.  (in seconds)
+  - `compDuration` : (read-only) The duration of the layer in the composition's time coordinate system.  (in seconds)
+  - `quality` : (read/write) The quality setting of the layer. Options of "WIREFRAME", "DRAFT", or "BEST". (layer.quality = BEST, etc)
+  - `startTime` : (read/write) The time offset of the layer.
+  - `video_active`: (read-write) Determines whether the layer's video is active. Setting this to `True` activates the layer's video, and setting it to `False` deactivates it.
+  - `audio_active`: (read-write) Determines whether the layer's audio is active. Setting this to `True` activates the layer's audio, and setting it to `False` deactivates it.
+  - `effects_active`: (read-write) Indicates whether effects on the layer are active. Toggle with `True` or `False`.
+  - `motion_blur`: (read-write) Controls the motion blur setting for the layer. Enable or disable with `True` or `False`.
+  - `frame_blending`: (read-write) Toggles frame blending for the layer. Set to `True` to enable, `False` to disable.
+  - `locked`: (read-write) Lock or unlock the layer. `True` locks the layer, preventing changes, and `False` unlocks it.
+  - `shy`: (read-write) Sets the layer's shy status. `True` makes the layer shy (hidden in the UI), and `False` makes it visible.
+  - `collapse`: (read-write) Toggles the collapse transformation for the layer. Set to `True` to enable, `False` to disable.
+  - `auto_orient_rotation`: (read-write) Controls the auto-orientation towards rotation for the layer. `True` to enable, `False` to disable.
+  - `adjustment_layer`: (read-write) Defines whether the layer is an adjustment layer. Set to `True` for adjustment layer, `False` otherwise.
+  - `time_remapping`: (read-write) Enables or disables time remapping for the layer. `True` to enable, `False` to disable.
+  - `layer_is_3d`: (read-write) Specifies if the layer is a 3D layer. `True` for 3D, `False` for 2D.
+  - `look_at_camera`: (read-write) Determines whether the layer is set to look at the camera. `True` to enable, `False` to disable.
+  - `look_at_poi`: (read-write) Toggles the layer's orientation towards the point of interest. `True` for active, `False` for inactive.
+  - `solo`: (read-write) Toggles the solo status of the layer. `True` solos the layer, `False` unsolos it.
+  - `markers_locked`: (read-write) Controls whether the markers on the layer are locked. `True` locks them, `False` unlocks.
+  - `null_layer`: (read-write) Indicates if the layer is a null object layer. `True` for null layer, `False` otherwise.
+  - `hide_locked_masks`: (read-write) Controls the visibility of locked masks. `True` hides them, `False` shows them.
+  - `guide_layer`: (read-write) Sets the layer as a guide layer. `True` to set as guide, `False` otherwise.
+  - `advanced_frame_blending`: (read-write) Enables or disables advanced frame blending. `True` to enable, `False` to disable.
+  - `sublayers_render_separately`: (read-write) Controls whether sublayers render separately. `True` for separate rendering, `False` for combined.
+  - `environment_layer`: (read-write) Determines if the layer is an environment layer. `True` to set as environment layer, `False` otherwise.
+  
 - **Methods:**
   - `delete()` : Deletes the layer from the composition.
   - `duplicate()` : Creates a duplicate of the layer.
@@ -96,12 +118,8 @@ Represents a composition item, which is a collection of layers.
   - `frameRate`: (read-write) The frame rate of the CompItem.
 
 - **Methods:**
-<<<<<<< HEAD
   - `addLayer(name: str = "New Layer", path: str = NULL, index: int = -1)`: Adds a new layer to the composition with specified parameters.
   - `addSolid(name: str = "New Solid", width: float = 0, height: float = 0, red: float = 0, green: float = 0, blue: float = 0, alpha: float = 0, float: duration = 0)` : Adds a new Solid to the comp with the specified parameters. 
-=======
-  - `addLayer(name: str = "New Layer", path: str = NULL, index: int = -1)`: Adds a new layer to the composition with specified parameters. Added to the top-most layer position, unless index is specified. 
->>>>>>> main
 
 - **Example Usage:**
   ```python
@@ -110,11 +128,7 @@ Represents a composition item, which is a collection of layers.
   comp = app.project.activeItem  # check for the activeItem
 
   if isinstance(comp, CompItem):  # if comp is actually a composition
-<<<<<<< HEAD
       comp.addLayer("name", "C:\\", 2)
-=======
-      comp.addLayer("name", "C:\\", "2)
->>>>>>> main
 
   layers = comp.layers  # get the list of layers
 
