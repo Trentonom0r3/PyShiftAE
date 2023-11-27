@@ -1,5 +1,5 @@
 # PyShiftAE
-PyShiftAE is an experimental, Open Source library designed to transcend the boundaries of the built-in ExtendScript library in Adobe After Effects (AE), heralding a new era of scripting possibilities in AE. By offering a Python library as an alternative to ExtendScript, PyShiftAE not only enriches the existing feature set but simplifies and amplifies the scripting experience.
+Python for After Effects! PyShiftAE is an experimental, Open Source library designed to transcend the boundaries of the built-in ExtendScript library in Adobe After Effects (AE), heralding a new era of scripting possibilities in AE. By offering a Python library as an alternative to ExtendScript, PyShiftAE not only enriches the existing feature set but simplifies and amplifies the scripting experience. PyShiftAE is NOT a wrapper around extendscript. Instead, it is a python library written around the c++ SDK.
 
 # ChangeLog
 All Updates should be assumed to come with updated documentation, and updated binary .aex file located in ```dist```, unless otherwise specified. 
