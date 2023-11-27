@@ -16,3 +16,5 @@ public:
     void reportInfo(std::string info);
 
 };
+
+void printToPanel(std::string message);

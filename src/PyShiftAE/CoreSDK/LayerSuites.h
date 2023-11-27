@@ -30,11 +30,13 @@ Result<AEGP_CompH> GetLayerParentComp(Result<AEGP_LayerH> layerH);
 
 Result<std::string> GetLayerQuality(Result<AEGP_LayerH> layerH);
 
-Result<void> SetLayerQuality(Result<AEGP_LayerH> layerH, std::string qualitystr);
+Result<void> SetLayerQuality(Result<AEGP_LayerH> layerH, int qualityint);
 
+//gets flags for layer, any flags that are true are returned
 Result<AEGP_LayerFlags> GetLayerFlags(Result<AEGP_LayerH> layerH); //DEAL WITH THIS LATER
 
-Result<void> SetLayerFlag(Result<AEGP_LayerH> layerH, AEGP_LayerFlags flag, A_Boolean value);  //DEAL WITH THIS LATER
+// sets flag false or true given user input
+Result<void> SetLayerFlag(Result<AEGP_LayerH> layerH, LayerFlag flag, A_Boolean value);  //DEAL WITH THIS LATER
 
 Result<bool> IsLayerVideoReallyOn(Result<AEGP_LayerH> layerH);
 

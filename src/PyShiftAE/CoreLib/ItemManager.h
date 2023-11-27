@@ -19,10 +19,12 @@ public:
     float duration(); //gets the duration in layer time
     float compDuration(); //gets the duration in comp time
     std::string getQuality();
-    void setQuality(std::string quality);
+    void setQuality(int quality);
     void deleteLayer(); //deletes the layer
     float getOffset();
     void setOffset(float offset);
+    void setFlag(LayerFlag flag, bool value);
+    bool getFlag(LayerFlag flag);
 
 protected:
     Result<AEGP_LayerH> layerHandle_;

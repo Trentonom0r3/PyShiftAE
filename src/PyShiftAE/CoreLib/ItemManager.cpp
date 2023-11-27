@@ -416,6 +416,18 @@ std::string Layer::GetLayerName()
 	auto& message = enqueueSyncTask(getLayerName, layer);
 	message->wait();
 
+	//try to get the layer flags, just as a test
+	auto& message2 = enqueueSyncTask(GetLayerFlags, layer);
+	message2->wait();
+
+	Result<AEGP_LayerFlags> result2 = message2->getResult();
+
+	if (result2.error != A_Err_NONE) {
+		throw std::runtime_error("Error getting layer flags");
+		return std::string{};
+	}
+	AEGP_LayerFlags flags = result2.value;
+
 	Result<std::string> result = message->getResult();
 	return result.value;
 }
@@ -593,11 +605,17 @@ std::string Layer::getQuality()
 	return result.value;
 }
 
-void Layer::setQuality(std::string quality)
+void Layer::setQuality(int quality)
 {
 	auto layer = this->layerHandle_;
 	if (layer.value == NULL) {
 		throw std::runtime_error("No active layer");
+	}
+	if (quality != AEGP_LayerQual_NONE &&
+		quality != AEGP_LayerQual_WIREFRAME &&
+		quality != AEGP_LayerQual_DRAFT &&
+		quality != AEGP_LayerQual_BEST) {
+		throw std::invalid_argument("Invalid quality value");
 	}
 	auto& message = enqueueSyncTask(SetLayerQuality, layer, quality);
 	message->wait();
@@ -669,7 +687,42 @@ void Layer::setOffset(float offset)
 	return;
 }
 
+void Layer::setFlag(LayerFlag flag, bool value)
+{
+	auto layer = this->layerHandle_;
+	if (layer.value == NULL) {
+		throw std::runtime_error("No active layer");
+	}
+	auto& message = enqueueSyncTask(SetLayerFlag, layer, flag, value);
+	message->wait();
 
+	Result<void> result = message->getResult();
+	return;
+}
+
+bool Layer::getFlag(LayerFlag specificFlag)
+{
+	auto layer = this->layerHandle_;
+	if (layer.value == NULL) {
+		throw std::runtime_error("No active layer");
+		return false;
+	}
+
+	auto& message = enqueueSyncTask(GetLayerFlags, layer);
+	message->wait();
+
+	Result<AEGP_LayerFlags> result = message->getResult();
+
+	if (result.error != A_Err_NONE) {
+		throw std::runtime_error("Error getting layer flags");
+		return false;
+	}
+
+	AEGP_LayerFlags combinedFlags = result.value;
+
+	// Check if the specific flag is set in the combined flags
+	return (combinedFlags & specificFlag) != 0;
+}
 
 
 void FolderItem::addFolder(std::string name)

@@ -269,7 +269,9 @@ if (comp == NULL) {
 	}
 	err = suites.CompSuite11()->AEGP_GetCompWorkAreaStart(comp, &start);
 
-	float startTimeInSeconds = ConvertATimeToFloat(start);  // Use the previously defined conversion function
+	A_FpLong frameRate;
+	ERR(suites.CompSuite11()->AEGP_GetCompFramerate(comp, &frameRate));
+	float startTimeInSeconds = ConvertATimeToFloat(start, frameRate);  // Use the previously defined conversion function
 	Result<float> result(startTimeInSeconds, err);
 	return result;
 }
@@ -285,7 +287,9 @@ if (comp == NULL) {
 
 	err = suites.CompSuite11()->AEGP_GetCompWorkAreaDuration(comp, &duration);
 
-	float durationInSeconds = ConvertATimeToFloat(duration);  // Use the previously defined conversion function
+	A_FpLong frameRate;
+	ERR(suites.CompSuite11()->AEGP_GetCompFramerate(comp, &frameRate));
+	float durationInSeconds = ConvertATimeToFloat(duration, frameRate);  // Use the previously defined conversion function
 	Result<float> result(durationInSeconds, err);
 	return result;
 }
@@ -408,9 +412,10 @@ Result<float> GetCompDisplayStartTime(Result<AEGP_CompH> compH) {
 if (comp == NULL) {
 		return Result<float>(0.0, err);
 	}
+	A_FpLong frameRate;
 	err = suites.CompSuite11()->AEGP_GetCompDisplayStartTime(comp, &startTime);
-
-	float startTimeInSeconds = ConvertATimeToFloat(startTime);  // Use the previously defined conversion function
+	ERR(suites.CompSuite11()->AEGP_GetCompFramerate(comp, &frameRate));
+	float startTimeInSeconds = ConvertATimeToFloat(startTime, frameRate);  // Use the previously defined conversion function
 	Result<float> result(startTimeInSeconds, err);
 	return result;
 }
@@ -547,8 +552,10 @@ if (comp == NULL) {
 		return Result<float>(0.0, err);
 	}
 	err = suites.CompSuite11()->AEGP_GetCompFrameDuration(comp, &frameDuration);
+	A_FpLong frameRate;
+	ERR(suites.CompSuite11()->AEGP_GetCompFramerate(comp, &frameRate));
+	float frameDurationInSeconds = ConvertATimeToFloat(frameDuration, frameRate);  // Use the previously defined conversion function
 
-	float frameDurationInSeconds = ConvertATimeToFloat(frameDuration);  // Use the previously defined conversion function
 	Result<float> result(frameDurationInSeconds, err);
 	return result;
 }

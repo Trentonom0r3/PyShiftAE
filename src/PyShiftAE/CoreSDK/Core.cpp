@@ -35,12 +35,16 @@ A_Time ConvertFloatToATime(float seconds, float frameRate) {
 	return aTime;
 }
 
-// Convert A_Time to float (seconds)
-float ConvertATimeToFloat(const A_Time& aTime) {
+float ConvertATimeToFloat(const A_Time& aTime, float frameRate) {
 	if (aTime.scale == 0) {
 		throw std::runtime_error("Scale cannot be zero in A_Time conversion.");
 	}
-	return static_cast<float>(aTime.value) / static_cast<float>(aTime.scale);
+	if (frameRate <= 0) {
+		throw std::runtime_error("Frame rate must be positive in A_Time conversion.");
+	}
+
+	float timeInSeconds = static_cast<float>(aTime.value) / static_cast<float>(aTime.scale);
+	return timeInSeconds * frameRate; // This will give you the frame number as a float
 }
 
 // Convert frame number to A_Time
@@ -82,4 +86,21 @@ AEGP_ProjBitDepth ConvertToProjBitDepth(const std::string& bitDepthStr) {
 	if (bitDepthStr == "16") return AEGP_ProjBitDepth_16;
 	if (bitDepthStr == "32") return AEGP_ProjBitDepth_32;
 	throw std::runtime_error("Invalid bit depth string: " + bitDepthStr);
+}
+
+Result<void> printToInfoPanel(std::string message)
+{
+	AEGP_SuiteHandler& suites = SuiteManager::GetInstance().GetSuiteHandler();
+	A_Err err = A_Err_NONE;
+	A_char* messageZ = const_cast<A_char*>(message.c_str());
+
+	err = suites.UtilitySuite6()->AEGP_WriteToOSConsole(messageZ);
+	if (err) {
+		throw std::runtime_error("Error appending to info panel: " + std::to_string(err));
+	}
+
+	Result<void> result;
+	result.error = err;
+	return result;
+
 }
