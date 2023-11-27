@@ -18,6 +18,7 @@ Contributions from the community are welcome, and I would be pleased to have the
 - Your code should be well-commented with docstrings for classes and methods.
 - Please try to keep your code as clean and straightforward as possible.
 - It would be beneficial to follow common Python conventions and keep a consistent coding style. (On the API exposure side)
+- The Core logic files `Core.h`, `Core.cpp`, `PyCore.h`, `PyCore.cpp`, as well as `Task_Utils.h` provide a large comment block detailing usage guidelines.
 
 #### Testing
 
