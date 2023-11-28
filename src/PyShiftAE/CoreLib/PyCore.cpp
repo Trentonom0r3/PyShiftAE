@@ -84,12 +84,27 @@ void bindLayer(py::module_& m)
 void bindLayerCollection(py::module_& m) {
     py::class_<LayerCollection, std::shared_ptr<LayerCollection>>(m, "LayerCollection")
         .def(py::init<const Result<AEGP_CompH>&, std::vector<Layer>>())
-        //add takes an argument of type Layer
+        .def("__getitem__", [](const LayerCollection& c, size_t i) {
+            if (i >= c.size()) throw py::index_error();
+            return c[i];
+            })
+        .def("__setitem__", [](LayerCollection& c, size_t i, const Layer& l) {
+                if (i >= c.size()) throw py::index_error();
+                c[i] = l;
+             })
+        .def("__len__", [](const LayerCollection& c) { return c.size(); })
         .def("append", &LayerCollection::addLayerToCollection, py::arg("layer"), py::arg("index") = -1, py::return_value_policy::reference)
         .def("insert", &LayerCollection::addLayerToCollection, py::arg("layer"), py::arg("index"), py::return_value_policy::reference)
         .def("remove", &LayerCollection::removeLayerFromCollection, py::arg("layer"), py::return_value_policy::reference)
         .def("pop", &LayerCollection::RemoveLayerByIndex, py::arg("index") = -1, py::return_value_policy::reference)
         .def("getAllLayers", &LayerCollection::getAllLayers);
+}
+
+void bindSolidItem(py::module_& m)
+{
+    py::class_<SolidItem, FootageItem, std::shared_ptr<SolidItem>>(m, "SolidItem")
+        .def(py::init(&SolidItem::createNew), py::arg("name") = "New Solid", py::arg("width") = 0,
+            py::arg("height") = 0, py::arg("red") = 0, py::arg("green") = 0, py::arg("blue") = 0, py::arg("alpha") = 0, py::arg("duration") = 0, py::arg("index") = -1);
 }
 
 
@@ -116,20 +131,15 @@ void bindCompItem(py::module_& m)
             py::arg("frameRate") = 24.0,
             py::arg("duration") = 10,
             py::arg("aspectRatio") = 1.0)
-        .def("getLayers", &CompItem::getLayers, py::return_value_policy::reference)
         .def_property_readonly("layer", &CompItem::getLayers, py::return_value_policy::reference)
         .def_property_readonly("layers", &CompItem::getLayers, py::return_value_policy::reference)
         .def_property_readonly("numLayers", &CompItem::NumLayers)
         .def_property("width", &Item::getWidth, &CompItem::setWidth)
         .def_property("height", &Item::getHeight, &CompItem::setHeight)
         .def_property("duration", &CompItem::getDuration, &CompItem::setDuration)
-        .def("addSolid", &CompItem::newSolid, py::arg("name") = "New Solid", py::arg("width") = 0,
-            py::arg("height") = 0, py::arg("red") = 0, py::arg("green") = 0, py::arg("blue") = 0, py::arg("alpha") = 0, py::arg("duration") = 0)
         .def_property("frameRate",//ADD TO DOCS
             &CompItem::getFrameRate,
-            &CompItem::setFrameRate)
-        .def("addLayer", &CompItem::addLayer, py::arg("name") = "New Layer",
-            py::arg("path") = NULL, py::arg("index") = -1);
+            &CompItem::setFrameRate);
 }
 
 void bindFootageItem(py::module_& m)

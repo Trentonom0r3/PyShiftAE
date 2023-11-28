@@ -417,18 +417,6 @@ std::string Layer::GetLayerName()
 	auto& message = enqueueSyncTask(getLayerName, layer);
 	message->wait();
 
-	//try to get the layer flags, just as a test
-	auto& message2 = enqueueSyncTask(GetLayerFlags, layer);
-	message2->wait();
-
-	Result<AEGP_LayerFlags> result2 = message2->getResult();
-
-	if (result2.error != A_Err_NONE) {
-		throw std::runtime_error("Error getting layer flags");
-		return std::string{};
-	}
-	AEGP_LayerFlags flags = result2.value;
-
 	Result<std::string> result = message->getResult();
 	return result.value;
 }
