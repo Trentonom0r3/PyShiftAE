@@ -97,12 +97,30 @@ public:
 class LayerCollection {
 public:
     explicit LayerCollection(const Result<AEGP_CompH>& compHandle, std::vector<Layer> layers) : compHandle_(compHandle), layers_(layers) {}
+    std::size_t size() const {
+        return layers_.size();
+    }
+
+    Layer& operator[](std::size_t index) {
+        if (index >= layers_.size()) {
+            throw std::out_of_range("Index out of range");
+        }
+        return layers_[index];
+    }
+
+    const Layer& operator[](std::size_t index) const {
+        if (index >= layers_.size()) {
+            throw std::out_of_range("Index out of range");
+        }
+        return layers_[index];
+    }
 
     std::shared_ptr<Layer> addLayerToCollection(Item itemHandle, int index = -1);
     std::shared_ptr<Layer> addSolidToCollection(Item itemHandle, int index = -1);
     void removeLayerFromCollection(Layer layerHandle);
     void RemoveLayerByIndex(int index);
     std::vector<Layer> getAllLayers();
+
 protected:
     Result<AEGP_CompH> compHandle_;
     std::vector<Layer> layers_;
@@ -166,3 +184,35 @@ public:
 
     void addFolder(std::string name);
 };
+
+class SolidItem : public FootageItem {
+public:
+// Constructors and Destructors
+	explicit SolidItem(const Result<AEGP_ItemH>& itemHandle) : FootageItem(itemHandle) {}
+	virtual ~SolidItem() = default;
+
+	static std::shared_ptr<SolidItem> createNew(std::string name, float width, float height, float red, float green, float blue, float alpha, float duration, int index = -1) {
+
+		auto& createfootage = enqueueSyncTask(NewSolidFootage, name, width, height, red, green, blue, alpha);
+		createfootage->wait();
+
+		Result<AEGP_FootageH> createFootage = createfootage->getResult();
+
+		auto& getroot = enqueueSyncTask(getProjectRootFolder);
+		getroot->wait();
+
+		Result<AEGP_ItemH> Root = getroot->getResult();
+
+		auto& addtoproj = enqueueSyncTask(addFootageToProject, createFootage, Root);
+		addtoproj->wait();
+
+		Result<AEGP_ItemH> footageItem = addtoproj->getResult();
+
+		if (footageItem.error != A_Err_NONE) {
+			throw std::runtime_error("Failed to create new footage item");
+			return NULL;
+		}
+
+		return std::make_shared<SolidItem>(footageItem);
+	}
+};;

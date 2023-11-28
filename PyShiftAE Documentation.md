@@ -1,4 +1,5 @@
 
+
 # PyShiftAE Documentation
 
 ## Module: PyShiftCore
@@ -100,8 +101,6 @@ Represents a layer within a composition, providing methods to access and modify 
   - `advanced_frame_blending`: (read-write) Enables or disables advanced frame blending. `True` to enable, `False` to disable.
   - `sublayers_render_separately`: (read-write) Controls whether sublayers render separately. `True` for separate rendering, `False` for combined.
   - `environment_layer`: (read-write) Determines if the layer is an environment layer. `True` to set as environment layer, `False` otherwise.
-  
-=======
   - `time` : (read-only) The current time of the layer in the layer's time coordinate system.
   - `compTime` : (read-only) The current time of the layer in the composition's time coordinate system.
   - `inPoint` : (read-only) The in-point of the layer in the layer's time coordinate system.
@@ -119,7 +118,7 @@ Represents a layer within a composition, providing methods to access and modify 
 
 Represents a composition item, which is a collection of layers.
 - **Constructor:** (When Creating New Items):
-
+  - `CompItem(name: str, height: int, width: int, frameRate: float, duration: float, aspectRatio: float)`
   ```python
   from PyShiftCore import *
   comp = CompItem(name: str, height: int, width: int, frameRate: float, duration: float, aspectRatio: float)
@@ -134,28 +133,6 @@ Represents a composition item, which is a collection of layers.
   - `frameRate`: (read-write) The frame rate of the CompItem.
 
 - **Methods:**
-  - `addLayer(name: str = "New Layer", path: str = NULL, index: int = -1)`: Adds a new layer to the composition with specified parameters.
-  - `addSolid(name: str = "New Solid", width: float = 0, height: float = 0, red: float = 0, green: float = 0, blue: float = 0, alpha: float = 0, float: duration = 0)` : Adds a new Solid to the comp with the specified parameters. 
-
-- **Example Usage:**
-  ```python
-  from PyShiftCore import *
-
-  comp = app.project.activeItem  # check for the activeItem
-
-  if isinstance(comp, CompItem):  # if comp is actually a composition
-      comp.addLayer("name", "C:\\", 2)
-
-  layers = comp.layers  # get the list of layers
-
-  for layer in layers:  
-      app.reportInfo(layer.name)
-      layer.index = -1  # read-write. Change this to reorder the layers. 
-
-  else:
-      app.reportInfo("Select a Composition first!")
-
-  ```
 
 ### Class: `FootageItem` (Inherits from `Item`)
 
@@ -176,7 +153,7 @@ Represents a folder item in a project, allowing organization of various items.
 
 ### Class: `LayerCollection`
 
-A collection of layers within a given composition. Access and usage similar (albeit slightly different) to standard python lists. Possibly Refactoring in the future to better align. 
+A collection of layers within a given composition. Access items just like you would any other list (albeit slightly altered)
 
 - **Methods:**
   - `append(layer: Item)` : Adds a created Item to the comp's layers.
@@ -188,13 +165,21 @@ A collection of layers within a given composition. Access and usage similar (alb
     
     comp = app.project.activeItem
     
-    layers = comp.layers
-
-    layer = layers[0]
+    layer = comp.layers[0]
     
     if layer.name == "some_name":
-      layers.remove(layer)
+      comp.layers.remove(layer)
+
+    for layer in comp.layers:
+      # do something
 
     ```
   - `pop(index: int)` : Removes a layer based on index. If no index is provided, removes the last layer.
 
+
+### Class: `SolidItem`
+
+A Solid Layer.
+
+- **Constructor**:
+  - `SolidItem(name: str, width: float, height: float, red: float, green: float, blue: float, alpha: float, duration: float)`

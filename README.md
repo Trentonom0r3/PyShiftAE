@@ -2,6 +2,7 @@
 Python for After Effects! PyShiftAE is an experimental, Open Source library designed to transcend the boundaries of the built-in ExtendScript library in Adobe After Effects (AE), heralding a new era of scripting possibilities in AE. By offering a Python library as an alternative to ExtendScript, PyShiftAE not only enriches the existing feature set but simplifies and amplifies the scripting experience. PyShiftAE is NOT a wrapper around extendscript. Instead, it is a python library written around the c++ SDK.
 
 ## Contents
+
 - [ChangeLog](#changelog)
 - [Problem Statement](#problem-statement)
 - [Why PyShiftAE?](#why-pyshiftae)
@@ -49,6 +50,33 @@ The ripple effect of PyShiftAE in the AE community could be profound. Scriptwrit
 # ChangeLog
 All Updates should be assumed to come with updated documentation, and an updated binary .aex file located in ```dist```, unless otherwise specified. 
 ChangeLog will contain a brief description of changes. See Wiki API docs for more info. 
+- [11.28.23 [Pt.2]]
+    - Adjusted `LayerCollection` to have getter/setter methods, access as you normally would lists. 
+    - Removed `addLayer` and `addSolid` from `CompItem` in favor of list manipulation.
+    - Started on python stub files `.pyi`, contained under `PyShiftCore.pyi`.
+    - Added `SolidItem` class.
+        -
+        ```python
+        from PyShiftCore import *
+        NAME = "NAME"
+        WIDTH = 1920
+        HEIGHT = 1080
+        RED = 0.55  # Floating Point in range [0.00, 1.00]
+        GREEN = 0.22  # Floating Point in range [0.00, 1.00]
+        BLUE = 0.10  # Floating Point in range [0.00, 1.00]
+        ALPHA = 1.0  # Floating Point in range [0.00, 1.00]
+        DURATION = 10.0  # Floating Point in range [0.00, 1.00]
+        solid = SolidItem(NAME, WIDTH, HEIGHT, RED, GREEN, BLUE, ALPHA, DURATION)
+
+        active_comp_layers = app.project.activeItem.layers
+
+        active_comp_layers.append(solid)
+
+        for layer in active_comp_layers:
+            # TODO: Implement Logic to have the following usage: if isinstance(layer, AVLayer):
+            if layer.name == "NAME":
+                app.reportInfo(layer.name)
+        ```
 - [11.28.23]
     - Added constructors for `CompItem`, `FootageItem`. 
         -
@@ -125,5 +153,4 @@ ChangeLog will contain a brief description of changes. See Wiki API docs for mor
             - This is a bit special. It utilizes a thread safe message queue to wrap the functions.
         -  ```PyUtils``` contains the python init, script running, and embedded module.
     - Overall refactoring to ensure separation of concerns and easier maintainability.
-    - 
-
+   
