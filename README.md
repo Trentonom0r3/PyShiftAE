@@ -3,6 +3,7 @@ Python for After Effects! PyShiftAE is an experimental, Open Source library desi
 
 ## Contents
 
+- [ChangeLog](#changelog)
 - [Problem Statement](#problem-statement)
 - [Why PyShiftAE?](#why-pyshiftae)
 - [Impact](#impact)
@@ -19,7 +20,6 @@ Python for After Effects! PyShiftAE is an experimental, Open Source library desi
     - [Setup](https://github.com/Trentonom0r3/PyShiftAE/blob/main/CONTRIBUTING.md#environment-setup)
     - [Review Process](https://github.com/Trentonom0r3/PyShiftAE/blob/main/CONTRIBUTING.md#review-process)
     - [Acknowledgements](https://github.com/Trentonom0r3/PyShiftAE/blob/main/CONTRIBUTING.md#acknowledgements)
-- [ChangeLog](#changelog)
       
 ### Problem Statement
 ExtendScript, the established scripting language in AE, poses certain limitations particularly around sophisticated tasks such as pixel or audio data manipulation. Its capabilities are somewhat confined, often demanding a transition to the more complex C++ SDK for advanced functionalities.
@@ -48,7 +48,7 @@ The ripple effect of PyShiftAE in the AE community could be profound. Scriptwrit
 - All contributors will be acknowledged in the project repository. Your contributions, no matter how small, are valuable to us and the community.
 
 # ChangeLog
-All Updates should be assumed to come with updated documentation, and updated binary .aex file located in ```dist```, unless otherwise specified. 
+All Updates should be assumed to come with updated documentation, and an updated binary .aex file located in ```dist```, unless otherwise specified. 
 ChangeLog will contain a brief description of changes. See Wiki API docs for more info. 
 - [11.28.23 [Pt.2]]
     - Adjusted `LayerCollection` to have getter/setter methods, access as you normally would lists. 
@@ -153,4 +153,4 @@ ChangeLog will contain a brief description of changes. See Wiki API docs for mor
             - This is a bit special. It utilizes a thread safe message queue to wrap the functions.
         -  ```PyUtils``` contains the python init, script running, and embedded module.
     - Overall refactoring to ensure separation of concerns and easier maintainability.
-    - 
+   
