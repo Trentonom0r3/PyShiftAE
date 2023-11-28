@@ -1,7 +1,7 @@
 #include "CompSuites.h"
 
-Result<void> Addcomp(std::string name, int width,
-					int height, float frameRate, int durationSecs,
+Result<AEGP_CompH> Addcomp(std::string name, float width,
+					float height, float frameRate, float durationSecs,
 					float pixelAspectRatio, Result<AEGP_ItemH> parentFolder) {
 
 	AEGP_SuiteHandler& suites = SuiteManager::GetInstance().GetSuiteHandler(); //initialization checks error. Mutexed, thread safe.
@@ -28,13 +28,15 @@ Result<void> Addcomp(std::string name, int width,
 	}
 
 	if (err != A_Err_NONE) {
-		Result<void> errorResult;
+		Result<AEGP_CompH> errorResult;
+		errorResult.value = NULL;
 		errorResult.error = err;
 		return errorResult; // Return an error result if AEGP_CreateComp fails
 	}
 
 	// If we reach this point, it means everything went well
-	Result<void> successResult;
+	Result<AEGP_CompH> successResult;
+	successResult.value = new_compH;
 	successResult.error = A_Err_NONE;
 	return successResult;
 }

@@ -12,8 +12,8 @@ public:
 
     std::shared_ptr<Item> ActiveItem();
     void addFolder(std::string name);
-    void Project::addComp(std::string name, int width,
-                         int height, float frameRate, int duration, float aspectRatio);
+    Result<AEGP_ItemH> addComp(std::string name, float width,
+        float height, float frameRate, float duration, float aspectRatio);
     Result<AEGP_ItemH> addFootage(std::string path);
 
     std::string getName();

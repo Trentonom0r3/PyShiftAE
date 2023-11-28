@@ -11,6 +11,7 @@ PYBIND11_EMBEDDED_MODULE(PyShiftCore, m) {
     bindApp(m);
     //bind the LayerFlag enum
     bindLayerEnum(m);
+    bindLayerCollection(m);
 }
 
 // Function to initialize the embedded Python interpreter and import the PyShiftCore module.

@@ -4,7 +4,46 @@ Python for After Effects! PyShiftAE is an experimental, Open Source library desi
 # ChangeLog
 All Updates should be assumed to come with updated documentation, and updated binary .aex file located in ```dist```, unless otherwise specified. 
 ChangeLog will contain a brief description of changes. See Wiki API docs for more info. 
+- [11.28.23]
+    - Added constructors for `CompItem`, `FootageItem`. 
+        -
+        ```python
+        from PyShiftCore import *
 
+        # declaring args for clarity
+
+        NAME = "NAME"
+        WIDTH = 1920
+        HEIGHT = 1080
+        FRAMERATE = 24.0
+        DURATION = 10.0
+        ASPECT_RATIO = 1.0
+
+        ITEM_NAME = "TEST"
+        PATH = "C:\\Users\\"
+
+        # get the activeItem
+        comp = app.project.activeItem
+
+        new_comp = CompItem(NAME, WIDTH, HEIGHT, FRAMERATE, DURATION, ASPECT_RATIO) # returns a CompItem for use
+
+        new_item = FootageItem(ITEM_NAME, PATH)
+
+        # add items to the new comp
+        layers = new_comp.layers
+        layers.append(new_item)
+
+        # add the new comp to the activeItem
+        comp.layers.append(new_comp)
+
+        ```
+    - Adjusted `comp.layers/comp.layer` to return a `LayerCollection` object, presented as a standard list.
+        - `append`, `insert`, `remove`, `pop`, all available, but slightly different from standard python.
+            - See API reference.
+    - Adjusted `app.reportInfo()` to take args more gracefully.
+        - Previously, had to create a separate "info_str" arg to pass in.
+        - Now you can simply run something like `app.reportInfo(comp.numLayers)`.
+    
 - [11.27.23]
     - Added `effects_active`, `frame_blending`, `locked`, `shy`,
     `collapse`, `auto_orient_rotation`, `adjustment_layer`, `time_remapping`, 

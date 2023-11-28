@@ -1,5 +1,10 @@
 #include "ItemManager.h"
 
+Result<AEGP_ItemH> Item::getItemHandle()
+{
+return this->itemHandle_;
+}
+
 std::string Item::getName() {
 	auto item = this->itemHandle_;
 	if (item.value == NULL) {
@@ -233,7 +238,7 @@ auto item = this->itemHandle_;
 	}
 }
 
-Layer CompItem::newSolid(std::string name, float width, float height,float red, float green, float blue, float alpha,
+std::shared_ptr<Layer> CompItem::newSolid(std::string name, float width, float height,float red, float green, float blue, float alpha,
 						float duration)
 {
 	auto item = this->itemHandle_;
@@ -248,15 +253,14 @@ Layer CompItem::newSolid(std::string name, float width, float height,float red, 
 
 	Result<AEGP_LayerH> result2 = message2->getResult();
 
-	return Layer(result2);
+	return std::make_shared<Layer>(result2);
 }
 
-std::vector<Layer> CompItem::getLayers()
+std::shared_ptr<LayerCollection> CompItem::getLayers()
 {
 	auto item = this->itemHandle_;
 	if (item.value == NULL) {
 		throw std::runtime_error("No active item");
-		return std::vector<Layer>{};
 	}
 	auto& message = enqueueSyncTask(getCompFromItem, item);
 	message->wait();
@@ -265,7 +269,6 @@ std::vector<Layer> CompItem::getLayers()
 
 	if (result.error != A_Err_NONE) {
 		throw std::runtime_error("Error getting comp from item");
-		return std::vector<Layer>{};
 	}
 
 	auto& message2 = enqueueSyncTask(getNumLayers, result);
@@ -275,7 +278,6 @@ std::vector<Layer> CompItem::getLayers()
 
 	if (result2.error != A_Err_NONE) {
 		throw std::runtime_error("Error getting number of layers");
-		return std::vector<Layer>{};
 	}
 
 	int numLayers = result2.value;
@@ -291,13 +293,12 @@ std::vector<Layer> CompItem::getLayers()
 
 		if (result3.error != A_Err_NONE) {
 			throw std::runtime_error("Error getting layer from comp");
-			return std::vector<Layer>{};
 		}
 
 		layers.push_back(Layer(result3));
 	}
 
-	return layers;
+	return std::make_shared<LayerCollection>(result, layers);
 
 }
 
@@ -487,19 +488,25 @@ void Layer::changeIndex(int index)
 	return;
 }
 
-Layer Layer::duplicate()
+std::shared_ptr<FootageItem> Layer::duplicate()
 {
 	auto layer = this->layerHandle_;
 	if (layer.value == NULL) {
 		throw std::runtime_error("No active layer");
-		return Layer(Result<AEGP_LayerH>{});
 	}
 	auto& message = enqueueSyncTask(DuplicateLayer, layer);
 	message->wait();
 
 	Result<AEGP_LayerH> result = message->getResult();
-	return Layer(result);
+
+	auto& message2 = enqueueSyncTask(getLayerSourceItem, result);
+	message2->wait();
+
+	Result<AEGP_ItemH> result2 = message2->getResult();
+
+	return std::make_shared<FootageItem>(result2);
 }
+
 
 float Layer::layerTime()
 {
@@ -724,6 +731,11 @@ bool Layer::getFlag(LayerFlag specificFlag)
 	return (combinedFlags & specificFlag) != 0;
 }
 
+Result<AEGP_LayerH> Layer::getLayerHandle()
+{
+return this->layerHandle_;
+}
+
 
 void FolderItem::addFolder(std::string name)
 {
@@ -736,4 +748,90 @@ void FolderItem::addFolder(std::string name)
 
 	Result<void> result = message->getResult();
 	return;
+}
+
+void LayerCollection::removeLayerFromCollection(Layer layerHandle)
+{
+	auto& layer = layerHandle.getLayerHandle();
+	if (layer.value == NULL) {
+		throw std::runtime_error("No active layer");
+	}
+	layerHandle.deleteLayer();
+}
+
+void LayerCollection::RemoveLayerByIndex(int index)
+{
+	auto& layers = this->layers_;
+	if (index < 0 || index >= layers.size()) {
+		throw std::invalid_argument("Invalid index");
+	}
+	auto& layer = layers[index];
+
+	layer.deleteLayer();
+
+}
+
+std::vector<Layer> LayerCollection::getAllLayers() {
+	return this->layers_;
+}
+
+std::shared_ptr<Layer> LayerCollection::addLayerToCollection(Item itemHandle, int index) {
+	auto result = itemHandle.getItemHandle();
+	if (result.error != A_Err_NONE) {
+		throw std::runtime_error("Error getting item handle");
+		return std::make_shared<Layer>(Result<AEGP_LayerH>{});
+	}
+
+	auto comp = this->compHandle_;
+	Result<AEGP_CompH> compH = comp;
+	if (compH.value == NULL) {
+		throw std::runtime_error("No active comp");
+		return std::make_shared<Layer>(Result<AEGP_LayerH>{});
+	}
+
+
+	if (compH.error != A_Err_NONE) {
+		throw std::runtime_error("Error getting comp handle");
+		return std::make_shared<Layer>(Result<AEGP_LayerH>{});
+	}
+
+	auto& isValid = enqueueSyncTask(isAddLayerValid, result, compH);
+	isValid->wait();
+
+	Result<bool> isvalid = isValid->getResult();
+
+	if (isvalid.value == false) {
+		throw std::runtime_error("Error adding layer");
+		return std::make_shared<Layer>(Result<AEGP_LayerH>{});
+	}
+
+	if (isvalid.error != A_Err_NONE) {
+		throw std::runtime_error("Error adding layer");
+		return std::make_shared<Layer>(Result<AEGP_LayerH>{});
+	}
+
+	auto& addedLayer = enqueueSyncTask(AddLayer, result, compH);
+
+	addedLayer->wait();
+
+	Result<AEGP_LayerH> newLayer = addedLayer->getResult();
+
+	if (newLayer.error != A_Err_NONE) {
+		throw std::runtime_error("Error adding layer");
+		return std::make_shared<Layer>(Result<AEGP_LayerH>{});
+	}
+
+	if (int(index) != -1) {
+		auto& message6 = enqueueSyncTask(changeLayerIndex, newLayer, index);
+		message6->wait();
+
+		Result<void> result6 = message6->getResult();
+
+		if (result6.error != A_Err_NONE) {
+			throw std::runtime_error("Error changing layer index");
+			return std::make_shared<Layer>(Result<AEGP_LayerH>{});
+		}
+	}
+
+	return std::make_shared<Layer>(newLayer);
 }

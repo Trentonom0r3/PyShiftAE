@@ -1,7 +1,7 @@
 #pragma once
 #include "Core.h"
 
-Result<void> Addcomp(std::string name, int width,int height, float frameRate, int durationSecs,
+Result<AEGP_CompH> Addcomp(std::string name, float width, float height, float frameRate, float durationSecs,
 									  float pixelAspectRatio, Result<AEGP_ItemH> parentFolder);
 
 Result<AEGP_CompH> getCompFromItem(Result<AEGP_ItemH> itemH);
