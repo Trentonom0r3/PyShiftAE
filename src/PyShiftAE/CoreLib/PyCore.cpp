@@ -13,8 +13,6 @@ void bindLayer(py::module_& m)
 {
     py::class_<Layer, std::shared_ptr<Layer>>(m, "Layer")
         .def(py::init<const Result<AEGP_LayerH>&>())
-
-        // PROPERTIES
         .def_property("name", &Layer::GetLayerName, &Layer::SetLayerName)
         .def_property("quality", &Layer::getQuality, &Layer::setQuality)
         .def_property("startTime", &Layer::getOffset, &Layer::setOffset) //CHANGE IN DOCS
@@ -83,6 +81,18 @@ void bindLayer(py::module_& m)
 
 }
 
+void bindLayerCollection(py::module_& m) {
+    py::class_<LayerCollection, std::shared_ptr<LayerCollection>>(m, "LayerCollection")
+        .def(py::init<const Result<AEGP_CompH>&, std::vector<Layer>>())
+        //add takes an argument of type Layer
+        .def("append", &LayerCollection::addLayerToCollection, py::arg("layer"), py::arg("index") = -1, py::return_value_policy::reference)
+        .def("insert", &LayerCollection::addLayerToCollection, py::arg("layer"), py::arg("index"), py::return_value_policy::reference)
+        .def("remove", &LayerCollection::removeLayerFromCollection, py::arg("layer"), py::return_value_policy::reference)
+        .def("pop", &LayerCollection::RemoveLayerByIndex, py::arg("index") = -1, py::return_value_policy::reference)
+        .def("getAllLayers", &LayerCollection::getAllLayers);
+}
+
+
 void bindItem(py::module_& m)
 {
     py::class_<Item, std::shared_ptr<Item>>(m, "Item")
@@ -96,8 +106,17 @@ void bindItem(py::module_& m)
 
 void bindCompItem(py::module_& m)
 {
+    /*
+    static CompItem CreateNew(std::string name, float width, float height, float frameRate, float duration, float aspectRatio) { */
     py::class_<CompItem, Item, std::shared_ptr<CompItem>>(m, "CompItem")
-        .def(py::init<Result<AEGP_ItemH>>())
+        .def(py::init(&CompItem::CreateNew),
+            py::arg("name") = "New Comp",
+            py::arg("width") = 1920,
+            py::arg("height") = 1080,
+            py::arg("frameRate") = 24.0,
+            py::arg("duration") = 10,
+            py::arg("aspectRatio") = 1.0)
+        .def("getLayers", &CompItem::getLayers, py::return_value_policy::reference)
         .def_property_readonly("layer", &CompItem::getLayers, py::return_value_policy::reference)
         .def_property_readonly("layers", &CompItem::getLayers, py::return_value_policy::reference)
         .def_property_readonly("numLayers", &CompItem::NumLayers)
@@ -111,13 +130,12 @@ void bindCompItem(py::module_& m)
             &CompItem::setFrameRate)
         .def("addLayer", &CompItem::addLayer, py::arg("name") = "New Layer",
             py::arg("path") = NULL, py::arg("index") = -1);
-
 }
 
 void bindFootageItem(py::module_& m)
 {
     py::class_<FootageItem, Item, std::shared_ptr<FootageItem>>(m, "FootageItem")
-        .def(py::init<Result<AEGP_ItemH>>());
+        .def(py::init(&FootageItem::createNew), py::arg("name") = "New Layer", py::arg("path") = NULL, py::arg("index") = -1);
 }
 
 void bindFolderItem(py::module_& m)
@@ -151,11 +169,9 @@ void bindApp(py::module_& m)
         .def("beginUndoGroup", &App::beginUndoGroup, py::arg("undo_name") = "Default Undo Group Name")
         .def("endUndoGroup", &App::endUndoGroup)
         .def("reportInfo", [](App& self, py::object info) {
-        // Convert the Python object to a string
-            std::ostringstream oss;
-            oss << info;
-            self.reportInfo(oss.str());
-            }, py::arg("info") = "Hello World");
+        std::string infoStr = py::str(info); // Convert any Python object to a string
+        self.reportInfo(infoStr);
+            }, py::arg("info"));
 
     // Create an instance of App and set it as an attribute of the module
     auto appInstance = std::make_shared<App>();

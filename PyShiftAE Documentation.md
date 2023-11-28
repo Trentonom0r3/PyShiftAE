@@ -108,9 +108,15 @@ Represents a layer within a composition, providing methods to access and modify 
 ### Class: `CompItem` (Inherits from `Item`)
 
 Represents a composition item, which is a collection of layers.
+- **Constructor:** (When Creating New Items):
 
+  ```python
+  from PyShiftCore import *
+  comp = CompItem(name: str, height: int, width: int, frameRate: float, duration: float, aspectRatio: float)
+  ```
 - **Attributes:**
-  - `layers`: (read-only) A list of all layer objects in the composition.
+  - `layers`: (read-write) `LayerCollection` object, accessed as a list. See `LayerCollection` for more info.
+
   - `numLayers`: (read-only) The number of layers in the composition.
   - `width`: (read-write) The width of the CompItem.
   - `height`: (read-write) The height of the CompItem.
@@ -143,7 +149,13 @@ Represents a composition item, which is a collection of layers.
 
 ### Class: `FootageItem` (Inherits from `Item`)
 
-Represents a footage item in a project.
+- **Constructor:**
+  - `name: str`, `path: str`
+  ```python
+  from PyShiftCore import *
+  new_item = FootageItem("name", "C:\\")
+  
+  ```
 
 ### Class: `FolderItem` (Inherits from `Item`)
 
@@ -151,3 +163,28 @@ Represents a folder item in a project, allowing organization of various items.
 
 - **Methods:**
   - `addFolder(name: str = "New Folder")`: Adds a new folder to the project.
+
+### Class: `LayerCollection`
+
+A collection of layers within a given composition. Access and usage similar (albeit slightly different) to standard python lists. Possibly Refactoring in the future to better align. 
+
+- **Methods:**
+  - `append(layer: Item)` : Adds a created Item to the comp's layers.
+  - `insert(layer: Item, index: int)` : Adds a created item to the comp's layers at the specified index.
+  - `remove(layer: Layer)` : Removes a layer given a layer object.
+    -
+    ```python
+    from PyShiftCore import *
+    
+    comp = app.project.activeItem
+    
+    layers = comp.layers
+
+    layer = layers[0]
+    
+    if layer.name == "some_name":
+      layers.remove(layer)
+
+    ```
+  - `pop(index: int)` : Removes a layer based on index. If no index is provided, removes the last layer.
+

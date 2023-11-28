@@ -20,3 +20,4 @@ void bindProject(py::module_& m);
 void bindApp(py::module_& m);
 void bindLayer(py::module_& m);
 void bindLayerEnum(py::module_& m);
+void bindLayerCollection(py::module_& m);

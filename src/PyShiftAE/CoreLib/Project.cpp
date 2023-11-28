@@ -37,7 +37,7 @@ void Project::addFolder(std::string name)
 }
 
 
-void Project::addComp(std::string name, int width, int height, float frameRate, int duration, float aspectRatio)
+Result<AEGP_ItemH> Project::addComp(std::string name, float width, float height, float frameRate, float duration, float aspectRatio)
 {
 	Result<AEGP_ItemH> itemHandle;
 	itemHandle.value = NULL;
@@ -46,7 +46,14 @@ void Project::addComp(std::string name, int width, int height, float frameRate, 
 	auto& message = enqueueSyncTask(Addcomp, name, width, height, frameRate, duration, aspectRatio, itemHandle); //passing NULL as last argument creates comp in root directory
 	message->wait();
 
-	Result<void> result = message->getResult();
+	Result<AEGP_CompH> result = message->getResult();
+
+	auto& message2 = enqueueSyncTask(GetItemFromComp, result);
+	message2->wait();
+
+	Result<AEGP_ItemH> result2 = message2->getResult();
+
+	return result2;
 }
 
 Result<AEGP_ItemH> Project::addFootage(std::string path)
