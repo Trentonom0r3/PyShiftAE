@@ -47,7 +47,7 @@ The ripple effect of PyShiftAE in the AE community could be profound. Scriptwrit
 - All contributors will be acknowledged in the project repository. Your contributions, no matter how small, are valuable to us and the community.
 
 # ChangeLog
-All Updates should be assumed to come with updated documentation, and updated binary .aex file located in ```dist```, unless otherwise specified. 
+All Updates should be assumed to come with updated documentation, and an updated binary .aex file located in ```dist```, unless otherwise specified. 
 ChangeLog will contain a brief description of changes. See Wiki API docs for more info. 
 - [11.28.23]
     - Added constructors for `CompItem`, `FootageItem`. 
