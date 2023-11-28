@@ -100,8 +100,6 @@ Represents a layer within a composition, providing methods to access and modify 
   - `advanced_frame_blending`: (read-write) Enables or disables advanced frame blending. `True` to enable, `False` to disable.
   - `sublayers_render_separately`: (read-write) Controls whether sublayers render separately. `True` for separate rendering, `False` for combined.
   - `environment_layer`: (read-write) Determines if the layer is an environment layer. `True` to set as environment layer, `False` otherwise.
-  
-=======
   - `time` : (read-only) The current time of the layer in the layer's time coordinate system.
   - `compTime` : (read-only) The current time of the layer in the composition's time coordinate system.
   - `inPoint` : (read-only) The in-point of the layer in the layer's time coordinate system.
