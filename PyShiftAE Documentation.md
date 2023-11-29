@@ -1,4 +1,5 @@
 
+
 # PyShiftAE Documentation
 
 ## Module: PyShiftCore
@@ -173,6 +174,7 @@ Represents a collection of items.
   - `append(item: Item)` **->** List[Item]: Adds an item to the item collection. Returns the Item Collection as a list. 
   - `remove(item: Item)` **->** List[Item]: Removes an item from the item collection. Returns the Item Collection as a list.
 
+<<<<<<< HEAD
 - **Usage Notes:**
   - It is necessary to assign the collection to a new variable.
 
@@ -220,3 +222,7 @@ Represents a layer within a composition, providing methods to access and modify 
 - **Methods:**
   - `delete()` : Deletes the layer from the composition.
   - `duplicate()` **->** `FootageItem`: Creates a duplicate of the layer.
+=======
+- **Constructor**:
+  - `SolidItem(name: str, width: float, height: float, red: float, green: float, blue: float, alpha: float, duration: float)`
+>>>>>>> 7d63db855842dad49d4f9834521677b831d74497
