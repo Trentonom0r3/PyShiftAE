@@ -28,55 +28,6 @@ std::shared_ptr<Item> Project::ActiveItem() {
 
 }
 
-void Project::addFolder(std::string name)
-{
-	auto& message = enqueueSyncTask(createFolderItem, name, NULL); //passing NULL as first argument creates folder in root directory
-	message->wait();
-
-	Result<void> result = message->getResult();
-}
-
-
-Result<AEGP_ItemH> Project::addComp(std::string name, float width, float height, float frameRate, float duration, float aspectRatio)
-{
-	Result<AEGP_ItemH> itemHandle;
-	itemHandle.value = NULL;
-	itemHandle.error = A_Err_NONE;
-
-	auto& message = enqueueSyncTask(Addcomp, name, width, height, frameRate, duration, aspectRatio, itemHandle); //passing NULL as last argument creates comp in root directory
-	message->wait();
-
-	Result<AEGP_CompH> result = message->getResult();
-
-	auto& message2 = enqueueSyncTask(GetItemFromComp, result);
-	message2->wait();
-
-	Result<AEGP_ItemH> result2 = message2->getResult();
-
-	return result2;
-}
-
-Result<AEGP_ItemH> Project::addFootage(std::string path)
-{
-	//sanitizePath(path);
-	auto& message = enqueueSyncTask(createFootage,path);
-	message->wait();
-
-	Result<AEGP_FootageH> result = message->getResult();
-
-	auto& message2 = enqueueSyncTask(getProjectRootFolder);
-	message2->wait();
-
-	Result<AEGP_ItemH> result2 = message2->getResult();
-
-	auto& message3 = enqueueSyncTask(addFootageToProject, result, result2);
-	message3->wait();
-
-	Result<AEGP_ItemH> result3 = message3->getResult();
-
-	return result3;
-}
-
 std::string Project::getName()
 {
 	auto proj = this->projH_;
@@ -109,3 +60,93 @@ void Project::saveAs(std::string path)
 	Result<void> result = message->getResult();
 }
 
+std::shared_ptr<ProjectCollection> Project::ChildItems()
+{
+	auto& message = enqueueSyncTask(getProject);
+	message->wait();
+
+	Result<AEGP_ProjectH> projH = message->getResult();
+
+	if (projH.error != A_Err_NONE) {
+		throw std::runtime_error("Error getting project");
+	}
+	if (projH.value == NULL) {
+		throw std::runtime_error("No active project");
+	}
+
+	ProjectCollection collection(projH);
+
+	return std::make_shared<ProjectCollection>(collection);
+
+}
+
+std::vector<std::shared_ptr<Item>> ProjectCollection::getItems()
+{
+	std::vector<std::shared_ptr<Item>> items;
+	auto& itemResult = enqueueSyncTask(getProjectRootFolder);
+	itemResult->wait();
+	Result<AEGP_ItemH> itemhandle = itemResult->getResult();
+
+	// Check if the current folder item is valid
+	if (itemhandle.value == NULL) {
+		throw std::runtime_error("No active item");
+	}
+
+	// Get the project handle
+	auto& projectMessage = enqueueSyncTask(getProject);
+	projectMessage->wait();
+	Result<AEGP_ProjectH> projectResult = projectMessage->getResult();
+	if (projectResult.error != A_Err_NONE) {
+		throw std::runtime_error("Error getting project");
+	}
+
+	// Start with the first project item
+	auto& itemMessage = enqueueSyncTask(GetFirstProjItem, projectResult);
+	itemMessage->wait();
+	Result<AEGP_ItemH> currentItemResult = itemMessage->getResult();
+	if (currentItemResult.error != A_Err_NONE) {
+		throw std::runtime_error("Error getting first project item");
+	}
+
+	while (currentItemResult.value != NULL) {
+		// Check if the current item is a child of the folder
+		auto& message = enqueueSyncTask(GetItemParentFolder, currentItemResult);
+		message->wait();
+
+		Result<AEGP_ItemH> parentItemH = message->getResult();
+
+		if (parentItemH.value == itemhandle.value) {
+			// Get the type of the current item
+			auto& typeMessage = enqueueSyncTask(getItemType, currentItemResult);
+			typeMessage->wait();
+			Result<AEGP_ItemType> itemTypeResult = typeMessage->getResult();
+			if (itemTypeResult.error != A_Err_NONE) {
+				throw std::runtime_error("Error getting item type");
+			}
+
+			// Add the current item to the list based on its type
+			switch (itemTypeResult.value) {
+			case AEGP_ItemType_FOLDER:
+				items.push_back(std::make_shared<FolderItem>(currentItemResult));
+				break;
+			case AEGP_ItemType_FOOTAGE:
+				items.push_back(std::make_shared<FootageItem>(currentItemResult));
+				break;
+			case AEGP_ItemType_COMP:
+				items.push_back(std::make_shared<CompItem>(currentItemResult));
+				break;
+				// Handle other types as needed
+			}
+		}
+
+		// Get the next project item
+		auto& nextItemMessage = enqueueSyncTask(GetNextProjItem, projectResult, currentItemResult);
+		nextItemMessage->wait();
+		currentItemResult = nextItemMessage->getResult();
+		if (currentItemResult.error != A_Err_NONE) {
+			throw std::runtime_error("Error getting next project item");
+		}
+	}
+
+	return items;
+}

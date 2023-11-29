@@ -17,8 +17,6 @@ void bindLayer(py::module_& m)
         .def_property("quality", &Layer::getQuality, &Layer::setQuality)
         .def_property("startTime", &Layer::getOffset, &Layer::setOffset) //CHANGE IN DOCS
         .def_property("index", &Layer::index, &Layer::changeIndex)
-
-        //ADD TO DOCS
         .def_property("video_active", [](Layer& self) {return self.getFlag(LayerFlag::VIDEO_ACTIVE); },
             			[](Layer& self, bool value) {self.setFlag(LayerFlag::VIDEO_ACTIVE, value); })
         .def_property("audio_active", [](Layer& self) {return self.getFlag(LayerFlag::AUDIO_ACTIVE); },
@@ -63,8 +61,6 @@ void bindLayer(py::module_& m)
             																												[](Layer& self, bool value) {self.setFlag(LayerFlag::SUBLAYERS_RENDER_SEPARATELY, value); })
         .def_property("environment_layer", [](Layer& self) {return self.getFlag(LayerFlag::ENVIRONMENT_LAYER); },
             				[](Layer& self, bool value) {self.setFlag(LayerFlag::ENVIRONMENT_LAYER, value); })
-        
-        //ADD TO DOCS
 
         .def_property_readonly("sourceName", &Layer::GetSourceName)
         .def_property_readonly("time", &Layer::layerTime) 
@@ -85,14 +81,27 @@ void bindLayerCollection(py::module_& m) {
     py::class_<LayerCollection, std::shared_ptr<LayerCollection>>(m, "LayerCollection")
         .def(py::init<const Result<AEGP_CompH>&, std::vector<Layer>>())
         .def("__getitem__", [](const LayerCollection& c, size_t i) {
-            if (i >= c.size()) throw py::index_error();
-            return c[i];
+            size_t index = i;
+            if (i < 0) {
+                // Convert negative index to positive
+                index = c.size() + i;
+            }
+            if (index >= c.size() || index < 0) throw py::index_error(); // Check for out-of-range
+            return c[index];
             })
         .def("__setitem__", [](LayerCollection& c, size_t i, const Layer& l) {
                 if (i >= c.size()) throw py::index_error();
                 c[i] = l;
              })
         .def("__len__", [](const LayerCollection& c) { return c.size(); })
+        .def("__iter__", [](LayerCollection& c) {
+        return py::make_iterator(c.begin(), c.end());
+            })
+           //define __str__ method, which gets the comp name for the collection
+        .def("__str__", [](LayerCollection& c) {
+            return c.getCompName();
+            })
+
         .def("append", &LayerCollection::addLayerToCollection, py::arg("layer"), py::arg("index") = -1, py::return_value_policy::reference)
         .def("insert", &LayerCollection::addLayerToCollection, py::arg("layer"), py::arg("index"), py::return_value_policy::reference)
         .def("remove", &LayerCollection::removeLayerFromCollection, py::arg("layer"), py::return_value_policy::reference)
@@ -117,6 +126,27 @@ void bindItem(py::module_& m)
         .def_property("name",
             &Item::getName,
             &Item::setName);
+}
+
+void bindItemCollection(py::module_& m) {
+    py::class_<ItemCollection, std::shared_ptr<ItemCollection>>(m, "ItemCollection")
+        .def(py::init<const Result<AEGP_ItemH>&>())
+        .def("__getitem__", [](const ItemCollection& c, int i) { // Use int instead of size_t
+        size_t index = i;
+        if (i < 0) {
+            // Convert negative index to positive
+            index = c.size() + i;
+        }
+        if (index >= c.size() || index < 0) throw py::index_error(); // Check for out-of-range
+        return c[index];
+            })
+
+        .def("__len__", [](const ItemCollection& c) { return c.size(); })
+         .def("__iter__", [](ItemCollection& c) {
+                return py::make_iterator(c.begin(), c.end());
+                    })
+        .def("append", &ItemCollection::append, py::arg("Item"), py::return_value_policy::reference)
+        .def("remove", &ItemCollection::remove, py::arg("Item"), py::return_value_policy::reference);
 }
 
 void bindCompItem(py::module_& m)
@@ -148,13 +178,34 @@ void bindFootageItem(py::module_& m)
         .def(py::init(&FootageItem::createNew), py::arg("name") = "New Layer", py::arg("path") = NULL, py::arg("index") = -1);
 }
 
+void bindProjectCollection(py::module_& m) {
+    py::class_<ProjectCollection, std::shared_ptr<ProjectCollection>>(m, "ProjectCollection")
+        .def(py::init<const Result<AEGP_ProjectH>&>())
+        .def("__getitem__", [](const ProjectCollection& c, size_t i) {
+        size_t index = i;
+        if (i < 0) {
+            // Convert negative index to positive
+            index = c.size() + i;
+        }
+        if (index >= c.size() || index < 0) throw py::index_error(); // Check for out-of-range
+        return c[index];
+            })
+        .def("__len__", [](const ProjectCollection& c) { return c.size(); })
+                .def("__iter__", [](ProjectCollection& c) {
+                return py::make_iterator(c.begin(), c.end());
+                    })
+        .def("append", &ProjectCollection::append, py::arg("item"), py::return_value_policy::reference)
+        .def("remove", &ProjectCollection::remove, py::arg("item"), py::return_value_policy::reference);
+}
+
 void bindFolderItem(py::module_& m)
 {
     py::class_<FolderItem, Item, std::shared_ptr<FolderItem>>(m, "FolderItem")
-        .def(py::init<Result<AEGP_ItemH>>())
-        .def("addFolder", &FolderItem::addFolder, py::arg("name") = "New Folder");
+        .def(py::init(&FolderItem::createNew), py::arg("name") = "New Folder")
+        .def_property_readonly("children", &FolderItem::ChildItems, py::return_value_policy::reference);
 
 }
+
 
 void bindProject(py::module_& m)
 {
@@ -163,12 +214,9 @@ void bindProject(py::module_& m)
         .def_property_readonly("activeItem", &Project::ActiveItem, py::return_value_policy::reference)
         .def_property_readonly("name", &Project::getName)
         .def_property_readonly("path", &Project::getPath)
-        .def("saveAs", &Project::saveAs, py::arg("path")) 
-        .def("addFolder", &Project::addFolder, py::arg("name") = "New Folder")
-        .def("addComp", &Project::addComp, py::arg("name") = "New Comp", py::arg("width") = 1920,
-            py::arg("height") = 1080, py::arg("frameRate") = 24.0, py::arg("duration") = 10,
-            py::arg("aspectRatio") = 1.0)
-        .def("addFootage", &Project::addFootage, py::arg("path") = "C:\\");
+        .def_property_readonly("items", &Project::ChildItems, py::return_value_policy::reference)
+        .def("saveAs", &Project::saveAs, py::arg("path"));
+
 }
 
 void bindApp(py::module_& m)
@@ -191,6 +239,13 @@ void bindApp(py::module_& m)
 
 void bindLayerEnum(py::module_& m)
 {
+    py::enum_<qualityOptions>(m,"Quality")
+		.value("BEST", qualityOptions::BEST)
+		.value("DRAFT", qualityOptions::DRAFT)
+		.value("WIREFRAME", qualityOptions::WIREFRAME)
+        .value("NONE", qualityOptions::NONE)
+        .export_values();
+
     py::enum_<LayerFlag>(m, "LayerFlag")
 		.value("VIDEO_ACTIVE", LayerFlag::VIDEO_ACTIVE)
 		.value("AUDIO_ACTIVE", LayerFlag::AUDIO_ACTIVE)

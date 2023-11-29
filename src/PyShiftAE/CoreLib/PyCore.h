@@ -22,3 +22,5 @@ void bindLayer(py::module_& m);
 void bindLayerEnum(py::module_& m);
 void bindLayerCollection(py::module_& m);
 void bindSolidItem(py::module_& m);
+void bindProjectCollection(py::module_& m);
+void bindItemCollection(py::module_& m);
