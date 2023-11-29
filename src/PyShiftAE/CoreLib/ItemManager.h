@@ -10,6 +10,14 @@ class CompItem;
 class FootageItem;
 class FolderItem;
 
+enum qualityOptions {
+    BEST = AEGP_LayerQual_BEST,
+    DRAFT = AEGP_LayerQual_DRAFT,
+    WIREFRAME = AEGP_LayerQual_WIREFRAME,
+    NONE = AEGP_LayerQual_NONE
+};
+
+
 class Layer {
 public:
     explicit Layer(const Result<AEGP_LayerH>& layerHandle) : layerHandle_(layerHandle) {}
@@ -114,12 +122,15 @@ public:
         }
         return layers_[index];
     }
-
+    // Iterator-related methods
+    std::vector<Layer>::iterator begin() { return layers_.begin(); }
+    std::vector<Layer>::iterator end() { return layers_.end(); }
     std::shared_ptr<Layer> addLayerToCollection(Item itemHandle, int index = -1);
     std::shared_ptr<Layer> addSolidToCollection(Item itemHandle, int index = -1);
     void removeLayerFromCollection(Layer layerHandle);
     void RemoveLayerByIndex(int index);
     std::vector<Layer> getAllLayers();
+    std::string getCompName();
 
 protected:
     Result<AEGP_CompH> compHandle_;
@@ -176,15 +187,96 @@ public:
     }
 };
 
+class ItemCollection {
+public:
+    explicit ItemCollection(const Result<AEGP_ItemH>& itemHandle) : itemHandle_(itemHandle) {
+        items_ = ItemCollection::getItems();
+    }
+
+    std::vector<std::shared_ptr<Item>> getItems();
+
+    std::size_t size() const {
+        return items_.size();
+    }
+
+    Item& operator[](std::size_t index) {
+        if (index >= items_.size()) {
+            throw std::out_of_range("Index out of range");
+        }
+        return *items_[index];
+    }
+
+    const Item& operator[](std::size_t index) const {
+        if (index >= items_.size()) {
+            throw std::out_of_range("Index out of range");
+        }
+        return *items_[index];
+    }
+    // Iterator-related methods
+    std::vector<std::shared_ptr<Item>>::iterator begin() { return items_.begin(); }
+    std::vector<std::shared_ptr<Item>>::iterator end() { return items_.end(); }
+    std::vector<std::shared_ptr<Item>> append(std::shared_ptr<Item> item) {
+        Item item2 = *item;
+        auto itemhandle = this->itemHandle_;
+
+        // Check if the current folder item is valid
+        if (itemhandle.value == NULL) {
+            throw std::runtime_error("No active item");
+        }
+        Result<AEGP_ItemH> itemhandle2 = item->getItemHandle();
+        auto& message2 = enqueueSyncTask(SetItemParentFolder, itemhandle2, itemhandle);
+        message2->wait();
+        Result<void> result = message2->getResult();
+        if (result.error != A_Err_NONE) {
+            throw std::runtime_error("Error setting item parent folder");
+        }
+        items_.push_back(item);
+
+        return items_;
+    }
+    std::vector<std::shared_ptr<Item>> remove(std::shared_ptr<Item> item) {
+        if (item == nullptr) {
+            throw std::runtime_error("Item is null");
+        }
+        Item item2 = *item;
+        item2.deleteItem();
+
+        return items_;
+    }
+
+private:
+    Result<AEGP_ItemH> itemHandle_;
+    std::vector<std::shared_ptr<Item>> items_;
+};
+
 class FolderItem : public Item {
 public:
     // Constructors and Destructors
     explicit FolderItem(const Result<AEGP_ItemH>& itemHandle) : Item(itemHandle) {}
     virtual ~FolderItem() = default;
 
-    void addFolder(std::string name);
-};
+    static std::shared_ptr<FolderItem> createNew(std::string name) {
 
+        auto& projectItem = enqueueSyncTask(getProjectRootFolder);
+        projectItem->wait();
+        Result<AEGP_ItemH> projItem = projectItem->getResult();
+
+        auto& createfootage = enqueueSyncTask(createFolderItem, name, projItem);
+		createfootage->wait();
+
+        Result<AEGP_ItemH> createFolder = createfootage->getResult();
+
+        if (createFolder.error != A_Err_NONE) {
+			throw std::runtime_error("Failed to create new folder item");
+			return NULL;
+		}
+
+		return std::make_shared<FolderItem>(createFolder);
+	}
+
+    std::shared_ptr<ItemCollection> ChildItems(); //std::shared_ptr<ItemCollection> ChildItems();
+};
+/* COpy ProjectCollection over, change to ItemCollection, pass in itemHandle to get childItems,*/
 class SolidItem : public FootageItem {
 public:
 // Constructors and Destructors
@@ -215,4 +307,5 @@ public:
 
 		return std::make_shared<SolidItem>(footageItem);
 	}
-};;
+};
+

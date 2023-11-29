@@ -166,7 +166,11 @@ EntryPointFunc(
 			}
 
 			if (!scriptPath.empty()) {
-				execute_python_script_from_file(scriptPath); // Execute the script
+				std::string output = execute_python_script_from_file(scriptPath); // Execute the script
+				if (output != "All good") {
+					auto& message = enqueueSyncTask(ReportInfo, output);
+					message->wait();
+				}
 			}
 		}
 		if (shouldExitPythonThread) {

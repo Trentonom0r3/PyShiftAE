@@ -50,6 +50,48 @@ The ripple effect of PyShiftAE in the AE community could be profound. Scriptwrit
 # ChangeLog
 All Updates should be assumed to come with updated documentation, and updated binary .aex file located in ```dist```, unless otherwise specified. 
 ChangeLog will contain a brief description of changes. See Wiki API docs for more info. 
+- [11.29.23]
+    - Added `ProjectCollection` and `ItemCollection` classes, similar to `LayerCollection`
+    - Updated API Reference with some more detailed information. 
+    - Added constructor to `FolderItem`. 
+    - Removed Item creation methods from `Project` class in favor of constructor usage. 
+    - Demonstration of recursive searching through `ProjectCollection` and `FolderItem` using a pythonic interace:
+        -
+        ```python
+        from PyShiftCore import *
+
+        NAME = "NAME"
+        PATH = "PATH"
+        project = app.project
+
+        items = project.items
+
+        new_folder = FolderItem(NAME)  # create a new folder item
+
+        new_footage = FootageItem(NAME, PATH)  # create a new footage item
+
+        new_folder.children.append(new_footage)  # add the footage item to the folder item
+
+        for item in items:  # loop through all items in the project
+            if isinstance(item, FolderItem): # check if the item is a folder
+                if item.name != "PyShiftAE": # check if the folder is not the PyShiftAE folder
+                    item.children.append(new_folder) # add the new folder to the folder we found
+            else:
+                app.reportInfo(item.name) # report the name of the item
+
+        for item in items: # loop through all items in the project
+            if isinstance(item, FolderItem): # check if the item is a folder
+                app.reportInfo("Folder Found!:" + item.name) # report the name of the folder
+                children = item.children # get the children of the folder
+                app.reportInfo("Looking for Child Items!") # report that we are looking for child items
+                for child in children: # loop through all the children
+                    app.reportInfo("Child Found!:" + child.name) # report the name of the child
+                    if isinstance(child, FolderItem): # check if the child is a folder
+                        app.reportInfo("Child is Folder!:" + child.name) # report that the child is a folder
+                        children2 = child.children # get the children of the child
+                        for child2 in children2: # loop through all the children of the child
+                            app.reportInfo("Child Folder Child Item:" + child2.name) # report the name of the child of the child       
+        ```
 - [11.28.23 [Pt.2]]
     - Adjusted `LayerCollection` to have getter/setter methods, access as you normally would lists. 
     - Removed `addLayer` and `addSolid` from `CompItem` in favor of list manipulation.

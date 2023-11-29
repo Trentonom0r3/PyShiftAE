@@ -1,5 +1,18 @@
 #include "ItemManager.h"
 
+void Item::deleteItem()
+{
+	auto item = this->itemHandle_;
+	if (item.value == NULL) {
+		throw std::runtime_error("No active item");
+	}
+	auto& message = enqueueSyncTask(DeleteItem, item);
+	message->wait();
+
+	Result<void> result = message->getResult();
+	return;
+}
+
 Result<AEGP_ItemH> Item::getItemHandle()
 {
 return this->itemHandle_;
@@ -724,19 +737,20 @@ Result<AEGP_LayerH> Layer::getLayerHandle()
 return this->layerHandle_;
 }
 
-
-void FolderItem::addFolder(std::string name)
+std::shared_ptr<ItemCollection> FolderItem::ChildItems()
 {
 	auto item = this->itemHandle_;
 	if (item.value == NULL) {
 		throw std::runtime_error("No active item");
 	}
-	auto& message = enqueueSyncTask(createFolderItem, name, item);
-	message->wait();
 
-	Result<void> result = message->getResult();
-	return;
+	Result<AEGP_ItemH> itemH = item;
+	ItemCollection collection(itemH);
+
+	return std::make_shared<ItemCollection>(collection);
+
 }
+
 
 void LayerCollection::removeLayerFromCollection(Layer layerHandle)
 {
@@ -761,6 +775,34 @@ void LayerCollection::RemoveLayerByIndex(int index)
 
 std::vector<Layer> LayerCollection::getAllLayers() {
 	return this->layers_;
+}
+
+std::string LayerCollection::getCompName() 
+{
+	auto comp = this->compHandle_;
+	if (comp.value == NULL) {
+		throw std::runtime_error("No active comp");
+		return std::string{};
+	}
+	auto& compmessage = enqueueSyncTask(GetItemFromComp, comp);
+	compmessage->wait();
+
+	Result<AEGP_ItemH> item = compmessage->getResult();
+
+	if (item.error != A_Err_NONE) {
+	throw std::runtime_error("Error getting item from comp");
+	return std::string{};
+	}
+
+	auto& message = enqueueSyncTask(getItemName, item);
+	message->wait();
+
+	Result<std::string> result = message->getResult();
+
+	std::string info = "Layers for Composition: " + result.value;
+
+	return info;
+
 }
 
 std::shared_ptr<Layer> LayerCollection::addLayerToCollection(Item itemHandle, int index) {
@@ -822,4 +864,66 @@ std::shared_ptr<Layer> LayerCollection::addLayerToCollection(Item itemHandle, in
 	}
 
 	return std::make_shared<Layer>(newLayer);
+}
+
+std::vector<std::shared_ptr<Item>> ItemCollection::getItems()
+{
+	std::vector<std::shared_ptr<Item>> items;
+	auto item = this->itemHandle_;
+
+	Result<AEGP_ItemH> itemhandle = item;
+
+	// Check if the current folder item is valid
+	if (itemhandle.value == NULL) {
+		throw std::runtime_error("No active item");
+	}
+	
+	auto& projectMessage = enqueueSyncTask(getProject);
+	projectMessage->wait();
+
+	Result<AEGP_ProjectH> projectResult = projectMessage->getResult();
+
+	Result<AEGP_ItemH> currentItemResult = itemhandle;
+
+	while (currentItemResult.value != NULL) {
+		// Check if the current item is a child of the folder
+		auto& message = enqueueSyncTask(GetItemParentFolder, currentItemResult);
+		message->wait();
+
+		Result<AEGP_ItemH> parentItemH = message->getResult();
+
+		if (parentItemH.value == itemhandle.value) {
+			// Get the type of the current item
+			auto& typeMessage = enqueueSyncTask(getItemType, currentItemResult);
+			typeMessage->wait();
+			Result<AEGP_ItemType> itemTypeResult = typeMessage->getResult();
+			if (itemTypeResult.error != A_Err_NONE) {
+				throw std::runtime_error("Error getting item type");
+			}
+
+			// Add the current item to the list based on its type
+			switch (itemTypeResult.value) {
+			case AEGP_ItemType_FOLDER:
+				items.push_back(std::make_shared<FolderItem>(currentItemResult));
+				break;
+			case AEGP_ItemType_FOOTAGE:
+				items.push_back(std::make_shared<FootageItem>(currentItemResult));
+				break;
+			case AEGP_ItemType_COMP:
+				items.push_back(std::make_shared<CompItem>(currentItemResult));
+				break;
+				// Handle other types as needed
+			}
+		}
+
+		// Get the next project item
+		auto& nextItemMessage = enqueueSyncTask(GetNextProjItem, projectResult, currentItemResult);
+		nextItemMessage->wait();
+		currentItemResult = nextItemMessage->getResult();
+		if (currentItemResult.error != A_Err_NONE) {
+			throw std::runtime_error("Error getting next project item");
+		}
+	}
+
+	return items;
 }

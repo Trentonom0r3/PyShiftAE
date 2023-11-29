@@ -13,7 +13,7 @@ Result<void>setItemName(Result<AEGP_ItemH> itemH, const std::string& name);
 
 Result<A_long> getUniqueItemID(Result<AEGP_ItemH> itemH);
 
-Result<void> createFolderItem(const std::string& name, Result<AEGP_ItemH> parentFolderH);
+Result<AEGP_ItemH> createFolderItem(const std::string& name, Result<AEGP_ItemH> parentFolderH);
 
 Result<AEGP_ItemH> GetFirstProjItem(Result<AEGP_ProjectH> projectH);
 

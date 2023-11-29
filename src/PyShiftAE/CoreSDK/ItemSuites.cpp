@@ -139,7 +139,7 @@ Result<A_long> getUniqueItemID(Result<AEGP_ItemH> itemH)
 }
 
 
-Result<void> createFolderItem(const std::string& name, Result<AEGP_ItemH> parentFolderH)
+Result<AEGP_ItemH> createFolderItem(const std::string& name, Result<AEGP_ItemH> parentFolderH)
 {
 	AEGP_SuiteHandler& suites = SuiteManager::GetInstance().GetSuiteHandler();
 	A_Err err = A_Err_NONE;
@@ -150,7 +150,7 @@ Result<void> createFolderItem(const std::string& name, Result<AEGP_ItemH> parent
 	AEGP_ItemH new_folderH;
 	std::vector<A_UTF16Char> unicode_name = convertUTF8ToUTF16(name);
 	if (unicode_name.empty()) {
-		return Result<void>(A_Err_STRUCT); // Handle conversion error
+		return Result<AEGP_ItemH>(parent_folderH, A_Err_STRUCT); // Handle conversion error
 	}
 	A_UTF16Char* nameZ = reinterpret_cast<A_UTF16Char*>(unicode_name.data());
 	AEGP_ProjectH projH = NULL;
@@ -163,13 +163,15 @@ Result<void> createFolderItem(const std::string& name, Result<AEGP_ItemH> parent
 		ERR(suites.ItemSuite9()->AEGP_CreateNewFolder(nameZ, parent_folderH, &new_folderH));
 	}
 	if (err != A_Err_NONE) {
-		Result<void> errorResult;
+		Result<AEGP_ItemH> errorResult;
+		errorResult.value = parent_folderH;
 		errorResult.error = err;
 		return errorResult; // Return an error result if AEGP_SetItemName fails
 	}
 
 	// If we reach this point, it means everything went well
-	Result<void> successResult;
+	Result<AEGP_ItemH> successResult;
+	successResult.value = new_folderH;
 	successResult.error = A_Err_NONE;
 	return successResult;
 }
