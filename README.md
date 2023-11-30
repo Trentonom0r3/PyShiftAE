@@ -56,7 +56,7 @@ ChangeLog will contain a brief description of changes. See Wiki API docs for mor
     - Added constructor to `FolderItem`. 
     - Removed Item creation methods from `Project` class in favor of constructor usage. 
     - Demonstration of recursive searching through `ProjectCollection` and `FolderItem` using a pythonic interace:
-        -
+        
         ```python
         from PyShiftCore import *
 
