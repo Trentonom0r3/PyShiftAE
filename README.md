@@ -8,7 +8,13 @@ Python for After Effects! PyShiftAE is an experimental, Open Source library desi
 - [Why PyShiftAE?](#why-pyshiftae)
 - [Impact](#impact)
 - [Challenges](#challenges-ahead)
-- [Documentation](#documentation)
+- [API-Reference](https://github.com/Trentonom0r3/PyShiftAE/wiki/API-Reference)
+    - [CSXS Events](https://github.com/Trentonom0r3/PyShiftAE/wiki/CSXS-Utils)
+    - [Demos](https://github.com/Trentonom0r3/PyShiftAE/wiki/Demos)
+    - [Building from source](https://github.com/Trentonom0r3/PyShiftAE/wiki/Building-from-source)
+    - [Pre-Compiled .aex Binary](https://github.com/Trentonom0r3/PyShiftAE/blob/main/dist/PyShiftAE.aex)
+      - MUST have Python 3.11 installed to path.
+  
 - [Contributing](https://github.com/Trentonom0r3/PyShiftAE/blob/main/CONTRIBUTING.md)
     - [Issues](https://github.com/Trentonom0r3/PyShiftAE/blob/main/CONTRIBUTING.md#reporting-issues)
     - [Pull Requests](https://github.com/Trentonom0r3/PyShiftAE/blob/main/CONTRIBUTING.md#submitting-pull-requests)
@@ -20,7 +26,8 @@ Python for After Effects! PyShiftAE is an experimental, Open Source library desi
     - [Setup](https://github.com/Trentonom0r3/PyShiftAE/blob/main/CONTRIBUTING.md#environment-setup)
     - [Review Process](https://github.com/Trentonom0r3/PyShiftAE/blob/main/CONTRIBUTING.md#review-process)
     - [Acknowledgements](https://github.com/Trentonom0r3/PyShiftAE/blob/main/CONTRIBUTING.md#acknowledgements)
-      
+      - All contributors will be acknowledged in the project repository. Your contributions, no matter how small, are valuable to us and the community.
+
 ### Problem Statement
 ExtendScript, the established scripting language in AE, poses certain limitations particularly around sophisticated tasks such as pixel or audio data manipulation. Its capabilities are somewhat confined, often demanding a transition to the more complex C++ SDK for advanced functionalities.
 
@@ -36,16 +43,6 @@ The ripple effect of PyShiftAE in the AE community could be profound. Scriptwrit
 ## Challenges Ahead
 - Memory & Lifetime Management: Ensuring robust state storage while averting memory leaks is a paramount concern.
 - Feature Parity: Retaining all the functionality from ExtendScript, albeit with an enhanced and simplified interface, is a significant challenge.
-  
-## Documentation 
-- [API-Reference](https://github.com/Trentonom0r3/PyShiftAE/wiki/API-Reference)
-- [CSXS](https://github.com/Trentonom0r3/PyShiftAE/wiki/CSXS-Utils)
-- [Demos](https://github.com/Trentonom0r3/PyShiftAE/wiki/Demos)
-- [Building from source](https://github.com/Trentonom0r3/PyShiftAE/wiki/Building-from-source)
-- [Pre-Compiled .aex Binary](https://github.com/Trentonom0r3/PyShiftAE/blob/main/dist/PyShiftAE.aex)
-  - MUST have Python 3.11 installed to path.
-  
-- All contributors will be acknowledged in the project repository. Your contributions, no matter how small, are valuable to us and the community.
 
 # ChangeLog
 All Updates should be assumed to come with updated documentation, and an updated binary .aex file located in ```dist```, unless otherwise specified. 
