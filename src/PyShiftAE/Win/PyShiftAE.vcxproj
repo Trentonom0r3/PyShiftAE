@@ -135,7 +135,7 @@
       <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
       <ObjectFileName>$(IntDir)</ObjectFileName>
       <ProgramDataBaseFileName>$(IntDir)vc$(PlatformToolsetVersion).pdb</ProgramDataBaseFileName>
-      <BrowseInformation>true</BrowseInformation>
+      <BrowseInformation>false</BrowseInformation>
       <WarningLevel>Level3</WarningLevel>
       <TreatWarningAsError>false</TreatWarningAsError>
       <SuppressStartupBanner>true</SuppressStartupBanner>
@@ -330,11 +330,13 @@
   <ItemGroup>
     <ClInclude Include="..\CoreLib\App.h" />
     <ClInclude Include="..\CoreLib\ItemManager.h" />
+    <ClInclude Include="..\CoreLib\Json.h" />
     <ClInclude Include="..\CoreLib\Project.h" />
     <ClInclude Include="..\CoreLib\PyCore.h" />
     <ClInclude Include="..\CoreSDK\CollectionSuites.h" />
     <ClInclude Include="..\CoreSDK\CompSuites.h" />
     <ClInclude Include="..\CoreSDK\Core.h" />
+    <ClInclude Include="..\CoreSDK\EffectSuites.h" />
     <ClInclude Include="..\CoreSDK\FootageSuites.h" />
     <ClInclude Include="..\CoreSDK\ItemSuites.h" />
     <ClInclude Include="..\CoreSDK\LayerSuites.h" />
@@ -408,6 +410,7 @@ cl /D "MSWindows" /EP $(IntDir)%(Filename).rrc &gt;               "$(ProjectDir)
     <ClCompile Include="..\CoreSDK\CollectionSuites.cpp" />
     <ClCompile Include="..\CoreSDK\CompSuites.cpp" />
     <ClCompile Include="..\CoreSDK\Core.cpp" />
+    <ClCompile Include="..\CoreSDK\EffectSuites.cpp" />
     <ClCompile Include="..\CoreSDK\FootageSuites.cpp" />
     <ClCompile Include="..\CoreSDK\ItemSuites.cpp" />
     <ClCompile Include="..\CoreSDK\LayerSuites.cpp" />

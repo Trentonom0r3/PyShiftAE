@@ -139,17 +139,17 @@ Result<AEGP_FootageH> GetProxyFootageFromItem(Result<AEGP_ItemH> itemH) {
 	return result;
 }
 
-Result<std::pair<long, long>> GetFootageNumFiles(Result<AEGP_FootageH> footageH) {
+Result<std::pair<int, int>> GetFootageNumFiles(Result<AEGP_FootageH> footageH) {
 	A_Err err = A_Err_NONE;
 	A_long numFiles = 0, filesPerFrame = 0;
 	AEGP_SuiteHandler& suites = SuiteManager::GetInstance().GetSuiteHandler();
 	AEGP_FootageH footage = footageH.value;
 if (footage == NULL) {
-		return Result<std::pair<long, long>>(A_Err_STRUCT);
+		return Result<std::pair<int, int>>(A_Err_STRUCT);
 	}
 	err = suites.FootageSuite5()->AEGP_GetFootageNumFiles(footage, &numFiles, &filesPerFrame);
 
-	Result<std::pair<long, long>> result(std::make_pair(numFiles, filesPerFrame), err);
+	Result<std::pair<int, int>> result(std::make_pair(numFiles, filesPerFrame), err);
 	return result;
 }
 
@@ -172,11 +172,12 @@ if (footage == NULL) {
 			PT_ETX(suites.MemorySuite1()->AEGP_UnlockMemHandle(unicodePathH));
 			PT_ETX(suites.MemorySuite1()->AEGP_FreeMemHandle(unicodePathH));
 		}
-	}
-	PT_XTE_CATCH_RETURN_ERR;
+
 
 	Result<std::string> result(path, err);
 	return result;
+	}
+	PT_XTE_CATCH_RETURN_ERR;
 }
 
 

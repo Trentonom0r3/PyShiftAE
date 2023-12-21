@@ -45,7 +45,7 @@ Result<AEGP_CompH> getCompFromItem(Result<AEGP_ItemH> itemH)
 {
 	AEGP_SuiteHandler& suites = SuiteManager::GetInstance().GetSuiteHandler();
 	A_Err err = A_Err_NONE;
-	AEGP_CompH compH = NULL;
+	AEGP_CompH compH;
 	AEGP_ItemH item = itemH.value;
 	ERR(suites.CompSuite4()->AEGP_GetCompFromItem(item, &compH));
 
@@ -318,7 +318,7 @@ Result<void> SetCompWorkAreaStartAndDuration(Result<AEGP_CompH> compH, float sta
 Result<AEGP_LayerH> CreateSolidInComp(const std::string& name, int width, int height, float red, float green, float blue, float alpha, Result<AEGP_CompH> parentCompH, float dur) {
 	AEGP_SuiteHandler& suites = SuiteManager::GetInstance().GetSuiteHandler();
 	A_Err err = A_Err_NONE;
-	AEGP_LayerH newSolidLayerH;
+	AEGP_LayerH newSolidLayerH = 0;
 	AEGP_CompH parentComp = parentCompH.value;
 	AEGP_ColorVal color;
 	if (parentComp == NULL) {
@@ -372,26 +372,56 @@ Result<AEGP_LayerH> CreateLightInComp(const std::string& name, float x, float y,
 	return result;
 }
 
-Result<AEGP_Collection2H> GetNewCollectionFromCompSelection(Result<AEGP_CompH> compH) {
+Result<std::vector<Result<AEGP_LayerH>>> GetNewCollectionFromCompSelection(Result<AEGP_CompH> compH) {
 	A_Err err = A_Err_NONE;
 	AEGP_Collection2H collectionH;
 	AEGP_SuiteHandler& suites = SuiteManager::GetInstance().GetSuiteHandler();
 	AEGP_PluginID* pluginIDPtr = SuiteManager::GetInstance().GetPluginID();
 
 	if (pluginIDPtr != nullptr) {
-		// Dereference the pointer to get the plugin ID
 		AEGP_PluginID pluginID = *pluginIDPtr;
-
 		AEGP_CompH comp = compH.value;
 		if (comp == NULL) {
-			return Result<AEGP_Collection2H>(collectionH, err);
+			return Result<std::vector<Result<AEGP_LayerH>>>(std::vector<Result<AEGP_LayerH>>(), err);
 		}
 		err = suites.CompSuite11()->AEGP_GetNewCollectionFromCompSelection(pluginID, comp, &collectionH);
+		A_u_long numItems;
+		err = suites.CollectionSuite2()->AEGP_GetCollectionNumItems(collectionH, &numItems);
+		std::vector<Result<AEGP_LayerH>> layers;
 
-		Result<AEGP_Collection2H> result(collectionH, err);
-		return result;
+		for (int i = 0; i < numItems; i++) {
+			AEGP_CollectionItemV2 itemH;
+			err = suites.CollectionSuite2()->AEGP_GetCollectionItemByIndex(collectionH, i, &itemH);
+			AEGP_CollectionItemType type = itemH.type;
+
+			// Declare variables outside of switch
+			AEGP_LayerH layerH;
+			Result<AEGP_LayerH> result;
+
+			switch (type) {
+			case AEGP_CollectionItemType_LAYER:
+			{
+				AEGP_LayerCollectionItem layerItem = itemH.u.layer;
+				layerH = layerItem.layerH;
+				result = Result<AEGP_LayerH>(layerH, err);
+				layers.push_back(result);
+			}
+			break;
+			case AEGP_CollectionItemType_MASK:
+			{
+				AEGP_MaskCollectionItem maskItem = itemH.u.mask;
+				// handle mask item
+			}
+			break;
+			}
+		}
+
+		Result<std::vector<Result<AEGP_LayerH>>> finalResult(layers, err);
+		suites.CollectionSuite2()->AEGP_DisposeCollection(collectionH);
+		return finalResult;
 	}
 }
+
 
 Result<void> SetSelection(Result<AEGP_CompH> compH, AEGP_Collection2H collectionH) {
 	A_Err err = A_Err_NONE;

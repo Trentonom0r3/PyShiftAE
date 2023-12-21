@@ -14,6 +14,8 @@ Result<std::string> getLayerSourceName(Result<AEGP_LayerH> layerH);
 
 Result<void> setLayerName(Result<AEGP_LayerH> layerH, const std::string& name);
 
+Result<AEGP_LayerH> ActiveLayer();
+
 Result<AEGP_LayerH> getLayerFromComp(Result<AEGP_CompH> compH, int index);
 
 Result<void> changeLayerIndex(Result<AEGP_LayerH> layerH, int index);

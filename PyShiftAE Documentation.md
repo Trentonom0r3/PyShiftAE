@@ -6,9 +6,22 @@
 
 # **Core Access Classes**
 
-### Class: `app`
+### Class: `Manifest`
 
-The `app` class represents the main application interface, providing access to projects and global application functions.
+The `Manifest` class is used to connect PyShiftAE Extensions with CEP and After Effects. 
+If a field does not have a value you wish to place, simply forego altering it. 
+
+- **Attributes:**
+  - `name` **->** `str`: The Name of your Manifest. Should Match the `comp.psc.EXTENSIONNAME` folder's name. 
+  - `version` **->** `str` : The version of your extension. 
+  - `author` **->** `str` :  The author of the extension.
+  - `description` **->** `str` : A brief description of what your extension's purpose is. 
+  - `entry` **->** `str` : The main entry file for your extension. Must be named `entry.py`. 
+  - `dependencies` **->** `list[str]`: A list of pip-installable names for your extension's module dependencies. 
+
+### Class: `App`
+
+The `App` class represents the main application interface, providing access to projects and global application functions. `App` may be instantiated, or you may use the provided global object; `app`.
 
 - **Attributes:**
   - `project` **->** `Project`: (read/write) The current project being manipulated within the application.
@@ -40,13 +53,12 @@ Represents a project within the application, providing methods to interact with 
       - **Usage Notes:** It is necessary to assign `items` to a new variable before using it.
       - 
       ```python
-      # THIS IS GOOD.
         from PyShiftCore import *
         items = app.project.items
         if isinstance(items, ProjectCollection):
           for item in items:
 
-      # THIS IS BAD, WILL CAUSE ERROR
+
         from PyShiftCore import *
         project = app.project
         for item in project.items:
@@ -67,7 +79,9 @@ Abstract base class for various types of items in a project, such as composition
   - `name` **->** `name: str`: (read/write) The name of the item.
   - `width` **->** `float`: (read-only) The width of the Item.
   - `height` **->** `float`: (read-only) The height of the Item.
-
+  - `duration` **->** `float`: Duration of the Item, in Item time.
+  - `time` **->** 'float' : The Current time of the Item, in Item time.
+  - `selected` **->** `bool` : (read-write) Boolean value indicating if the layer is selected or not.
  
 ### Class: `CompItem` (Inherits from `Item`)
 
@@ -77,8 +91,10 @@ Represents a composition item, which is a collection of layers.
 - **Attributes:**
   - `layers` **->** `LayerCollection`: (read-only) A `LayerCollection` object containing the layers of the composition.
   - `layer`**->** `LayerCollection`: (read-only) A `LayerCollection` object containing the layers of the composition.
-    - **Usage Notes:** It is necessary to assign `layer` or `layers` to a new variable before using it. 
-      - 
+  - `selectedLayers` **->** `LayerCollection`: (read-only) A `LayerCollection` object containing the selected layers of the composition.
+  - `selectedlayer` **->** `LayerCollection`: (read-only) A `LayerCollection` object containing the selected layers of the composition.
+      
+      
       ```python
       # THIS IS GOOD.
         from PyShiftCore import *
@@ -107,16 +123,18 @@ Represents a footage item in a project. Footage items are used as sources for la
 - **Constructor:**
   - `FootageItem(name: str, path: str)` **->** `FootageItem`
 
+- **Attributes:**
+  - `path` : (read-only) The path to the FootageItem. 
+
 ### Class: `FolderItem` (Inherits from `Item`)
 
 Represents a folder item in a project, allowing organization of various items.
 
 - **Attributes:**
   - `children`**->** `ItemCollection`: (read-only) The child items of the folder. Returns and ItemCollection Object.
-    - **Usage Notes:** It is necessary to assign `children` to a new variable before using it.
-      - 
+
+       
       ```python
-      # THIS IS GOOD.
         from PyShiftCore import *
         items = app.project.items
         for item in items:
@@ -125,14 +143,13 @@ Represents a folder item in a project, allowing organization of various items.
             for child in children:
               # do something 
 
-      # THIS IS BAD, WILL CAUSE ERROR
+   
         from PyShiftCore import *
         project = app.project
-        for item in project.items: # ERROR THROWN HERE
+        for item in project.items: 
           if isinstance(item, FolderItem):
             for child in item.children:
-              # ERR WAS ALREADY THROUGH HALFWAY THROUGH. DOESNT REACH THIS POINT
-          
+
       ```
 
  
@@ -155,8 +172,7 @@ A collection of layers within a given composition. Access items just like you wo
   - `remove(layer: Layer)` **->** `NONE` : Removes a layer given a layer object.
   - `pop(index: int)` **->** `NONE`: Removes a layer based on index. If no index is provided, removes the last layer.
 
-- **Usage Notes:**
-  - It is necessary to assign the collection to a new variable.
+
 ### Class: `ProjectCollection`
 
 Represents a collection of projects.
@@ -164,8 +180,7 @@ Represents a collection of projects.
 - **Methods:**
   - `append(item: Item)` **->** List[Item]: Adds an item to the ProjectCollection. Returns the ProjectCollection as a list
   - `remove(item: Item)` **->** List[Item]: Removes an item from the ProjectCollection. Returns the ProjectCollection as a list.
-- **Usage Notes:**
-  - It is necessary to assign the collection to a new variable.
+
 ### Class: `ItemCollection`
 
 Represents a collection of items.
@@ -173,9 +188,6 @@ Represents a collection of items.
 - **Methods:**
   - `append(item: Item)` **->** List[Item]: Adds an item to the item collection. Returns the Item Collection as a list. 
   - `remove(item: Item)` **->** List[Item]: Removes an item from the item collection. Returns the Item Collection as a list.
-
-- **Usage Notes:**
-  - It is necessary to assign the collection to a new variable.
 
 # **Layer Classes!**
 
@@ -185,7 +197,8 @@ Represents a layer within a composition, providing methods to access and modify 
 
 - **Attributes:**
   - `name`**->** `name: str`: (read/write) The name of the layer.
-  - `index`: (read/write) The index of the layer within its composition. Changing the index can reorder layers.
+  - `index`**->** `index: int`: (read/write) The index of the layer within its composition. Changing the index can reorder layers.
+  - `source`**->** `sourceItem: FootageItem`: returns a FootageItem object for the layer.
   - `sourceName`**->** `name: str`: (read-only) The source name of the layer.
   - `time` **->** `float`: (read-only) The current time of the layer in the layer's time coordinate system. (in seconds) 
   - `compTime`**->** `float` : (read-only) The current time of the layer in the composition's time coordinate system.  (in seconds)

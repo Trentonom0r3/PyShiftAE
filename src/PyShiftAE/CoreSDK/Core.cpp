@@ -87,20 +87,3 @@ AEGP_ProjBitDepth ConvertToProjBitDepth(const std::string& bitDepthStr) {
 	if (bitDepthStr == "32") return AEGP_ProjBitDepth_32;
 	throw std::runtime_error("Invalid bit depth string: " + bitDepthStr);
 }
-
-Result<void> printToInfoPanel(std::string message)
-{
-	AEGP_SuiteHandler& suites = SuiteManager::GetInstance().GetSuiteHandler();
-	A_Err err = A_Err_NONE;
-	A_char* messageZ = const_cast<A_char*>(message.c_str());
-
-	err = suites.UtilitySuite6()->AEGP_WriteToOSConsole(messageZ);
-	if (err) {
-		throw std::runtime_error("Error appending to info panel: " + std::to_string(err));
-	}
-
-	Result<void> result;
-	result.error = err;
-	return result;
-
-}
