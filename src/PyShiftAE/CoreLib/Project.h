@@ -8,6 +8,7 @@ public:
     explicit ProjectCollection(const Result<AEGP_ProjectH>& projHandle) : projHandle_(projHandle) {
         items_ = ProjectCollection::getItems();
     }
+    ProjectCollection(std::vector<std::shared_ptr<Item>> items) : items_(items) {}
 
     std::vector<std::shared_ptr<Item>> getItems();
 
@@ -15,22 +16,26 @@ public:
         return items_.size();
     }
 
-    Item& operator[](std::size_t index) {
+    std::shared_ptr<Item>& operator[](std::size_t index) {
         if (index >= items_.size()) {
             throw std::out_of_range("Index out of range");
         }
-        return *items_[index];
+        return items_[index];
     }
 
-    const Item& operator[](std::size_t index) const {
+    const std::shared_ptr<Item>& operator[](std::size_t index) const {
         if (index >= items_.size()) {
             throw std::out_of_range("Index out of range");
         }
-        return *items_[index];
+        return items_[index];
     }
+
     // Iterator-related methods
-    std::vector<std::shared_ptr<Item>>::iterator begin() { return items_.begin(); }
-    std::vector<std::shared_ptr<Item>>::iterator end() { return items_.end(); }
+    auto begin() { return items_.begin(); }
+    auto end() { return items_.end(); }
+    auto begin() const { return items_.cbegin(); }
+    auto end() const { return items_.cend(); }
+
     std::vector<std::shared_ptr<Item>> append(std::shared_ptr<Item> item) {
         auto proj = this->projHandle_;
         auto& message = enqueueSyncTask(getProjectRootFolder);
@@ -73,11 +78,15 @@ public:
         : activeItem(std::make_shared<Item>(itemHandle)) {}
 
     std::shared_ptr<Item> ActiveItem();
+    std::shared_ptr<Layer> GetActiveLayer();
     std::string getName();
     std::string getPath();
     void saveAs(std::string path);
     std::shared_ptr<ProjectCollection> ChildItems();
+    std::shared_ptr<ProjectCollection> SelectedItems();
 private:
     std::shared_ptr<Item> activeItem;
     Result<AEGP_ProjectH> projH_;
 };
+
+

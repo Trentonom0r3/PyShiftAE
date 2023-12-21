@@ -20,7 +20,7 @@ Result<AEGP_FootageH> GetMainFootageFromItem(Result<AEGP_ItemH> itemH);
 
 Result<AEGP_FootageH> GetProxyFootageFromItem(Result<AEGP_ItemH> itemH);
 
-Result<std::pair<long, long>> GetFootageNumFiles(Result<AEGP_FootageH> footageH);
+Result<std::pair<int, int>> GetFootageNumFiles(Result<AEGP_FootageH> footageH);
 
 Result<std::string> GetFootagePath(Result<AEGP_FootageH> footageH, int frameNum, int fileIndex);
 

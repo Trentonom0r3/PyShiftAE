@@ -5,7 +5,7 @@ Result<AEGP_ItemH> getActiveItem()
 {
 	AEGP_SuiteHandler& suites = SuiteManager::GetInstance().GetSuiteHandler();
 	A_Err err = A_Err_NONE;
-	AEGP_ItemH itemH = nullptr; // Initialize to nullptr in case AEGP_GetActiveItem fails
+	AEGP_ItemH itemH; // Initialize to nullptr in case AEGP_GetActiveItem fails
 	ERR(suites.ItemSuite9()->AEGP_GetActiveItem(&itemH));
 
 	Result<AEGP_ItemH> result;
@@ -307,20 +307,10 @@ Result<float> GetItemDuration(Result<AEGP_ItemH> itemH) {
 		throw A_Err_STRUCT; // throw an error if item is null
 	}
 	err = suites.ItemSuite9()->AEGP_GetItemDuration(item, &duration);
-	AEGP_CompH compH;
-	ERR(suites.CompSuite11()->AEGP_GetCompFromItem(item, &compH));
-	if (err == A_Err_NONE && compH) {
-		A_FpLong frameRate;
-		err = suites.CompSuite11()->AEGP_GetCompFramerate(compH, &frameRate);
-		float durationInSeconds = ConvertATimeToFloat(duration, frameRate);
+		float durationInSeconds = duration.value / duration.scale;
 		Result<float> result(durationInSeconds, err);
 		return result;
-	}
-	else {
-		float durationInSeconds = ConvertATimeToFloat(duration, 0);
-		Result<float> result(durationInSeconds, err);
-		return result;
-	}
+	
 }
 
 Result<float> GetItemCurrentTime(Result<AEGP_ItemH> itemH) {
@@ -332,20 +322,26 @@ Result<float> GetItemCurrentTime(Result<AEGP_ItemH> itemH) {
 		throw A_Err_STRUCT; // throw an error if item is null
 	}
 	err = suites.ItemSuite9()->AEGP_GetItemCurrentTime(item, &currTime);
-	AEGP_CompH compH;
-	ERR(suites.CompSuite11()->AEGP_GetCompFromItem(item, &compH));
-	if (err == A_Err_NONE && compH) {
-		A_FpLong frameRate;
-		err = suites.CompSuite11()->AEGP_GetCompFramerate(compH, &frameRate);
-		float currTimeInSeconds = ConvertATimeToFloat(currTime, frameRate);
+		A_FpLong currTimeInSeconds = currTime.value / currTime.scale;
+		float currTimeH = static_cast<float>(currTimeInSeconds);
+		Result<float> result(currTimeH, err);
+		return result;
+}
+
+Result<float> GetCompItemCurrentTime(Result<AEGP_ItemH> itemH, float frameRate) {
+	A_Err err = A_Err_NONE;
+	A_Time currTime;
+	AEGP_SuiteHandler& suites = SuiteManager::GetInstance().GetSuiteHandler();
+	AEGP_ItemH item = itemH.value;
+	A_FpLong frameRateFp = static_cast<A_FpLong>(frameRate);
+	if (!item) {
+		throw A_Err_STRUCT; // throw an error if item is null
+	}
+	err = suites.ItemSuite9()->AEGP_GetItemCurrentTime(item, &currTime);
+		float currTimeInSeconds = ConvertATimeToFloat(currTime, frameRateFp);
 		Result<float> result(currTimeInSeconds, err);
 		return result;
-	}
-	else {
-		float currTimeInSeconds = ConvertATimeToFloat(currTime, 0);
-		Result<float> result(currTimeInSeconds, err);
-		return result;
-	}
+
 }
 
 Result<size> GetItemDimensions(Result<AEGP_ItemH> itemH) {
@@ -404,29 +400,46 @@ Result<void> SetItemCurrentTime(Result<AEGP_ItemH> itemH, float time) {
 	A_Err err = A_Err_NONE;
 	AEGP_CompH compH;
 	AEGP_ItemH item = itemH.value;
+	A_Time currTime;
+	ERR(suites.ItemSuite9()->AEGP_GetItemCurrentTime(item, &currTime));
+	A_FpLong scle = currTime.scale;
 
 	if (!item) {
 		throw A_Err_STRUCT; // throw an error if item is null
 	}
 
-	ERR(suites.CompSuite11()->AEGP_GetCompFromItem(item, &compH));
-
-	if (err == A_Err_NONE && compH) {
-		A_FpLong frameRate;
-		err = suites.CompSuite11()->AEGP_GetCompFramerate(compH, &frameRate);
-		newTime = ConvertFloatToATime(time, frameRate);
-		err = suites.CompSuite11()->AEGP_SetCompDisplayStartTime(compH, &newTime);
-	}
-	else {
-		A_FpLong frameRate = 0;
-		newTime = ConvertFloatToATime(time, frameRate);
-		err = suites.ItemSuite9()->AEGP_SetItemCurrentTime(item, &newTime);
+	newTime.value = static_cast<A_long>(time * scle);
+	newTime.scale = scle;
+	ERR(suites.ItemSuite9()->AEGP_SetItemCurrentTime(item, &newTime));
+	if (err != A_Err_NONE) {
+		throw std::runtime_error("Error setting item current time. Error code: " + std::to_string(err));
 	}
 
 	Result<void> result(err);
 	return result;
 }
 
+Result<void> SetCompItemCurrentTime(Result<AEGP_ItemH> itemH, float time, float frameRate) {
+	AEGP_SuiteHandler& suites = SuiteManager::GetInstance().GetSuiteHandler();
+	A_Time newTime;
+	A_Err err = A_Err_NONE;
+	AEGP_CompH compH;
+	AEGP_ItemH item = itemH.value;
+
+	if (!item) {
+		throw A_Err_STRUCT; // throw an error if item is null
+	}
+
+	newTime.value = static_cast<A_long>(time);
+	newTime.scale = frameRate;
+	ERR(suites.ItemSuite9()->AEGP_SetItemCurrentTime(item, &newTime));
+	if (err != A_Err_NONE) {
+		throw std::runtime_error("Error setting item current time. Error code: " + std::to_string(err));
+	}
+
+	Result<void> result(err);
+	return result;
+}
 Result<std::string> GetItemComment(Result<AEGP_ItemH> itemH) {
 	A_Err err = A_Err_NONE;
 	AEGP_MemHandle unicodeNameMH;

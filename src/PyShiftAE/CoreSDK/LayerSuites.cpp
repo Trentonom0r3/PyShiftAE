@@ -122,6 +122,20 @@ Result<void> setLayerName(Result<AEGP_LayerH> layerH, const std::string& name) {
 	return successResult;
 }
 
+Result<AEGP_LayerH> ActiveLayer()
+{
+	AEGP_SuiteHandler& suites = SuiteManager::GetInstance().GetSuiteHandler();
+	A_Err err = A_Err_NONE;
+	AEGP_LayerH layerH;
+	ERR(suites.LayerSuite9()->AEGP_GetActiveLayer(&layerH));
+
+	Result<AEGP_LayerH> result;
+	result.value = layerH;
+	result.error = err;
+
+	return result;
+}
+
 Result<AEGP_LayerH> getLayerFromComp(Result<AEGP_CompH> compH, int index)
 {
 	AEGP_SuiteHandler& suites = SuiteManager::GetInstance().GetSuiteHandler();
@@ -322,6 +336,9 @@ Result<void> SetLayerFlag(Result<AEGP_LayerH> layerH, LayerFlag flag, A_Boolean 
 	AEGP_LayerH layer = layerH.value;
 	if (!layer) {
 		throw A_Err_STRUCT;
+	}
+	if (layer == NULL) {
+		throw std::runtime_error("Layer is null");
 	}
 	ERR(suites.LayerSuite9()->AEGP_SetLayerFlag(layer, flag, value));
 

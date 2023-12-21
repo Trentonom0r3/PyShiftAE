@@ -1,7 +1,11 @@
 #pragma once
 #include "../CoreSDK/TaskUtils.h"
 #include "../CoreSDK/Utils.h"
-
+#include <pybind11/pybind11.h>
+#include <pybind11/embed.h>  // for the embedded interpreter
+#include <pybind11/numpy.h>
+#include <pybind11/stl.h>
+#include <pybind11/functional.h>
 //forward declarations
 class Item;
 class Layer;
@@ -10,13 +14,34 @@ class CompItem;
 class FootageItem;
 class FolderItem;
 
+namespace py = pybind11;
+
+// Slider class equivalent
+class Slider {
+public:
+    Slider(const std::string& name, float minS, float maxS, float default_)
+        : name(name), minimum(minS), maximum(maxS), _default(default_) {}
+
+    std::string name;
+    float minimum, maximum, _default;
+};
+
+// CustomEffect class equivalent
+class CustomEffect {
+public:
+    CustomEffect() {}
+
+    std::string name;
+    std::vector<Slider> sliders;
+    py::function callback_function;
+};
+
 enum qualityOptions {
     BEST = AEGP_LayerQual_BEST,
     DRAFT = AEGP_LayerQual_DRAFT,
     WIREFRAME = AEGP_LayerQual_WIREFRAME,
     NONE = AEGP_LayerQual_NONE
 };
-
 
 class Layer {
 public:
@@ -42,6 +67,8 @@ public:
     void setFlag(LayerFlag flag, bool value);
     bool getFlag(LayerFlag flag);
     Result<AEGP_LayerH> getLayerHandle();
+    void addEffect(std::shared_ptr<CustomEffect> effect);
+    std::shared_ptr<Item> getSource();
 protected:
     Result<AEGP_LayerH> layerHandle_;
     int index_;
@@ -60,10 +87,13 @@ public:
     float getWidth();
     float getHeight();
     std::string name;
-    float getCurrentTime();
     float getDuration();
+    float getCurrentTime();
+    void setCurrentTime(float time);
     void deleteItem();
     Result<AEGP_ItemH> getItemHandle();
+    bool isSelected();
+    void setSelected(bool select);
 protected:
     Result<AEGP_ItemH> itemHandle_;
 };
@@ -99,43 +129,52 @@ public:
 
         return std::make_shared<FootageItem>(footageItem);
     }
-
+    std::string getPath();
 };
-
 class LayerCollection {
 public:
-    explicit LayerCollection(const Result<AEGP_CompH>& compHandle, std::vector<Layer> layers) : compHandle_(compHandle), layers_(layers) {}
+    explicit LayerCollection(const Result<AEGP_CompH>& compHandle, std::vector<std::shared_ptr<Layer>> layers)
+        : compHandle_(compHandle), layers_(std::move(layers)) {}
+    auto begin() const { return layers_.cbegin(); }
+    auto end() const { return layers_.cend(); }
     std::size_t size() const {
         return layers_.size();
     }
 
-    Layer& operator[](std::size_t index) {
+    std::shared_ptr<Layer>& operator[](std::size_t index) {
         if (index >= layers_.size()) {
             throw std::out_of_range("Index out of range");
         }
         return layers_[index];
     }
 
-    const Layer& operator[](std::size_t index) const {
+    const std::shared_ptr<Layer>& operator[](std::size_t index) const {
         if (index >= layers_.size()) {
             throw std::out_of_range("Index out of range");
         }
         return layers_[index];
     }
+
     // Iterator-related methods
-    std::vector<Layer>::iterator begin() { return layers_.begin(); }
-    std::vector<Layer>::iterator end() { return layers_.end(); }
+    auto begin() { return layers_.begin(); }
+    auto end() { return layers_.end(); }
+
     std::shared_ptr<Layer> addLayerToCollection(Item itemHandle, int index = -1);
     std::shared_ptr<Layer> addSolidToCollection(Item itemHandle, int index = -1);
     void removeLayerFromCollection(Layer layerHandle);
     void RemoveLayerByIndex(int index);
-    std::vector<Layer> getAllLayers();
+
+    std::vector<std::shared_ptr<Layer>> getAllLayers() {
+        return layers_;
+    }
+
     std::string getCompName();
 
 protected:
     Result<AEGP_CompH> compHandle_;
-    std::vector<Layer> layers_;
+    std::vector<std::shared_ptr<Layer>> layers_;
 };
+
 
 //TODO: Figure out how to turn "item" into a factory class, but still access things the same way.
 class CompItem : public Item {
@@ -145,7 +184,8 @@ public:
 
     std::shared_ptr<LayerCollection> CompItem::getLayers();
     int NumLayers();
-   // float frameRate;
+    float getCurrentTime();
+    void setCurrentTime(float time);
     void addLayer(std::string name, std::string path = NULL, int index = -1);
     float getFrameRate();
     void setFrameRate(float frameRate);
@@ -156,7 +196,7 @@ public:
     void setHeight(float height);
     std::shared_ptr<Layer> CompItem::newSolid(std::string name, float width, float height,float red, float green, float blue, float alpha,
     float duration);
-
+    std::shared_ptr<LayerCollection> CompItem::getSelectedLayers();
     // Static factory method to create a new CompItem
     static std::shared_ptr<CompItem> CreateNew(std::string name, float width, float height, float frameRate, float duration, float aspectRatio) {
         Result<AEGP_ItemH> itemHandle;
@@ -199,22 +239,25 @@ public:
         return items_.size();
     }
 
-    Item& operator[](std::size_t index) {
+    std::shared_ptr<Item>& operator[](std::size_t index) {
         if (index >= items_.size()) {
             throw std::out_of_range("Index out of range");
         }
-        return *items_[index];
+        return items_[index];
     }
 
-    const Item& operator[](std::size_t index) const {
+    const std::shared_ptr<Item>& operator[](std::size_t index) const {
         if (index >= items_.size()) {
             throw std::out_of_range("Index out of range");
         }
-        return *items_[index];
+        return items_[index];
     }
+
     // Iterator-related methods
-    std::vector<std::shared_ptr<Item>>::iterator begin() { return items_.begin(); }
-    std::vector<std::shared_ptr<Item>>::iterator end() { return items_.end(); }
+    auto begin() { return items_.begin(); }
+    auto end() { return items_.end(); }
+    auto begin() const { return items_.cbegin(); }
+    auto end() const { return items_.cend(); }
     std::vector<std::shared_ptr<Item>> append(std::shared_ptr<Item> item) {
         Item item2 = *item;
         auto itemhandle = this->itemHandle_;
@@ -307,5 +350,56 @@ public:
 
 		return std::make_shared<SolidItem>(footageItem);
 	}
+
+    std::vector<float> GetSolidColor(); //TODO
+    void SetSolidColor(float red, float green, float blue, float alpha);  //TODO
+    void SetSolidDimensions(float width, float height);  //TODO
 };
 
+class AdjustmentLayer : public Layer {
+public:
+	explicit AdjustmentLayer(const Result<AEGP_LayerH>& layerHandle) : Layer(layerHandle) {}
+	virtual ~AdjustmentLayer() = default;
+
+	static std::shared_ptr<AdjustmentLayer> createNew(std::shared_ptr<CompItem> compH, std::string name = "Adjustment Layer") {
+        CompItem comp = *compH;
+        Result<AEGP_ItemH> itemHandle = comp.getItemHandle();
+        if (itemHandle.value == NULL) {
+			throw std::runtime_error("No active item");
+		}
+        auto& compHOut = enqueueSyncTask(getCompFromItem, itemHandle);
+        compHOut->wait();
+
+        Result<AEGP_CompH> compH2 = compHOut->getResult();
+		if (compH2.error != A_Err_NONE) {
+			throw std::runtime_error("Failed to get comp from item");
+		}
+        if (compH2.value == NULL) {
+            throw std::runtime_error("Failed to get comp from item");
+        }
+
+		auto& message = enqueueSyncTask(CreateSolidInComp, name, comp.getWidth(), comp.getHeight(), 0, 0, 0, 0, compH2, comp.getDuration());
+		message->wait();
+
+		Result<AEGP_LayerH> result = message->getResult();
+		AEGP_LayerH layerH = result.value;
+        if (layerH == NULL) {
+			throw std::runtime_error("Failed to create new layer");
+		}
+		if (result.error != A_Err_NONE) {
+			throw std::runtime_error("Failed to create new layer");
+		}
+
+        LayerFlag flag = LayerFlag::ADJUSTMENT_LAYER;
+        auto& message2 = enqueueSyncTask(SetLayerFlag, result, flag, true);
+        message2->wait();
+
+		Result<void> result2 = message2->getResult();
+		if (result2.error != A_Err_NONE) {
+			throw std::runtime_error("Failed to set layer flag");
+		}
+
+        AdjustmentLayer layer(result);
+        return std::make_shared<AdjustmentLayer>(layer);
+	}
+};

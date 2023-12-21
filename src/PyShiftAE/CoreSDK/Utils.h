@@ -10,3 +10,6 @@
 #include "RenderSuites.h"
 #include "UtilitySuites.h"
 #include "WorldSuites.h"
+#include "EffectSuites.h"
+#include "PanelSuites.h"
+

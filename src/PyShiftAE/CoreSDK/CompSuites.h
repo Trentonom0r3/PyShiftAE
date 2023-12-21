@@ -46,7 +46,7 @@ Result<AEGP_LayerH> CreateCameraInComp(const std::string& name, float x, float y
 
 Result<AEGP_LayerH> CreateLightInComp(const std::string& name, float x, float y, Result<AEGP_CompH> parentCompH);
 
-Result<AEGP_Collection2H> GetNewCollectionFromCompSelection(Result<AEGP_CompH> compH);
+Result<std::vector<Result<AEGP_LayerH>>> GetNewCollectionFromCompSelection(Result<AEGP_CompH> compH);
 
 Result<void> SetSelection(Result<AEGP_CompH> compH, AEGP_Collection2H collectionH);
 

@@ -45,8 +45,22 @@ The ripple effect of PyShiftAE in the AE community could be profound. Scriptwrit
 - Feature Parity: Retaining all the functionality from ExtendScript, albeit with an enhanced and simplified interface, is a significant challenge.
 
 # ChangeLog
-All Updates should be assumed to come with updated documentation, and an updated binary .aex file located in ```dist```, unless otherwise specified. 
+All Updates should be assumed to come with updated documentation, and an updated binary .aex file located in `dist`, unless otherwise specified. 
 ChangeLog will contain a brief description of changes. See Wiki API docs for more info. 
+- [12.21.23]
+    - Massive Overhaul and Feature Updates. Slight API doc changes. 
+    - Included a Debug Console, found under `Window` -> `Python Console`.
+    - Added to the [CEPy-Resources Repo](https://github.com/Trentonom0r3/CEPy-Resources)
+      - See this repo for how to run PyShiftAE from CEP extensions, and instructions for setup. 
+    - Fixed issues with using iterator, fixed some memory and pointer issues.
+    - Added `layer.source`, use to get source Item, which is used to alter/change source item. 
+    - Added `selectedLayer(s)` to `CompItem` class, shows you which layers are selected.
+    - Added `selectedItems` to `Project` class.
+    - Added `activeLayer` to `Project`.
+    - Added `selected` boolean attribute to `Item` base class. 
+    - Added a `build.py` script to help user generate the boilerplate for `CEP` integration. 
+        - Again, see the [CEPy-Resources Repo](https://github.com/Trentonom0r3/CEPy-Resources).
+
 - [11.29.23]
     - Added `ProjectCollection` and `ItemCollection` classes, similar to `LayerCollection`
     - Updated API Reference with some more detailed information. 

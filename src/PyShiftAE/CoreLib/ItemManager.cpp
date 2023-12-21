@@ -18,6 +18,35 @@ Result<AEGP_ItemH> Item::getItemHandle()
 return this->itemHandle_;
 }
 
+bool Item::isSelected()
+{
+	auto item = this->itemHandle_;
+	if (item.value == NULL) {
+		throw std::runtime_error("No active item");
+		return false;
+	}
+	auto& message = enqueueSyncTask(IsItemSelected, item);
+	message->wait();
+
+	Result<bool> result = message->getResult();
+	bool isSelected = result.value;
+	return isSelected;
+}
+
+void Item::setSelected(bool select)
+{
+	bool deselectOthers = false;
+	auto item = this->itemHandle_;
+	if (item.value == NULL) {
+		throw std::runtime_error("No active item");
+	}
+	auto& message = enqueueSyncTask(SelectItem, item, select, deselectOthers);
+	message->wait();
+
+	Result<void> result = message->getResult();
+	return;
+}
+
 std::string Item::getName() {
 	auto item = this->itemHandle_;
 	if (item.value == NULL) {
@@ -28,7 +57,8 @@ std::string Item::getName() {
 	message->wait();
 
 	Result<std::string> result = message->getResult();
-	return result.value;
+	std::string name = result.value;
+	return name;
 }
 
 void Item::setName(std::string name) {
@@ -59,7 +89,8 @@ float Item::getWidth()
 			return 0.0f;
 		}
 
-	return result.value.width;
+	float width = result.value.width;
+	return width;
 }
 
 float Item::getHeight()
@@ -79,7 +110,66 @@ float Item::getHeight()
 			return 0.0f;
 		}
 
-	return result.value.height;
+	float height = result.value.height;
+	return height;
+}
+
+float Item::getCurrentTime()
+{
+	auto item = this->itemHandle_;
+	if (item.value == NULL) {
+			throw std::runtime_error("No active item");
+			return 0.0f;
+		}
+	auto& message = enqueueSyncTask(GetItemCurrentTime, item);
+	message->wait();
+
+	Result<float> result = message->getResult();
+
+	if (result.error != A_Err_NONE) {
+			throw std::runtime_error("Error getting item current time");
+			return 0.0f;
+		}
+
+	float time = result.value;
+	return time;
+}
+
+float Item::getDuration()
+{
+	auto item = this->itemHandle_;
+	if (item.value == NULL) {
+			throw std::runtime_error("No active item");
+			return 0.0f;
+		}
+	auto& message = enqueueSyncTask(GetItemDuration, item);
+	message->wait();
+
+	Result<float> result = message->getResult();
+
+	if (result.error != A_Err_NONE) {
+			throw std::runtime_error("Error getting item duration");
+			return 0.0f;
+		}
+
+	float time = result.value;
+	return time;
+}
+
+void Item::setCurrentTime(float time)
+{
+	auto item = this->itemHandle_;
+	if (item.value == NULL) {
+			throw std::runtime_error("No active item");
+		}
+	auto& message = enqueueSyncTask(SetItemCurrentTime, item, time);
+	message->wait();
+
+	Result<void> result = message->getResult();
+
+	if (result.error != A_Err_NONE) {
+			throw std::runtime_error("Error setting item current time");
+		}
 }
 
 float CompItem::getFrameRate()
@@ -109,7 +199,8 @@ auto item = this->itemHandle_;
 		return 0;
 	}
 
-	return result2.value;
+	float time = result2.value;
+	return time;
 }
 
 void CompItem::setFrameRate(float frameRate)
@@ -166,7 +257,8 @@ auto item = this->itemHandle_;
 		return 0;
 	}
 
-	return result2.value;
+	float time = result2.value;
+	return time;
 }
 
 void CompItem::setDuration(float duration)
@@ -266,8 +358,46 @@ std::shared_ptr<Layer> CompItem::newSolid(std::string name, float width, float h
 
 	Result<AEGP_LayerH> result2 = message2->getResult();
 
-	return std::make_shared<Layer>(result2);
+	std::shared_ptr<Layer> layer = std::make_shared<Layer>(result2);
+	return layer;
 }
+
+std::shared_ptr<LayerCollection> CompItem::getSelectedLayers()
+{
+	auto item = this->itemHandle_;
+	if (item.value == NULL) {
+		throw std::runtime_error("No active item");
+	}
+	auto& message = enqueueSyncTask(getCompFromItem, item);
+	message->wait();
+
+	Result<AEGP_CompH> result = message->getResult();
+
+	if (result.error != A_Err_NONE) {
+		throw std::runtime_error("Error getting comp from item");
+	}
+
+	auto& message2 = enqueueSyncTask(GetNewCollectionFromCompSelection, result);
+	message2->wait();
+
+	Result<std::vector<Result<AEGP_LayerH>>> result2 = message2->getResult();
+
+	if (result2.error != A_Err_NONE) {
+		throw std::runtime_error("Error getting selected layers");
+	}
+
+	std::vector<std::shared_ptr<Layer>> layers;	
+
+	for (int i = 0; i < result2.value.size(); i++) {
+		Layer layer = Layer(result2.value[i]);
+		std::shared_ptr<Layer> layerPtr = std::make_shared<Layer>(layer);
+		layers.push_back(layerPtr);
+	}
+
+	std::shared_ptr<LayerCollection> layerCollection = std::make_shared<LayerCollection>(result, layers);
+	return layerCollection;
+}
+
 
 std::shared_ptr<LayerCollection> CompItem::getLayers()
 {
@@ -295,7 +425,7 @@ std::shared_ptr<LayerCollection> CompItem::getLayers()
 
 	int numLayers = result2.value;
 
-	std::vector<Layer> layers;
+	std::vector<std::shared_ptr<Layer>> layers;
 
 	for (int i = 0; i < numLayers; i++) { 
 		auto index = i;
@@ -307,11 +437,12 @@ std::shared_ptr<LayerCollection> CompItem::getLayers()
 		if (result3.error != A_Err_NONE) {
 			throw std::runtime_error("Error getting layer from comp");
 		}
-
-		layers.push_back(Layer(result3));
+		std::shared_ptr<Layer> layer = std::make_shared<Layer>(result3);
+		layers.push_back(layer);
 	}
 
-	return std::make_shared<LayerCollection>(result, layers);
+	std::shared_ptr<LayerCollection> layerCollection = std::make_shared<LayerCollection>(result, layers);
+	return layerCollection;
 
 }
 
@@ -342,7 +473,68 @@ int CompItem::NumLayers() {
 		return 0;
 	}
 
-	return result2.value;
+	int numLayers = result2.value;
+	return numLayers;
+}
+
+float CompItem::getCurrentTime()
+{
+	auto item = this->itemHandle_;
+	if (item.value == NULL) {
+		throw std::runtime_error("No active item");
+		return 0.0f;
+	}
+
+	auto& compH = enqueueSyncTask(getCompFromItem, item);
+	compH->wait();
+
+	Result<AEGP_CompH> resultZ = compH->getResult();
+
+	auto& frameRate = enqueueSyncTask(GetCompFramerate, resultZ);
+	frameRate->wait();
+
+	Result<float> result = frameRate->getResult();
+
+	auto& message = enqueueSyncTask(GetCompItemCurrentTime, item, result.value);
+	message->wait();
+
+	Result<float> resultH = message->getResult();
+
+	if (resultH.error != A_Err_NONE) {
+		throw std::runtime_error("Error getting current time");
+		return 0.0f;
+	}
+
+	float time = resultH.value;
+	return time;
+}
+
+void CompItem::setCurrentTime(float time)
+{
+	auto item = this->itemHandle_;
+	if (item.value == NULL) {
+		throw std::runtime_error("No active item");
+	}
+
+	auto& compH = enqueueSyncTask(getCompFromItem, item);
+	compH->wait();
+
+	Result<AEGP_CompH> resultZ = compH->getResult();
+
+	auto& frameRate = enqueueSyncTask(GetCompFramerate, resultZ);
+	frameRate->wait();
+
+	Result<float> result = frameRate->getResult();
+
+	auto& message = enqueueSyncTask(SetCompItemCurrentTime, item, time, result.value);
+	message->wait();
+
+	Result<void> resultH = message->getResult();
+
+	if (resultH.error != A_Err_NONE) {
+		throw std::runtime_error("Error setting current time");
+		return;
+	}
 }
 
 void CompItem::addLayer(std::string name, std::string path, int index)
@@ -431,7 +623,16 @@ std::string Layer::GetLayerName()
 	message->wait();
 
 	Result<std::string> result = message->getResult();
-	return result.value;
+	std::string	name = result.value;
+	if (name == "") {
+		auto& message2 = enqueueSyncTask(getLayerSourceName, layer);
+		message2->wait();
+
+		Result<std::string> result2 = message2->getResult();
+		std::string	name2 = result2.value;
+		return name2;
+	}
+	return name;
 }
 
 std::string Layer::GetSourceName()
@@ -445,7 +646,8 @@ std::string Layer::GetSourceName()
 	message->wait();
 
 	Result<std::string> result = message->getResult();
-	return result.value;
+	std::string	name = result.value;
+	return name;
 }
 
 void Layer::SetLayerName(std::string name)
@@ -472,7 +674,8 @@ int Layer::index()
 	message->wait();
 
 	Result<int> result = message->getResult();
-	return result.value;
+	int index = result.value;
+	return index;
 }
 
 //Swaps the index of the layer with the layer at the given index
@@ -505,7 +708,8 @@ std::shared_ptr<FootageItem> Layer::duplicate()
 
 	Result<AEGP_ItemH> result2 = message2->getResult();
 
-	return std::make_shared<FootageItem>(result2);
+	std::shared_ptr<FootageItem> footageItem = std::make_shared<FootageItem>(result2);	
+	return footageItem;
 }
 
 
@@ -521,7 +725,8 @@ float Layer::layerTime()
 	message->wait();
 
 	Result<float> result = message->getResult();
-	return result.value;
+	float time = result.value;
+	return time;
 }
 
 float Layer::layerCompTime()
@@ -536,7 +741,8 @@ float Layer::layerCompTime()
 	message->wait();
 
 	Result<float> result = message->getResult();
-	return result.value;
+	float time = result.value;
+	return time;
 }
 
 float Layer::inPoint()
@@ -551,7 +757,8 @@ float Layer::inPoint()
 	message->wait();
 
 	Result<float> result = message->getResult();
-	return result.value;
+	float time = result.value;
+	return time;
 }
 
 float Layer::compInPoint()
@@ -566,7 +773,8 @@ float Layer::compInPoint()
 	message->wait();
 
 	Result<float> result = message->getResult();
-	return result.value;
+	float time = result.value;
+	return time;
 }
 
 float Layer::duration()
@@ -581,7 +789,8 @@ float Layer::duration()
 	message->wait();
 
 	Result<float> result = message->getResult();
-	return result.value;
+	float time = result.value;
+	return time;
 }
 
 float Layer::compDuration()
@@ -596,7 +805,8 @@ float Layer::compDuration()
 	message->wait();
 
 	Result<float> result = message->getResult();
-	return result.value;
+	float time = result.value;
+	return time;
 }
 
 std::string Layer::getQuality()
@@ -610,7 +820,8 @@ std::string Layer::getQuality()
 	message->wait();
 
 	Result<std::string> result = message->getResult();
-	return result.value;
+	std::string quality = result.value;
+	return quality;
 }
 
 void Layer::setQuality(int quality)
@@ -656,7 +867,8 @@ float Layer::getOffset()
 	message->wait();
 
 	Result<float> result = message->getResult();
-	return result.value;
+	float offset = result.value;
+	return offset;
 }
 
 void Layer::setOffset(float offset)
@@ -737,6 +949,120 @@ Result<AEGP_LayerH> Layer::getLayerHandle()
 return this->layerHandle_;
 }
 
+void Layer::addEffect(std::shared_ptr<CustomEffect>  effect)
+{
+	if (effect == NULL) {
+		throw std::invalid_argument("Invalid effect");
+		return;
+	}
+	void* effectPtr = reinterpret_cast<void*>(effect.get());
+	auto layer = this->layerHandle_;
+	if (layer.value == NULL) {
+		throw std::runtime_error("No active layer");
+	}
+
+	auto& message = enqueueSyncTask(GetNumInstalledEffects);
+	message->wait();
+
+	Result<int> result = message->getResult();
+
+	if (result.error != A_Err_NONE) {
+		throw std::runtime_error("Error getting number of installed effects");
+		return;
+	}
+
+	int numEffects = result.value;
+	Result<AEGP_InstalledEffectKey> effectKey;
+	effectKey.value = 0;
+	effectKey.error = A_Err_NONE;
+	for (int i = 0; i < numEffects; i++) {
+		auto index = i;
+		auto& getEffect = enqueueSyncTask(GetNextInstalledEffect, effectKey);
+		getEffect->wait();
+
+		Result<AEGP_InstalledEffectKey> nextKey = getEffect->getResult();
+
+		if (nextKey.error != A_Err_NONE) {
+			throw std::runtime_error("Error getting next installed effect");
+			return;
+		}
+
+		effectKey = nextKey;
+
+		auto& getEffectName = enqueueSyncTask(GetEffectMatchName, effectKey);
+		getEffectName->wait();
+
+		Result<std::string> effectName = getEffectName->getResult();
+
+		if (effectName.error != A_Err_NONE) {
+			throw std::runtime_error("Error getting effect name");
+		}
+
+		if (effectName.value == "ADBE Skeleton") {
+			auto& addEffect = enqueueSyncTask(ApplyEffect, layer, effectKey);
+			addEffect->wait();
+
+			Result<AEGP_EffectRefH> effectRef = addEffect->getResult();
+
+			if (effectRef.error != A_Err_NONE) {
+				throw std::runtime_error("Error adding effect");
+			}
+
+			auto& sendEffect = enqueueSyncTask(EffectCallGeneric, effectRef, effectPtr);
+			sendEffect->wait();
+
+			Result<void> result = sendEffect->getResult();
+
+			if (result.error != A_Err_NONE) {
+				throw std::runtime_error("Error sending effect");
+			}
+		}
+	}
+
+
+}
+
+std::shared_ptr<Item> Layer::getSource()
+{
+	//Result<AEGP_ItemH> getLayerSourceItem(Result<AEGP_LayerH> layerH);
+	auto layer = this->layerHandle_;
+	if (layer.value == NULL) {
+		throw std::runtime_error("No active layer");
+	}
+	auto& message = enqueueSyncTask(getLayerSourceItem, layer);
+	message->wait();
+
+	Result<AEGP_ItemH> result = message->getResult();
+
+	//get item type
+	auto& message2 = enqueueSyncTask(getItemType, result);
+	message2->wait();
+
+	Result<AEGP_ItemType> result2 = message2->getResult();
+
+	if (result2.error != A_Err_NONE) {
+		throw std::runtime_error("Error getting item type");
+	}
+
+	if (result2.value == AEGP_ItemType_FOOTAGE) {
+		std::shared_ptr<FootageItem> footageItem = std::make_shared<FootageItem>(result);
+		return footageItem;
+	}
+	else if (result2.value == AEGP_ItemType_COMP) {
+		std::shared_ptr<CompItem> compItem = std::make_shared<CompItem>(result);
+		return compItem;
+	}
+	else if (result2.value == AEGP_ItemType_FOLDER) {
+		std::shared_ptr<FolderItem> folderItem = std::make_shared<FolderItem>(result);
+		return folderItem;
+	}
+	else {
+		std::shared_ptr<Item> item = std::make_shared<Item>(result);
+		return item;
+	}
+}
+
+
 std::shared_ptr<ItemCollection> FolderItem::ChildItems()
 {
 	auto item = this->itemHandle_;
@@ -747,7 +1073,8 @@ std::shared_ptr<ItemCollection> FolderItem::ChildItems()
 	Result<AEGP_ItemH> itemH = item;
 	ItemCollection collection(itemH);
 
-	return std::make_shared<ItemCollection>(collection);
+	std::shared_ptr<ItemCollection> itemCollection = std::make_shared<ItemCollection>(collection);
+	return itemCollection;
 
 }
 
@@ -769,13 +1096,10 @@ void LayerCollection::RemoveLayerByIndex(int index)
 	}
 	auto& layer = layers[index];
 
-	layer.deleteLayer();
+	layer->deleteLayer();
 
 }
 
-std::vector<Layer> LayerCollection::getAllLayers() {
-	return this->layers_;
-}
 
 std::string LayerCollection::getCompName() 
 {
@@ -863,7 +1187,8 @@ std::shared_ptr<Layer> LayerCollection::addLayerToCollection(Item itemHandle, in
 		}
 	}
 
-	return std::make_shared<Layer>(newLayer);
+	std::shared_ptr<Layer> layer = std::make_shared<Layer>(newLayer);
+	return layer;
 }
 
 std::vector<std::shared_ptr<Item>> ItemCollection::getItems()
@@ -926,4 +1251,48 @@ std::vector<std::shared_ptr<Item>> ItemCollection::getItems()
 	}
 
 	return items;
+}
+
+std::string FootageItem::getPath()
+{
+	auto item = this->itemHandle_;
+	if (item.value == NULL) {
+		throw std::runtime_error("No active item");
+		return std::string{};
+	}
+
+	auto& curTime = enqueueSyncTask(GetItemCurrentTime, item);
+	curTime->wait();
+
+	Result<float> time = curTime->getResult();
+
+	if (time.error != A_Err_NONE) {
+		throw std::runtime_error("Error getting current time");
+		return std::string{};
+	}
+
+	auto& message = enqueueSyncTask(GetMainFootageFromItem, item);
+	message->wait();
+
+	Result<AEGP_FootageH> result = message->getResult();
+
+	if (result.error != A_Err_NONE) {
+		throw std::runtime_error("Error getting main footage from item");
+		return std::string{};
+	}
+
+	auto& message2 = enqueueSyncTask(GetFootagePath, result, time.value, AEGP_FOOTAGE_MAIN_FILE_INDEX);
+	message2->wait();
+
+	Result<std::string> result2 = message2->getResult();
+
+	if (result2.error != A_Err_NONE) {
+		throw std::runtime_error("Error getting footage path");
+		return std::string{};
+	}
+
+	std::string result2String = result2.value;
+	return result2String;
+
+
 }

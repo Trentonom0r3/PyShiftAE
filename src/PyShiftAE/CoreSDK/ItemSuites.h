@@ -25,6 +25,9 @@ Result<void> SelectItem(Result<AEGP_ItemH> itemH, bool select, bool deselectOthe
 
 Result<AEGP_ItemFlags> GetItemFlags(Result<AEGP_ItemH> itemH);
 
+Result<float> GetCompItemCurrentTime(Result<AEGP_ItemH> itemH, float frameRate);
+Result<void> SetCompItemCurrentTime(Result<AEGP_ItemH> itemH, float time, float frameRate);
+
 Result<void> SetItemUseProxy(Result<AEGP_ItemH> itemH, bool useProxy);
 
 Result<AEGP_ItemH> GetItemParentFolder(Result<AEGP_ItemH> itemH);

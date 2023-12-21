@@ -58,3 +58,38 @@ Result<void> EndUndoGroup()
 	return result;
 
 }
+
+Result<std::string> getPluginPaths()
+{
+	A_Err 	err = A_Err_NONE,
+		err2 = A_Err_NONE;
+	AEGP_SuiteHandler& suites = SuiteManager::GetInstance().GetSuiteHandler();
+	AEGP_GetPathTypes pathType = AEGP_GetPathTypes_USER_PLUGIN;
+	AEGP_PluginID* pluginIDPtr = SuiteManager::GetInstance().GetPluginID();
+	AEGP_MemHandle unicode_pathMH = nullptr;
+	A_UTF16Char* unicode_pathP = nullptr;
+	std::string path;
+
+	if (pluginIDPtr != nullptr) {
+		// Dereference the pointer to get the plugin ID
+		AEGP_PluginID  pluginID = *pluginIDPtr;
+		// Use the macro and capture any error that occurs
+		ERR(suites.UtilitySuite6()->AEGP_GetPluginPaths(pluginID, pathType, &unicode_pathMH));
+		if (err != A_Err_NONE) { // If there was an error
+					// Throw a runtime error with the error code
+					throw std::runtime_error("Error getting plugin paths. Error code: " + std::to_string(err));
+				}
+		if (unicode_pathMH) {
+			suites.MemorySuite1()->AEGP_LockMemHandle(unicode_pathMH, (void**)&unicode_pathP);
+			path = convertUTF16ToUTF8(unicode_pathP);  // Assuming convertUTF16ToUTF8 is already implemented
+			suites.MemorySuite1()->AEGP_UnlockMemHandle(unicode_pathMH);
+			suites.MemorySuite1()->AEGP_FreeMemHandle(unicode_pathMH);
+		}
+		Result<std::string> result(path, err);
+		return result;
+	}
+	else {
+		throw std::runtime_error("Plugin ID is null");
+	}
+
+}
