@@ -5,6 +5,8 @@ Python for After Effects! PyShiftAE is an experimental, Open Source library desi
   
 - PyShiftAE not only allows scripting of AE through python, but integration of most (if not all) external python libraries, provided you have the installed. 
 - As ways to script shapes/masks/text et alia are implemented, this will open doors to python data-driven animation within AE, utilization of various ML and AI libraries, and much, much more.
+### Join the Official **PyShiftAE** Discord!
+- Check it out [here](https://discord.gg/S2AE9Zfuxb)!
 
 ## Contents
 
