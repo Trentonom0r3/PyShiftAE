@@ -290,7 +290,8 @@ void bindFootageItem(py::module_& m)
 {
     py::class_<FootageItem, Item, std::shared_ptr<FootageItem>>(m, "FootageItem")
         .def(py::init(&FootageItem::createNew), py::arg("name") = "New Layer", py::arg("path") = NULL, py::arg("index") = -1)
-        .def_property_readonly("path", &FootageItem::getPath);
+        .def_property_readonly("path", &FootageItem::getPath)
+        .def("replace", &FootageItem::replaceWithNewSource, py::arg("name"), py::arg("path"));
 }
 
 void bindProjectCollection(py::module_& m) {

@@ -24,62 +24,6 @@ public:
 
 };
 
-class Effect {
-public:
-    Effect();
-    Effect(std::string effectName);
-
-    std::string getDisplayName();
-    std::string getCategory();
-    std::string getMatchName();
-    std::string getVersion();
-
-    EffectFlags getFlags();
-    void setFlags(EffectFlags flags);
-protected:
-    AEGP_EffectRefH effectRefH_;
-
-};
-
-class EffectCollection {
-public:
-    EffectCollection();
-    EffectCollection(Result<AEGP_LayerH> layerH);
-
-    std::size_t size() const {
-		return effects_.size();
-	}
-
-    Effect& operator[](std::size_t index) {
-        if (index >= effects_.size()) {
-			throw std::out_of_range("Index out of range");
-		}
-		return *effects_[index];
-	}
-
-    const Effect& operator[](std::size_t index) const {
-        if (index >= effects_.size()) {
-			throw std::out_of_range("Index out of range");
-		}
-		return *effects_[index];
-	}
-
-	std::vector<std::shared_ptr<Effect>>::iterator begin() { return effects_.begin(); }
-	std::vector<std::shared_ptr<Effect>>::iterator end() { return effects_.end(); }
-
-    protected:
-	Result<AEGP_LayerH> layerH_;
-	std::vector<std::shared_ptr<Effect>> effects_;
-};
-
-class EffectProperties {
-public: 
-    EffectProperties(Result<AEGP_EffectRefH> effectRefH);
-
-    //set up stream suite wrappers
-
-};
-
 
 template <>
 const A_char* SuiteTraits<PFAppSuite4>::i_name = kPFAppSuite;
