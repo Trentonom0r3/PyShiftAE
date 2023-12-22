@@ -41,7 +41,7 @@ The `App` class represents the main application interface, providing access to p
   app.reportInfo("Operations Completed")
   ```
 
-### Class: `project`
+### Class: `Project`
 
 Represents a project within the application, providing methods to interact with various project elements like compositions, footage, and folders.
 
@@ -126,6 +126,9 @@ Represents a footage item in a project. Footage items are used as sources for la
 - **Attributes:**
   - `path` : (read-only) The path to the FootageItem. 
 
+- **Methods:** 
+  - `replace(name:str, path:str)` **->** `FootageItem`: Replaces the Footage in a `FootageItem`.
+  
 ### Class: `FolderItem` (Inherits from `Item`)
 
 Represents a folder item in a project, allowing organization of various items.

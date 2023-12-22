@@ -1296,3 +1296,29 @@ std::string FootageItem::getPath()
 
 
 }
+
+void FootageItem::replaceWithNewSource(std::string name, std::string path)
+{
+	auto& Item = this->itemHandle_;
+	if (Item.value == NULL) {
+		throw std::runtime_error("No active item");
+		return;
+	}
+
+	auto& createfootage = enqueueSyncTask(createFootage, path);
+	createfootage->wait();
+
+	Result<AEGP_FootageH> createFootage = createfootage->getResult();
+
+	if (createFootage.error != A_Err_NONE) {
+		throw std::runtime_error("Error creating footage");
+		return;
+	}
+
+	auto& replace = enqueueSyncTask(ReplaceItemMainFootage, createFootage, Item);
+	replace->wait();
+
+	Result<AEGP_ItemH> result = replace->getResult();
+	Item = result;
+
+}

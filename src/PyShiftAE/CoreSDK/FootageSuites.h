@@ -28,7 +28,7 @@ Result<AEGP_FootageSignature> GetFootageSignature(Result<AEGP_FootageH> footageH
 
 Result<void> SetItemProxyFootage(Result<AEGP_FootageH> footageH, Result<AEGP_ItemH> itemH);
 
-Result<void> ReplaceItemMainFootage(Result<AEGP_FootageH> footageH, Result<AEGP_ItemH> itemH);
+Result<AEGP_ItemH> ReplaceItemMainFootage(Result<AEGP_FootageH> footageH, Result<AEGP_ItemH> itemH);
 
 Result<void> SetFootageInterpretation(Result<AEGP_ItemH> itemH, bool proxyB, AEGP_FootageInterp interpP);
 

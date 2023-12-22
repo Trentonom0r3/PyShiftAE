@@ -99,7 +99,7 @@ protected:
 };
 
 
-class FootageItem : public Item {
+class FootageItem : public Item, public std::enable_shared_from_this<FootageItem> {
 public:
     // Constructors and Destructors
     explicit FootageItem(const Result<AEGP_ItemH>& itemHandle) : Item(itemHandle) {}
@@ -130,6 +130,7 @@ public:
         return std::make_shared<FootageItem>(footageItem);
     }
     std::string getPath();
+    void replaceWithNewSource(std::string name, std::string path);
 };
 class LayerCollection {
 public:

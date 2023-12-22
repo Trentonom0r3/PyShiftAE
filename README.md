@@ -50,6 +50,9 @@ The ripple effect of PyShiftAE in the AE community could be profound. Scriptwrit
 # ChangeLog
 All Updates should be assumed to come with updated documentation, and an updated binary .aex file located in `dist`, unless otherwise specified. 
 ChangeLog will contain a brief description of changes. See Wiki API docs for more info. 
+- [12.22.23]
+    - Added `replace` method to `FootageItem`.
+    - Created `PSC.exe` to help install `PyShiftAE` in the correct location, with the correct python version. Find this in `/dist/`.
 - [12.21.23]
     - Massive Overhaul and Feature Updates. Slight API doc changes. 
     - Included a Debug Console, found under `Window` -> `Python Console`.

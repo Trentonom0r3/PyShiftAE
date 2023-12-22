@@ -210,18 +210,18 @@ if (item == NULL || footage == NULL) {
 	return result;
 }
 
-Result<void> ReplaceItemMainFootage(Result<AEGP_FootageH> footageH, Result<AEGP_ItemH> itemH) {
+Result<AEGP_ItemH> ReplaceItemMainFootage(Result<AEGP_FootageH> footageH, Result<AEGP_ItemH> itemH) {
 	A_Err err = A_Err_NONE;
 	AEGP_SuiteHandler& suites = SuiteManager::GetInstance().GetSuiteHandler();
 	AEGP_ItemH item = itemH.value;
 	AEGP_FootageH footage = footageH.value;
 	if (item == NULL || footage == NULL) {
-			return Result<void>(A_Err_STRUCT);
-		}
+		throw std::runtime_error("Error replacing main footage. Error code: " + std::to_string(A_Err_STRUCT));
+	}
 
 	err = suites.FootageSuite5()->AEGP_ReplaceItemMainFootage(footage, item);
 
-	Result<void> result(err);
+	Result<AEGP_ItemH> result(item, err);
 	return result;
 }
 
