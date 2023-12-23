@@ -93,9 +93,13 @@ std::tuple<std::string, std::string, std::map<std::string, JsonValue>> processRe
 				std::string argKey = arg->name->string;
 				auto* argValue = (struct json_value_s*)arg->value;
 
+				// Debug print
+				std::cout << "Key: " << argKey << ", Type: " << argValue->type << std::endl;
+
+				auto* stringValue = (struct json_string_s*)argValue->payload;
 				switch (argValue->type) {
 				case json_type_string:
-					argsMap[argKey] = ((struct json_string_s*)argValue->payload)->string;
+					argsMap[argKey] = std::string(stringValue->string);	
 					break;
 				case json_type_number:
 					argsMap[argKey] = std::stod(((struct json_number_s*)argValue->payload)->number);
