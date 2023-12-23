@@ -19,9 +19,8 @@ Python for After Effects! PyShiftAE is an experimental, Open Source library desi
     - [CSXS Events](https://github.com/Trentonom0r3/PyShiftAE/wiki/CSXS-Utils)
     - [Demos](https://github.com/Trentonom0r3/PyShiftAE/wiki/Demos)
     - [Building from source](https://github.com/Trentonom0r3/PyShiftAE/wiki/Building-from-source)
-    - [Pre-Compiled .aex Binary](https://github.com/Trentonom0r3/PyShiftAE/blob/main/dist/PyShiftAE.aex)
-      - MUST have Python 3.11 installed to path.
-  
+    - [Installation via installer(RECOMMENDED)](https://github.com/Trentonom0r3/PyShiftAE/wiki/Installing-from-.exe-(RECOMMENDED))
+      
 - [Contributing](https://github.com/Trentonom0r3/PyShiftAE/blob/main/CONTRIBUTING.md)
     - [Issues](https://github.com/Trentonom0r3/PyShiftAE/blob/main/CONTRIBUTING.md#reporting-issues)
     - [Pull Requests](https://github.com/Trentonom0r3/PyShiftAE/blob/main/CONTRIBUTING.md#submitting-pull-requests)
