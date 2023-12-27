@@ -47,8 +47,9 @@ ExtendScript, the established scripting language in AE, poses certain limitation
 The ripple effect of PyShiftAE in the AE community could be profound. Scriptwriters could venture into more advanced coding territories, and CEP extension authors could craft hybrid extensions blending SDK features via PyShiftAE, thereby catalyzing a wave of innovative solutions in the AE ecosystem.
 
 ## Challenges Ahead
-- Memory & Lifetime Management: Ensuring robust state storage while averting memory leaks is a paramount concern.
 - Feature Parity: Retaining all the functionality from ExtendScript, albeit with an enhanced and simplified interface, is a significant challenge.
+- `CEPy` Extensions: A play on `CEP`, `CEPy` extensions aim to provide an interface for pure python GUI creation, for those that don't care about having a pretty JS UI.
+- Custom Effects: The ability to create and write your own custom effects. They function like effects, have keyframeable parameters like effects, etc. Users would write custom python callbacks, determining the behavior of their effect.
 
 # ChangeLog
 All Updates should be assumed to come with updated documentation, and an updated binary .aex file located in `dist`, unless otherwise specified. 
