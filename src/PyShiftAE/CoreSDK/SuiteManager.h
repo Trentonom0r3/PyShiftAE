@@ -1,9 +1,15 @@
 // SuiteManager.h
 #pragma once
 
+#ifdef MYSUITEDLL_EXPORTS
+#define MYSUITE_API __declspec(dllexport)
+#else
+#define MYSUITE_API __declspec(dllimport)
+#endif
+
 #include "AEGP_SuiteHandler.h"
 #include "AE_GeneralPlugPanels.h"
-#include "SuiteHelper.h"#
+#include "SuiteHelper.h"
 /*
  * File: SuiteManager.h
  * Description: Singleton class managing the After Effects suite handler and plugin ID.
@@ -18,7 +24,7 @@ const A_char* SuiteTraits<AEGP_PanelSuite1>::i_name = kAEGPPanelSuite;
 template <>
 const int32_t SuiteTraits<AEGP_PanelSuite1>::i_version = kAEGPPanelSuiteVersion1;
 
-class SuiteManager {
+class MYSUITE_API SuiteManager {
 public:
     // Gets the singleton instance of SuiteManager
     static SuiteManager& GetInstance() {
@@ -72,3 +78,5 @@ private:
     bool panelSuitesInitialized;
     AEGP_PluginID* pluginIDPtr;
 };
+
+

@@ -94,6 +94,7 @@ public:
     Result<AEGP_ItemH> getItemHandle();
     bool isSelected();
     void setSelected(bool select);
+    std::string getType();
 protected:
     Result<AEGP_ItemH> itemHandle_;
 };
@@ -159,12 +160,19 @@ public:
     // Iterator-related methods
     auto begin() { return layers_.begin(); }
     auto end() { return layers_.end(); }
-
+    std::shared_ptr<Layer> getLayerByIndex(int index) {
+        if (index >= layers_.size()) {
+			throw std::out_of_range("Index out of range");
+		}
+		return layers_[index];  
+    }
     std::shared_ptr<Layer> addLayerToCollection(Item itemHandle, int index = -1);
     std::shared_ptr<Layer> addSolidToCollection(Item itemHandle, int index = -1);
     void removeLayerFromCollection(Layer layerHandle);
     void RemoveLayerByIndex(int index);
-
+    int numLayers() {
+        return layers_.size();
+    }
     std::vector<std::shared_ptr<Layer>> getAllLayers() {
         return layers_;
     }

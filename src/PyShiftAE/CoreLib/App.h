@@ -11,7 +11,9 @@ class EffectFlags;
 
 class App {
 public:
-    App(); //Constructor -- Initialize this first.
+	App() {
+		project = Project();
+	}
     Project getProject();
 
     Project project;
@@ -23,7 +25,6 @@ public:
     std::string pluginPaths();
 
 };
-
 
 template <>
 const A_char* SuiteTraits<PFAppSuite4>::i_name = kPFAppSuite;

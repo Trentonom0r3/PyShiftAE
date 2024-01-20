@@ -37,9 +37,11 @@ public:
 		_pythonDefault("3.11"),
 		name("Plugin Name"),
 		version("1.0.0"),
+        useJS(false),
 		author("Author Name"),
 		description("A Python-based plugin for After Effects."),
 		entryPath("path/to/entry_script.py"),
+        mainPath("path/to/main_script.py"),
 		dependenciesFolder({ "numpy", "opencv-python" })
 	{}
 
@@ -50,7 +52,9 @@ public:
     std::string description;
     std::vector<std::string> AE_VERS;
     std::string entryPath;
+    std::string mainPath;
     std::vector<std::string> dependenciesFolder;
+    bool useJS = false;
     AEGP_Command command;
     void validate();
     void load();

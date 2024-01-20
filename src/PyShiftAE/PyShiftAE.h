@@ -4,7 +4,7 @@
 #ifdef AE_OS_WIN
 	#include <windows.h>
 #endif
-
+#include <cstdlib>
 //SDK HEADERS
 #include "entry.h"
 #include "AE_GeneralPlug.h"
@@ -18,7 +18,6 @@
 #include "AE_GeneralPlugPanels.h"
 #include <future>
 //CUSTOM HEADERS
-
 #define AEGP_MAX_STREAM_DIM 4
 
 // This entry point is exported through the PiPL (.r file)
@@ -26,7 +25,7 @@ extern "C" DllExport AEGP_PluginInitFuncPrototype EntryPointFunc;
 //define the Panelator UI class we'll be using globally, so it can be accessed from anywhere
 
 struct ScriptTask {
-	enum ResultType { Generic, ManifestType, NoResult, FlyOutType, PanelType } resultType;
+	enum ResultType { Generic, ManifestType, NoResult, GUIType } resultType;
 	std::string scriptPath;
 	FlyoutMenuItem* flyoutItem;
 	Panel* panel;

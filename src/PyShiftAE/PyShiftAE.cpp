@@ -13,6 +13,7 @@
 #include "PyShiftAE.h"
 #include <filesystem>
 #include "CoreLib/Json.h"
+#include "MessageManager.h"
 
 static AEGP_PluginID		PyShiftAE			=	6969L;
 static AEGP_Command			PyShift				=	6769L;
@@ -30,6 +31,7 @@ std::unordered_map<std::string, py::object> scriptResults;
 std::thread pythonThread;
 std::condition_variable scriptAddedCond;
 bool newScriptAdded = false;
+
 
 
 static A_Err
@@ -64,7 +66,10 @@ DeathHook(
 		shouldExitPythonThread = true; // Signal the thread to exit
 		pythonThread.join(); // Wait for the thread to finish
 	}
-
+	Command cmd;
+	cmd.name = "exit";
+	auto& mqm = MessageQueueManager::getInstance();
+	mqm.sendCommand(cmd);
 	// Finalize the Python interpreter (if not done in the Python thread)
 	//finalize();
 	return err;
@@ -306,9 +311,16 @@ UpdateMenuHook(
 
 	AEGP_SuiteHandler	suites(sP);
 
+	Manifests *manifests = reinterpret_cast<Manifests*>(plugin_refconPV);
+	for (int i = 0; i < manifests->manifests.size(); i++) {
+		if (manifests->manifests[i].useJS == FALSE)
+		{
+			ERR(suites.CommandSuite1()->AEGP_EnableCommand(manifests->manifests[i].command));
+			//entry in this case will be the GUI script that shall be executed
+		}
+	}
 	ERR(suites.CommandSuite1()->AEGP_EnableCommand(PyShift));
 	ERR(suites.CommandSuite1()->AEGP_EnableCommand(console));
-	
 	return err;
 }
 
@@ -402,11 +414,93 @@ CommandHook(
 		}
 		*handledPB = TRUE;
 	}
+	else {
+ 		Manifests* manifests = reinterpret_cast<Manifests*>(plugin_refconPV);
+		for (int i = 0; i < manifests->manifests.size(); i++) {
+			if (command == manifests->manifests[i].command) {
+				//run the manifest
+				//get the manifest from the vector
+				Manifest manifest = manifests->manifests[i];
+				//venvpath is in same location as manifest, but in a folder called venv. manifest.entryPath is 'entry.py', need to remove that
+				std::string venvPath = manifest.entryPath.substr(0, manifest.entryPath.size() - 8) + "venv";
+				std::string guiScriptPath = manifest.entryPath;
+				ScriptTask task;
+				task.scriptPath = guiScriptPath;
+				task.resultType = ScriptTask::GUIType;
+				{
+					std::lock_guard<std::mutex> lock(scriptQueueMutex);
+					scriptExecutionQueue.push(std::move(task));
+					scriptAddedCond.notify_one();
+
+				}
+				*handledPB = TRUE;
+			}
+			*handledPB = FALSE;
+		}
+
+	}
 
 	return err;
 }
 
+void prepPipes(std::vector<Manifest> manifests) {
+	try {
+		if (manifests.size() > 0) {
+			std::vector<PipeInfo> pipeInfos = std::vector<PipeInfo>();
+			for (int i = 0; i < manifests.size(); i++) {
+				if (manifests[i].useJS == TRUE) {
+					//import the manifest as a new python module, under the manifests name
+					std::string name = manifests[i].name;
+					std::string entry = manifests[i].entryPath;
 
+					//remove "entry.py" from the end of the entry path
+					entry = entry.substr(0, entry.size() - 9);
+					PipeInfo pipeInfo;
+					pipeInfo.name = name;
+					pipeInfo.entryPath = entry;
+					if (name != "Plugin Name") {
+						pipeInfos.push_back(pipeInfo);
+					}
+					else if (name == "Plugin Name") {
+						//remove the manifest from the vector
+						manifests.erase(manifests.begin() + i);
+					}
+					createNamedPipes(pipeInfos);
+				}
+				else if (manifests[i].useJS == FALSE) {
+					//create a command for the manifest
+					//register the command
+					A_Err err = A_Err_NONE;
+					AEGP_SuiteHandler &suites = SuiteManager::GetInstance().GetSuiteHandler();
+					A_long cmd = manifests[i].command;
+					AEGP_Command manifestCommand = cmd;
+
+					ERR(suites.CommandSuite1()->AEGP_InsertMenuCommand(manifestCommand,
+												manifests[i].name.c_str(),
+												AEGP_Menu_WINDOW,
+												AEGP_MENU_INSERT_SORTED));
+					std::string mainP = manifests[i].mainPath;
+					ScriptTask mainTask;
+					mainTask.scriptPath = mainP;
+					mainTask.resultType = ScriptTask::NoResult;
+					{
+						std::lock_guard<std::mutex> lock(scriptQueueMutex);
+						scriptExecutionQueue.push(std::move(mainTask));
+						scriptAddedCond.notify_one();
+					}
+				}
+			}
+		}
+	}
+	catch (std::exception& e) {
+		std::cout << e.what() << std::endl;
+		std::string error = e.what();
+	}
+	catch (std::filesystem::filesystem_error& e) {
+		std::cout << e.what() << std::endl;
+		std::string error = e.what();
+	}
+}
 
 A_Err
 EntryPointFunc(
@@ -423,9 +517,21 @@ EntryPointFunc(
 							err2 = A_Err_NONE;
 
 	sP = pica_basicP;
-
+	//get the env for PYTHONHOM
+	
 	std::thread pythonThread([]() {
-		initialize_python_module(); // Initialize the Python interpreter
+		//initialize_python_module(); // Initialize the Python interpreter
+		py::scoped_interpreter guard{}; // start the interpreter and keep it alive
+		// Import PyShiftCore module
+		py::object pyShiftCore = py::module_::import("PyShiftCore");
+
+		// Access the sys module
+		py::object sys = py::module_::import("sys");
+
+		// Redirect stdout and stderr
+		py::object pyOutputStream = py::cast(new PyOutputStream()); // Assuming PyOutputStream is properly defined
+		sys.attr("stdout") = pyOutputStream;
+		sys.attr("stderr") = pyOutputStream;
 
 		while (!shouldExitPythonThread.load()) {
 			ScriptTask task;
@@ -441,8 +547,6 @@ EntryPointFunc(
 			}
 
 			if (!task.scriptPath.empty()) {
-				py::gil_scoped_acquire acquire; // Acquire GIL
-				// Inside the Python thread function
 				// Inside the Python thread function
 				if (task.resultType == ScriptTask::Generic) {
 					//get the data from pathFunc tuple
@@ -454,16 +558,13 @@ EntryPointFunc(
 					task.manifestPromise.set_value(manifest);
 				}
 				else if (task.resultType == ScriptTask::NoResult) {
-				executeFromFile(task.scriptPath);
-
+					executeFromFile(task.scriptPath);
 				}
-				else if (task.resultType == ScriptTask::FlyOutType) {
-					executeFlyoutFunction(*task.flyoutItem);
+				else if (task.resultType == ScriptTask::GUIType) {
+					//get the data from pathFunc tuple
+					executeFileInNewProcess(task.scriptPath);
 				}
-				else if (task.resultType == ScriptTask::PanelType) {
-					Panel panel = executePanelLoad(task.scriptPath);
-					task.panelPromise.set_value(panel);
-				}
+				
 
 			}
 
@@ -471,7 +572,7 @@ EntryPointFunc(
 
 		// Finalize the Python interpreter
 		if (shouldExitPythonThread) {
-			finalize();
+			//finalize();
 		}
 		});
 
@@ -553,16 +654,15 @@ EntryPointFunc(
 					scriptAddedCond.notify_one();
 				}
 				manifest = manifestFuture.get();
-				//turn manifest name into A_long
-				std::string name = manifest.name;
-				A_long nameLong = 0;
-				StringToLong(name.c_str(), &nameLong);
-				manifest.command = nameLong;
-			
+				A_long cmdID;
+				StringToLong(manifest.name.c_str(), &cmdID);
+				manifest.command = cmdID;
 				manifests.push_back(manifest);
 			}
 		}
 	}
+	// cast manifest list to global refcon, if manifest.use_js == True, do below, if false, we'll create the commmand and register it for use.
+	// Then, when the command is called from the menu, we'll match command with manifest.command, and then execute manifest.entryPath
 	catch (std::exception& e) {
 		std::cout << e.what() << std::endl;
 		std::string error = e.what();
@@ -571,37 +671,12 @@ EntryPointFunc(
 		std::cout << e.what() << std::endl;
 		std::string error = e.what();
 	}
-	try {
-		if (manifests.size() > 0) {
-			std::vector<PipeInfo> pipeInfos = std::vector<PipeInfo>();
-			for (int i = 0; i < manifests.size(); i++) {
-				//import the manifest as a new python module, under the manifests name
-				std::string name = manifests[i].name;
-				std::string entry = manifests[i].entryPath;
-				//remove "entry.py" from the end of the entry path
-				entry = entry.substr(0, entry.size() - 9);
-				PipeInfo pipeInfo;
-				pipeInfo.name = name;
-				pipeInfo.entryPath = entry;
-				if (name != "Plugin Name") {
-				pipeInfos.push_back(pipeInfo);
-			}
-				else if (name == "Plugin Name") {
-					//remove the manifest from the vector
-					manifests.erase(manifests.begin() + i);
-				}
-			}
-			createNamedPipes(pipeInfos);
-		}
-	}
-	catch (std::exception& e) {
-		std::cout << e.what() << std::endl;
-		std::string error = e.what();
-	}
-	catch (std::filesystem::filesystem_error& e) {
-		std::cout << e.what() << std::endl;
-		std::string error = e.what();
-	}
+	prepPipes(manifests);
+	Manifests *manifestsP = new Manifests();
+	manifestsP->manifests = manifests;
+	*global_refconV = reinterpret_cast<AEGP_GlobalRefcon>(manifestsP);
+	SessionManager::GetInstance();
+
 	return err;
 }
-			  
+		

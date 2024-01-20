@@ -3,6 +3,8 @@
 #include "../CoreSDK/Utils.h"
 #include "ItemManager.h"
 
+
+
 class ProjectCollection {
 public:
     explicit ProjectCollection(const Result<AEGP_ProjectH>& projHandle) : projHandle_(projHandle) {
