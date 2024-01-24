@@ -692,7 +692,7 @@ public:
         commands["RemoveLayerByIndex"] =  [](const Command& cmd) { return std::make_unique<RemovelayerbyindexCommand>(cmd); };
         commands["GetCompName"] =  [](const Command& cmd) { return std::make_unique<GetcompnameCommand>(cmd); };
         commands["AddLayerToCollection"] =  [](const Command& cmd) { return std::make_unique<AddlayertocollectionCommand>(cmd); };
-        commands["GetItems"] =  [](const Command& cmd) { return std::make_unique<GetitemsCommand>(cmd); };
+
         commands["GetFootagePath"] =  [](const Command& cmd) { return std::make_unique<GetfootagepathCommand>(cmd); };
         commands["ReplaceFootage"] =  [](const Command& cmd) { return std::make_unique<ReplacefootageCommand>(cmd); };
         commands["ActiveItem"] =  [](const Command& cmd) { return std::make_unique<ActiveitemCommand>(cmd); };
@@ -704,7 +704,7 @@ public:
         commands["getSelectedItems"] =  [](const Command& cmd) { return std::make_unique<GetselecteditemsCommand>(cmd); };
         commands["getItems"] =  [](const Command& cmd) { return std::make_unique<GetitemsCommand>(cmd); };
         commands["appendItem"] =  [](const Command& cmd) { return std::make_unique<AppenditemCommand>(cmd); };
-        commands["getAllLayers"] =  [](const Command& cmd) { return std::make_unique<GetAlllayersCommand>(cmd); };
+        commands["GetAllLayers"] =  [](const Command& cmd) { return std::make_unique<GetAlllayersCommand>(cmd); };
 
     }
 

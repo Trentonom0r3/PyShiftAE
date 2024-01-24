@@ -16,7 +16,13 @@ public:
         return instance;
     }
 
+    ~SessionManager()
+    {
+        //clear Sessions
+        sessions.clear();
+    }
     SessionManager() {
+        sessions.clear();
         std::thread messageQueueThread(&SessionManager::handleMessageQueue, this);
         messageQueueThread.detach();
     }
@@ -48,21 +54,22 @@ protected:
         CommandFactory commandFactory;
 
         while (true) {
-            Command receivedCmd = mqm.receiveCommand();
-            if (receivedCmd.name == "exit") {
-                mqm.clearQueues();
-                break;
-            }
-
-            auto cmd = commandFactory.createCommand(receivedCmd.name, receivedCmd);
-            if (cmd) {
-                cmd->execute();
+            Command receivedCmd;
+            if (mqm.tryReceiveCommand(receivedCmd)) {
+                // Process the command
+                auto cmd = commandFactory.createCommand(receivedCmd.name, receivedCmd);
+                if (cmd) {
+                    cmd->execute();
+                }
+                else {
+                    std::cout << "Command not found: " << receivedCmd.name << std::endl;
+                }
             }
             else {
-                std::cout << "Command not found: " << receivedCmd.name << std::endl;
+                // No command received, sleep for a bit
+                std::this_thread::sleep_for(std::chrono::milliseconds(100));
             }
         }
     }
-
 
 };

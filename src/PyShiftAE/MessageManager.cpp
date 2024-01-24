@@ -26,7 +26,6 @@ void ReportInfoCommand::execute() {
         std::string info = boost::get<std::string>(cmd.args[0]);
         App app;
         app.reportInfo(info);
-        mqm.sendSuccessResponse(cmd.sessionID);
     }
     catch (const boost::bad_get& e) {
         Response resp;
@@ -129,7 +128,7 @@ void SelectitemCommand::execute() {
 			}
 			}, itemVariant);
 
-		 mqm.sendSuccessResponse(cmd.sessionID);
+
 	}
 	catch (const boost::bad_get& e) {
 		Response resp;
@@ -147,7 +146,6 @@ void BeginUndoGroupCommand::execute() {
 		std::string undoName = boost::get<std::string>(cmd.args[0]);
 		App app;
 		app.beginUndoGroup(undoName);
-		mqm.sendSuccessResponse(cmd.sessionID);
 	}
     catch (const boost::bad_get& e) {
 		Response resp;
@@ -163,7 +161,6 @@ void EndUndoGroupCommand::execute() {
     try {
 		App app;
 		app.endUndoGroup();
-		 mqm.sendSuccessResponse(cmd.sessionID);
 	}
     catch (const boost::bad_get& e) {
 		Response resp;
@@ -180,7 +177,7 @@ void ExecutecommandCommand::execute() {
 		int commandID = boost::get<int>(cmd.args[0]);
 		App app;
 		app.executeCommand(commandID);
-		 mqm.sendSuccessResponse(cmd.sessionID);
+
 	}
     catch (const boost::bad_get& e) {
 		Response resp;
@@ -280,7 +277,7 @@ void SetitemnameCommand::execute() {
 				throw std::runtime_error("Unsupported type");
 			}
 			}, itemVariant);
-		 mqm.sendSuccessResponse(cmd.sessionID);
+
 	}
     catch (const boost::bad_get& e) {
 		Response resp;
@@ -295,7 +292,7 @@ void GetitemwidthCommand::execute() {
 	auto& mqm = MessageQueueManager::getInstance();
     try {
 		const auto& itemVariant = SessionManager::GetInstance().getSessionObject(cmd.sessionID);
-		int width = std::visit([](const auto& arg) -> int {
+		float width = std::visit([](const auto& arg) -> float {
 			using T = std::decay_t<decltype(arg)>;
 			if constexpr (std::is_same_v<T, std::shared_ptr<Item>>) {
 				return arg->getWidth();
@@ -319,8 +316,9 @@ void GetitemwidthCommand::execute() {
 			}, itemVariant);	
 
 		Response resp;
+		float widthH = static_cast<float>(width);
 		resp.sessionID = cmd.sessionID;
-		resp.args.push_back(width);
+		resp.args.push_back(widthH);
 		mqm.sendResponse(resp);
 	}
     catch (const boost::bad_get& e) {
@@ -337,7 +335,7 @@ void GetitemheightCommand::execute() {
 	auto& mqm = MessageQueueManager::getInstance();
     try {
 		const auto& itemVariant = SessionManager::GetInstance().getSessionObject(cmd.sessionID);
-		int height = std::visit([](const auto& arg) -> int {
+		float height = std::visit([](const auto& arg) -> float {
 			using T = std::decay_t<decltype(arg)>;
 			if constexpr (std::is_same_v<T, std::shared_ptr<Item>>) {
 				return arg->getHeight();
@@ -361,8 +359,10 @@ void GetitemheightCommand::execute() {
 			}, itemVariant);
 
 		Response resp;
+		//make sure float is in the correct format
+		float heightH = static_cast<float>(height);
 		resp.sessionID = cmd.sessionID;
-		resp.args.push_back(height);
+		resp.args.push_back(heightH);
 		mqm.sendResponse(resp);
 	}
 	catch (const boost::bad_get& e) {
@@ -379,7 +379,7 @@ void GetitemcurrenttimeCommand::execute() {
 	auto& mqm = MessageQueueManager::getInstance();
 	try {
 		const auto& itemVariant = SessionManager::GetInstance().getSessionObject(cmd.sessionID);
-		int currentTime = std::visit([](const auto& arg) -> int {
+		float currentTime = std::visit([](const auto& arg) -> float {
 			using T = std::decay_t<decltype(arg)>;
 			if constexpr (std::is_same_v<T, std::shared_ptr<Item>>) {
 				return arg->getCurrentTime();
@@ -420,7 +420,7 @@ void GetitemdurationCommand::execute() {
 	auto& mqm = MessageQueueManager::getInstance();
 	try {
 		const auto& itemVariant = SessionManager::GetInstance().getSessionObject(cmd.sessionID);
-		int duration = std::visit([](const auto& arg) -> int {
+		float duration = std::visit([](const auto& arg) -> float {
 			using T = std::decay_t<decltype(arg)>;
 			if constexpr (std::is_same_v<T, std::shared_ptr<Item>>) {
 				return arg->getDuration();
@@ -461,7 +461,7 @@ void GetitemdurationCommand::execute() {
 void SetitemcurrenttimeCommand::execute() {
 	auto& mqm = MessageQueueManager::getInstance();
 	try {
-		int currentTime = boost::get<int>(cmd.args[0]);
+		float currentTime = boost::get<float>(cmd.args[0]);
 		const auto& itemVariant = SessionManager::GetInstance().getSessionObject(cmd.sessionID);
 		std::visit([&currentTime](auto&& arg) {
 			using T = std::decay_t<decltype(arg)>;
@@ -486,7 +486,7 @@ void SetitemcurrenttimeCommand::execute() {
 			}
 			}, itemVariant);
 
-		 mqm.sendSuccessResponse(cmd.sessionID);
+
 	}
 	catch (const boost::bad_get& e) {
 		Response resp;
@@ -539,7 +539,7 @@ void SetcompframerateCommand::execute() {
 				 throw std::runtime_error("Unsupported type");
 			 }
 			 }, compItem);
-		 mqm.sendSuccessResponse(cmd.sessionID);
+
 	}
     catch (const boost::bad_get& e) {
 		Response resp;
@@ -554,13 +554,13 @@ void GetcompworkareadurationCommand::execute() {
 	auto& mqm = MessageQueueManager::getInstance();
     try {
 		const auto& compItem = SessionManager::GetInstance().getSessionObject(cmd.sessionID);
-		int duration = std::visit([](const auto& arg) -> int {
+		float duration = std::visit([](const auto& arg) -> float {
 			using T = std::decay_t<decltype(arg)>;
 			if constexpr (std::is_same_v<T, std::shared_ptr<CompItem>>) {
 				return arg->getDuration();
 			}
 			else {
-				return 0;
+				return 0.0f;
 			}
 			}, compItem);
 		Response resp;
@@ -581,7 +581,7 @@ void GetcompworkareadurationCommand::execute() {
 void SetcompdurationCommand::execute() {
 	auto& mqm = MessageQueueManager::getInstance();
     try {
-		int duration = boost::get<int>(cmd.args[0]);
+		float duration = boost::get<float>(cmd.args[0]);
 		const auto& compItem = SessionManager::GetInstance().getSessionObject(cmd.sessionID);
 		std::visit([&duration](auto&& arg) {
 			using T = std::decay_t<decltype(arg)>;
@@ -592,7 +592,7 @@ void SetcompdurationCommand::execute() {
 				throw std::runtime_error("Unsupported type");
 			}
 			}, compItem);
-		 mqm.sendSuccessResponse(cmd.sessionID);
+
 	}
     catch (const boost::bad_get& e) {
 
@@ -608,7 +608,7 @@ void SetcompdurationCommand::execute() {
 void SetcompwidthCommand::execute() {
 	auto& mqm = MessageQueueManager::getInstance();
     try {
-		int width = boost::get<int>(cmd.args[0]);
+		float width = boost::get<float>(cmd.args[0]);
 		const auto& compItem = SessionManager::GetInstance().getSessionObject(cmd.sessionID);
 		std::visit([&width](auto&& arg) {
 			using T = std::decay_t<decltype(arg)>;
@@ -619,7 +619,6 @@ void SetcompwidthCommand::execute() {
 				throw std::runtime_error("Unsupported type");
 			}
 			}, compItem);
-		 mqm.sendSuccessResponse(cmd.sessionID);
 	}
     catch (const boost::bad_get& e) {
 
@@ -635,7 +634,7 @@ void SetcompwidthCommand::execute() {
 void SetcompheightCommand::execute() {
 	auto& mqm = MessageQueueManager::getInstance();
     try {
-		int height = boost::get<int>(cmd.args[0]);
+		float height = boost::get<float>(cmd.args[0]);
 		const auto& compItem = SessionManager::GetInstance().getSessionObject(cmd.sessionID);
 		std::visit([&height](auto&& arg) {
 			using T = std::decay_t<decltype(arg)>;
@@ -646,8 +645,6 @@ void SetcompheightCommand::execute() {
 				throw std::runtime_error("Unsupported type");
 			}
 			}, compItem);
-		mqm.sendSuccessResponse(cmd.sessionID);
-		 mqm.sendSuccessResponse(cmd.sessionID);
 	}
     catch (const boost::bad_get& e) {
 
@@ -724,22 +721,26 @@ void GetlayersCommand::execute() {
 void GetAlllayersCommand::execute() {
 	auto& mqm = MessageQueueManager::getInstance();
     try {
-		const auto& comp = SessionManager::GetInstance().getSessionObject(cmd.sessionID);
-		std::shared_ptr<LayerCollection> layers = std::visit([](const auto& arg) -> std::shared_ptr<LayerCollection> {
+		auto& layerCollection = SessionManager::GetInstance().getSessionObject(cmd.sessionID);
+		std::vector<std::shared_ptr<Layer>> layers = std::visit([](const auto& arg) -> std::vector<std::shared_ptr<Layer>> {
 			using T = std::decay_t<decltype(arg)>;
-			if constexpr (std::is_same_v<T, std::shared_ptr<CompItem>>) {
-				return arg->getLayers();
+			if constexpr (std::is_same_v<T, std::shared_ptr<LayerCollection>>) {
+				return arg->getAllLayers();
 			}
 			else {
-				return nullptr;
+				return {};
 			}
-			}, comp);
-		std::string layersID = createUUID();
-		SessionManager::GetInstance().addToSessions(layersID, layers);
+			}, layerCollection);
+
 		Response resp;
 		resp.sessionID = cmd.sessionID;
-		
-
+		std::vector<std::string> layersID;
+		for (auto& layer : layers) {
+			std::string layerID = createUUID();
+			SessionManager::GetInstance().addToSessions(layerID, layer);
+			layersID.push_back(layerID);
+		}
+		resp.args.push_back(layersID);
 		mqm.sendResponse(resp);
 
 	}
@@ -826,9 +827,9 @@ void SetcompitemcurrenttimeCommand::execute() {
 				throw std::runtime_error("Unsupported type");
 			}
 			}, comp);
-		 mqm.sendSuccessResponse(cmd.sessionID);
+
 		
-		 mqm.sendSuccessResponse(cmd.sessionID);
+
 	}
     catch (const boost::bad_get& e) {
 
@@ -857,7 +858,7 @@ void AddlayertocompCommand::execute() {
 			}
 			}, comp);
 
-        mqm.sendSuccessResponse(cmd.sessionID);
+
     }
     catch (const boost::bad_get& e) {
 
@@ -949,7 +950,7 @@ void SetlayernameCommand::execute() {
 				throw std::runtime_error("Unsupported type");
 			}
 			}, layer);
-		 mqm.sendSuccessResponse(cmd.sessionID);
+
 	}
 	catch (const boost::bad_get& e) {
 
@@ -1010,9 +1011,9 @@ void ChangelayerindexCommand::execute() {
 				throw std::runtime_error("Unsupported type");
 			}
 			}, layer);
-		 mqm.sendSuccessResponse(cmd.sessionID);
 
-		 mqm.sendSuccessResponse(cmd.sessionID);
+
+
 	}
 	catch (const boost::bad_get& e) {
 
@@ -1039,7 +1040,7 @@ void DuplicatelayerCommand::execute() {
 				throw std::runtime_error("Unsupported type");
 			}
 			}, layer);
-		 mqm.sendSuccessResponse(cmd.sessionID);
+
 	}
 	catch (const boost::bad_get& e) {
 		Response resp;
@@ -1216,7 +1217,7 @@ void SetlayerqualityCommand::execute() {
 				throw std::runtime_error("Unsupported type");
 			}
 			}, layer);
-		 mqm.sendSuccessResponse(cmd.sessionID);
+
 	}
 	catch (const boost::bad_get& e) {
 
@@ -1245,7 +1246,7 @@ void DeletelayerCommand::execute() {
 				 throw std::runtime_error("Unsupported type");
 			 }
 			 }, layer);
-		 mqm.sendSuccessResponse(cmd.sessionID);
+
 	}
 	catch (const boost::bad_get& e) {
 		Response resp;
@@ -1304,7 +1305,7 @@ void SetlayeroffsetCommand::execute() {
 				throw std::runtime_error("Unsupported type");
 			}
 			}, layer);
-		 mqm.sendSuccessResponse(cmd.sessionID);
+
 	}
 	catch (const boost::bad_get& e) {
 
@@ -1336,7 +1337,7 @@ void SetlayerflagCommand::execute() {
 				throw std::runtime_error("Unsupported type");
 			}
 			}, layer);
-		 mqm.sendSuccessResponse(cmd.sessionID);
+
 	}
 	catch (const boost::bad_get& e) {
 
@@ -1439,9 +1440,9 @@ void GetchilditemsCommand::execute() {
 	auto& mqm = MessageQueueManager::getInstance();
 	try {
 		const auto& folder = SessionManager::GetInstance().getSessionObject(cmd.sessionID);
-		std::shared_ptr<ItemCollection> items = std::visit([](const auto& arg) -> std::shared_ptr<ItemCollection> {
+		std::shared_ptr<ProjectCollection> items = std::visit([](const auto& arg) -> std::shared_ptr<ProjectCollection> {
 			using T = std::decay_t<decltype(arg)>;
-			if constexpr (std::is_same_v<T, std::shared_ptr<FolderItem>>) {
+			if constexpr (std::is_same_v<T, std::shared_ptr<Project>>) {
 				return arg->ChildItems();
 			}
 			else {
@@ -1497,7 +1498,6 @@ void RemovelayerfromcollectionCommand::execute() {
 
 		if (layerCollection && layer) {
 			layerCollection->removeLayerFromCollection(*layer);
-			mqm.sendSuccessResponse(cmd.sessionID);
 		}
 		else {
 			throw std::runtime_error("Layer or LayerCollection is null");
@@ -1526,7 +1526,7 @@ void RemovelayerbyindexCommand::execute() {
 				 throw std::runtime_error("Unsupported type");
 			 }
 			 }, layers);
-		 mqm.sendSuccessResponse(cmd.sessionID);
+
 	}
 	catch (const boost::bad_get& e) {
 		Response resp;
@@ -1600,7 +1600,6 @@ void AddlayertocollectionCommand::execute() {
 
 		if (layerCollection && footageItemH) {
 			layerCollection->addLayerToCollection(*footageItemH);
-			mqm.sendSuccessResponse(cmd.sessionID);
 		}
 		else {
 			throw std::runtime_error("Layer or LayerCollection is null");
@@ -1632,11 +1631,11 @@ void GetitemsCommand::execute() {
 			}, projects);
 		Response resp;
 		resp.sessionID = cmd.sessionID;
+		std::vector<std::string> sessionIDs;
+		std::vector<std::string> types;
 		for (auto item : items) {
 			std::string itemID = createUUID();
 			std::string type = item->getType();
-			std::vector<std::string> sessionIDs;
-			std::vector<std::string> types;
 			if (type == "Comp") {
 				//turn item into comp, then add to sessions
 				std::shared_ptr<CompItem> comp = std::dynamic_pointer_cast<CompItem>(item);
@@ -1658,9 +1657,9 @@ void GetitemsCommand::execute() {
 				types.push_back("Footage");
 				SessionManager::GetInstance().addToSessions(itemID, footage);
 			}
-			resp.args.push_back(sessionIDs);
-			resp.args.push_back(types);
 		}
+		resp.args.push_back(sessionIDs);
+		resp.args.push_back(types);
 		mqm.sendResponse(resp);
 
 		}
@@ -1786,7 +1785,7 @@ void ReplacefootageCommand::execute() {
 				throw std::runtime_error("Unsupported type");
 			}
 			}, footage);
-		 mqm.sendSuccessResponse(cmd.sessionID);
+
 	} 
 	catch (const boost::bad_get& e) {
 		Response resp;
@@ -1994,7 +1993,7 @@ void SaveprojectasCommand::execute() {
 				throw std::runtime_error("Unsupported type");
 			}
 			}, project);
-		 mqm.sendSuccessResponse(cmd.sessionID);
+
 	}
 	catch (const boost::bad_get& e) {
 		Response resp;

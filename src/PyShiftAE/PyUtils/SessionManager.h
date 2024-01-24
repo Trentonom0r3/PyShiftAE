@@ -8,6 +8,10 @@
 #include <boost/variant/get.hpp>
 #include <boost/serialization/vector.hpp>
 #include <boost/serialization/variant.hpp>
+#include <boost/interprocess/sync/named_mutex.hpp>
+#include <boost/interprocess/sync/named_condition.hpp>
+//posix time
+#include <boost/date_time/posix_time/posix_time.hpp>
 #include <iostream>
 #include <thread>
 #include <sstream>
@@ -67,8 +71,8 @@ public:
  
 
     void clearQueues() {
-		clearQueue("PyC1");
-		clearQueue("PyR1");
+		clearQueue("PyC21");
+		clearQueue("PyR21");
 	}
 
     void sendCommand(Command command) {
@@ -114,28 +118,44 @@ public:
         boost::archive::text_oarchive oa(ss);
         oa << response;
         std::string serializedResponse = ss.str();
+        if (serializedResponse.empty()) {
+			std::cout << "Empty response" << std::endl;
+            throw std::runtime_error("Empty response");
+		}
         responseQueue->send(serializedResponse.c_str(), serializedResponse.size(), 0);
     }
 
-    void sendSuccessResponse(const std::string& sessionID) {
-        Response resp;
-        resp.sessionID = sessionID;
-        std::string success = "Success";
-        resp.args.push_back(success);
-        this->sendResponse(resp);
+    // In MessageQueueManager
+    bool tryReceiveCommand(Command& command) {
+        boost::interprocess::message_queue::size_type recvd_size;
+        unsigned int priority;
+        std::size_t max_msg_size = commandQueue->get_max_msg_size();
+        std::vector<char> buffer(max_msg_size);
+        if (commandQueue->timed_receive(buffer.data(), buffer.size(), recvd_size, priority,
+            boost::posix_time::microsec_clock::universal_time() +
+            boost::posix_time::milliseconds(100))) {
+            std::string serializedCommand(buffer.begin(), buffer.begin() + recvd_size);
+            std::stringstream ss(serializedCommand);
+            boost::archive::text_iarchive ia(ss);
+            ia >> command;
+            return true;
+        }
+        return false;
     }
 
 private:
     MessageQueueManager() {
+        clearQueue("PyC21");
+        clearQueue("PyR21");
         // Using smart pointers for automatic resource management
         commandQueue = std::make_unique<boost::interprocess::message_queue>(
-            boost::interprocess::open_or_create, "PyC1", 100, 1024);
+            boost::interprocess::create_only, "PyC21", 100, 1024);
         responseQueue = std::make_unique<boost::interprocess::message_queue>(
-            boost::interprocess::open_or_create, "PyR1", 100, 1024);
+            boost::interprocess::create_only, "PyR21", 100, 1024);
     }
     ~MessageQueueManager() {
-		boost::interprocess::message_queue::remove("PyC1");
-		boost::interprocess::message_queue::remove("PyR1");
+		boost::interprocess::message_queue::remove("PyC21");
+		boost::interprocess::message_queue::remove("PyR21");
 	}
     std::unique_ptr<boost::interprocess::message_queue> commandQueue;
     std::unique_ptr<boost::interprocess::message_queue> responseQueue;
@@ -144,4 +164,6 @@ private:
             std::cout << "Cleared existing queue: " << queueName << std::endl;
         }
     }
+
+
 };
