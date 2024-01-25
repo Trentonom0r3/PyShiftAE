@@ -4,6 +4,9 @@
 #include "Project.h"
 #include "ItemManager.h"
 #include "Panel.h"
+
+#define Py_LIMITED_API 0x030A0000  // for python 3.10
+#include <Python.h>
 #include <pybind11/pybind11.h>
 #include <pybind11/embed.h>  // for the embedded interpreter
 #include <pybind11/numpy.h>

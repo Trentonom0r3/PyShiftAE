@@ -25,15 +25,13 @@ extern "C" DllExport AEGP_PluginInitFuncPrototype EntryPointFunc;
 //define the Panelator UI class we'll be using globally, so it can be accessed from anywhere
 
 struct ScriptTask {
-	enum ResultType { Generic, ManifestType, NoResult, GUIType } resultType;
+	enum ResultType { ManifestType, NoResult, GUIType } resultType;
 	std::string scriptPath;
 	FlyoutMenuItem* flyoutItem;
 	Panel* panel;
-	JSData jsData;
 	std::tuple<std::string, std::string> pathFunc; // For loading a Python module
 	std::promise<std::string> resultPromise; // For generic Python object results
 	std::promise<Manifest> manifestPromise; // Specifically for Manifest results
-	std::promise<Panel> panelPromise; // Specifically for Panel results
 	// Constructor to set default result type
 	ScriptTask() : resultType(NoResult) {}
 };
@@ -68,41 +66,4 @@ A_Err StringToLong(const A_char* string, A_long* value) {
 
 	return err;
 }
-
-// Define a type that can hold multiple types (string, bool, double)
-using JsonValue = std::variant<std::string, bool, double, std::nullptr_t>;
-
-struct PipeInfo {
-	std::string name;
-	std::string entryPath;
-};
-
-class PipeInstance {
-public:
-	HANDLE hPipe;
-	HANDLE hEvent;
-	OVERLAPPED overlapped;
-	char buffer[1024];
-	DWORD bytesRead;
-	bool isPending;
-	std::string pipeName;
-	std::string entryPath;
-
-	PipeInstance(const std::string& name, const std::string& path)
-		: hPipe(INVALID_HANDLE_VALUE), hEvent(NULL), bytesRead(0), isPending(false), pipeName(name), entryPath(path) {
-		ZeroMemory(&overlapped, sizeof(overlapped));
-		overlapped.hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
-	}
-
-	PipeInstance::~PipeInstance() {
-		if (hPipe != INVALID_HANDLE_VALUE) {
-			FlushFileBuffers(hPipe);
-			DisconnectNamedPipe(hPipe);
-			CloseHandle(hPipe);
-		}
-		if (hEvent != NULL) {
-			CloseHandle(hEvent);
-		}
-	}
-};
 

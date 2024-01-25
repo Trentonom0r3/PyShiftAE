@@ -29,14 +29,6 @@ Manifest executeManifestFromFile(const std::string& scriptPath) {
         py::gil_scoped_acquire acquire;
         py::globals().clear();
         py::object pyShiftCore = py::module_::import("PyShiftCore");
-
-        // Access the sys module
-        py::object sys = py::module_::import("sys");
-
-        // Redirect stdout and stderr
-        py::object pyOutputStream = py::cast(new PyOutputStream()); // Assuming PyOutputStream is properly defined
-        sys.attr("stdout") = pyOutputStream;
-        sys.attr("stderr") = pyOutputStream;
         //clear globals
         py::object result = py::eval_file(scriptPath);
         manifest = py::globals()["manifest"].cast<Manifest>();
@@ -75,13 +67,6 @@ py::module_ import_module_as(const std::string& module_path, const std::string& 
         py::gil_scoped_acquire acquire;
         py::object pyShiftCore = py::module_::import("PyShiftCore");
 
-        // Access the sys module
-        py::object sys = py::module_::import("sys");
-
-        // Redirect stdout and stderr
-        py::object pyOutputStream = py::cast(new PyOutputStream()); // Assuming PyOutputStream is properly defined
-        sys.attr("stdout") = pyOutputStream;
-        sys.attr("stderr") = pyOutputStream;
         // Escape backslashes in the module path
         std::string escaped_path = escape_backslashes(module_path);
         std::string file_name = "entry";
@@ -120,13 +105,6 @@ std::string executeJSFunction(const std::string& module_path, const std::string&
     py::gil_scoped_acquire acquire;
     py::object pyShiftCore = py::module_::import("PyShiftCore");
 
-    // Access the sys module
-    py::object sys = py::module_::import("sys");
-
-    // Redirect stdout and stderr
-    py::object pyOutputStream = py::cast(new PyOutputStream()); // Assuming PyOutputStream is properly defined
-    sys.attr("stdout") = pyOutputStream;
-    sys.attr("stderr") = pyOutputStream;
     std::string funcName = data.funcName;
     std::vector<std::variant<std::string, bool, double, std::nullptr_t>> args = data.args;
     std::string result;
@@ -175,13 +153,6 @@ void executeFromFile(const std::string& scriptPath) {
         py::gil_scoped_acquire acquire;
         py::object pyShiftCore = py::module_::import("PyShiftCore");
 
-        // Access the sys module
-        py::object sys = py::module_::import("sys");
-
-        // Redirect stdout and stderr
-        py::object pyOutputStream = py::cast(new PyOutputStream()); // Assuming PyOutputStream is properly defined
-        sys.attr("stdout") = pyOutputStream;
-        sys.attr("stderr") = pyOutputStream;
         py::eval_file(scriptPath);
     }
     catch (const py::error_already_set& e) {
@@ -204,13 +175,6 @@ void executeFileInNewProcess(const std::string& scriptPath) {
         py::gil_scoped_acquire acquire;
         py::object pyShiftCore = py::module_::import("PyShiftCore");
 
-        // Access the sys module
-        py::object sys = py::module_::import("sys");
-
-        // Redirect stdout and stderr
-        py::object pyOutputStream = py::cast(new PyOutputStream()); // Assuming PyOutputStream is properly defined
-        sys.attr("stdout") = pyOutputStream;
-        sys.attr("stderr") = pyOutputStream;
 
         py::eval_file(scriptPath);
     }

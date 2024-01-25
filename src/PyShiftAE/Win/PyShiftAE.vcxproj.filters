@@ -227,13 +227,13 @@
     <ClCompile Include="..\MessageManager.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="PyShiftAE_PiPL.rc">
-      <Filter>Resources</Filter>
-    </ResourceCompile>
-  </ItemGroup>
-  <ItemGroup>
     <CustomBuild Include="..\PyShiftAE_PiPL.r">
       <Filter>Resources</Filter>
     </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="PyShiftAE_PiPL.rc">
+      <Filter>Resources</Filter>
+    </ResourceCompile>
   </ItemGroup>
 </Project>

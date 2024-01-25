@@ -26,14 +26,17 @@ void ReportInfoCommand::execute() {
         std::string info = boost::get<std::string>(cmd.args[0]);
         App app;
         app.reportInfo(info);
+		mqm.sendEmptyResponse(cmd.sessionID);
     }
     catch (const boost::bad_get& e) {
-        Response resp;
-        resp.sessionID = cmd.sessionID;
-        std::string error = e.what();
-        resp.args.push_back(error);
-        mqm.sendResponse(resp);
+		mqm.sendErrorResponse(cmd.sessionID, e.what());
     }
+	catch (const std::exception& e) {
+		mqm.sendErrorResponse(cmd.sessionID, e.what());
+	}
+	catch (...) {
+		mqm.sendErrorResponse(cmd.sessionID, "Unknown error");
+	}
 }
 
 void GetProjectCommand::execute() {
@@ -49,11 +52,13 @@ void GetProjectCommand::execute() {
 		mqm.sendResponse(resp);
 	}
 	catch (const boost::bad_get& e) {
-		Response resp;
-		resp.sessionID = cmd.sessionID;
-		std::string error = e.what();
-		resp.args.push_back(error);
-		mqm.sendResponse(resp);
+		mqm.sendErrorResponse(cmd.sessionID, e.what());
+	}
+	catch (const std::exception& e) {
+		mqm.sendErrorResponse(cmd.sessionID, e.what());
+	}
+	catch (...) {
+		mqm.sendErrorResponse(cmd.sessionID, "Unknown error");
 	}
 }
 
@@ -89,14 +94,15 @@ void IsitemselectedCommand::execute() {
 		resp.sessionID = cmd.sessionID;
 		resp.args.push_back(isSelected);
 		mqm.sendResponse(resp);
+    }
+    catch (const boost::bad_get& e) {
+		mqm.sendErrorResponse(cmd.sessionID, e.what());
+    }
+	catch (const std::exception& e) {
+		mqm.sendErrorResponse(cmd.sessionID, e.what());
 	}
-	catch (const boost::bad_get& e) {
-		Response resp;
-		resp.sessionID = cmd.sessionID;
-
-		std::string error = e.what();
-		resp.args.push_back(error);
-		mqm.sendResponse(resp);
+	catch (...) {
+		mqm.sendErrorResponse(cmd.sessionID, "Unknown error");
 	}
 }
 
@@ -128,15 +134,16 @@ void SelectitemCommand::execute() {
 			}
 			}, itemVariant);
 
-
+		mqm.sendEmptyResponse(cmd.sessionID);
 	}
 	catch (const boost::bad_get& e) {
-		Response resp;
-		resp.sessionID = cmd.sessionID;
-
-		std::string error = e.what();
-		resp.args.push_back(error);
-		mqm.sendResponse(resp);
+		mqm.sendErrorResponse(cmd.sessionID, e.what());
+	}
+	catch (const std::exception& e) {
+		mqm.sendErrorResponse(cmd.sessionID, e.what());
+	}
+	catch (...) {
+		mqm.sendErrorResponse(cmd.sessionID, "Unknown error");
 	}
 }
 
@@ -146,13 +153,16 @@ void BeginUndoGroupCommand::execute() {
 		std::string undoName = boost::get<std::string>(cmd.args[0]);
 		App app;
 		app.beginUndoGroup(undoName);
+		mqm.sendEmptyResponse(cmd.sessionID);
 	}
-    catch (const boost::bad_get& e) {
-		Response resp;
-		resp.sessionID = cmd.sessionID;
-		std::string error = e.what();
-		resp.args.push_back(error);
-		mqm.sendResponse(resp);
+	catch (const boost::bad_get& e) {
+		mqm.sendErrorResponse(cmd.sessionID, e.what());
+	}
+	catch (const std::exception& e) {
+		mqm.sendErrorResponse(cmd.sessionID, e.what());
+	}
+	catch (...) {
+		mqm.sendErrorResponse(cmd.sessionID, "Unknown error");
 	}
 }
 
@@ -161,13 +171,16 @@ void EndUndoGroupCommand::execute() {
     try {
 		App app;
 		app.endUndoGroup();
+		mqm.sendEmptyResponse(cmd.sessionID);
 	}
-    catch (const boost::bad_get& e) {
-		Response resp;
-		resp.sessionID = cmd.sessionID;
-		std::string error = e.what();
-		resp.args.push_back(error);
-		mqm.sendResponse(resp);
+	catch (const boost::bad_get& e) {
+		mqm.sendErrorResponse(cmd.sessionID, e.what());
+	}
+	catch (const std::exception& e) {
+		mqm.sendErrorResponse(cmd.sessionID, e.what());
+	}
+	catch (...) {
+		mqm.sendErrorResponse(cmd.sessionID, "Unknown error");
 	}
 }
 
@@ -177,14 +190,16 @@ void ExecutecommandCommand::execute() {
 		int commandID = boost::get<int>(cmd.args[0]);
 		App app;
 		app.executeCommand(commandID);
-
+		mqm.sendEmptyResponse(cmd.sessionID);
 	}
-    catch (const boost::bad_get& e) {
-		Response resp;
-		resp.sessionID = cmd.sessionID;
-		std::string error = e.what();
-		resp.args.push_back(error);
-		mqm.sendResponse(resp);
+	catch (const boost::bad_get& e) {
+		mqm.sendErrorResponse(cmd.sessionID, e.what());
+	}
+	catch (const std::exception& e) {
+		mqm.sendErrorResponse(cmd.sessionID, e.what());
+	}
+	catch (...) {
+		mqm.sendErrorResponse(cmd.sessionID, "Unknown error");
 	}
 }
 
@@ -198,12 +213,14 @@ void GetpluginpathsCommand::execute() {
 		resp.args.push_back(pluginPaths);
 		mqm.sendResponse(resp);
 	}
-    catch (const boost::bad_get& e) {
-		Response resp;
-		resp.sessionID = cmd.sessionID;
-		std::string error = e.what();
-		resp.args.push_back(error);
-		mqm.sendResponse(resp);
+	catch (const boost::bad_get& e) {
+		mqm.sendErrorResponse(cmd.sessionID, e.what());
+	}
+	catch (const std::exception& e) {
+		mqm.sendErrorResponse(cmd.sessionID, e.what());
+	}
+	catch (...) {
+		mqm.sendErrorResponse(cmd.sessionID, "Unknown error");
 	}
 }
 
@@ -237,14 +254,19 @@ void GetitemnameCommand::execute() {
 
 		Response resp;
 		resp.sessionID = cmd.sessionID;
-		resp.args.push_back(name);
+		//make sure string is in the correct format
+		std::string nameH = name;
+		resp.args.push_back(nameH);
 		mqm.sendResponse(resp);
 	}
+	catch (const boost::bad_get& e) {
+		mqm.sendErrorResponse(cmd.sessionID, e.what());
+	}
 	catch (const std::exception& e) {
-		Response resp;
-		resp.sessionID = cmd.sessionID;
-		resp.args.push_back(e.what());
-		mqm.sendResponse(resp);
+		mqm.sendErrorResponse(cmd.sessionID, e.what());
+	}
+	catch (...) {
+		mqm.sendErrorResponse(cmd.sessionID, "Unknown error");
 	}
 }
 
@@ -277,14 +299,16 @@ void SetitemnameCommand::execute() {
 				throw std::runtime_error("Unsupported type");
 			}
 			}, itemVariant);
-
+		mqm.sendEmptyResponse(cmd.sessionID);
 	}
-    catch (const boost::bad_get& e) {
-		Response resp;
-		resp.sessionID = cmd.sessionID;
-		std::string error = e.what();
-		resp.args.push_back(error);
-		mqm.sendResponse(resp);
+	catch (const boost::bad_get& e) {
+		mqm.sendErrorResponse(cmd.sessionID, e.what());
+	}
+	catch (const std::exception& e) {
+		mqm.sendErrorResponse(cmd.sessionID, e.what());
+	}
+	catch (...) {
+		mqm.sendErrorResponse(cmd.sessionID, "Unknown error");
 	}
 }
 
@@ -321,14 +345,15 @@ void GetitemwidthCommand::execute() {
 		resp.args.push_back(widthH);
 		mqm.sendResponse(resp);
 	}
-    catch (const boost::bad_get& e) {
-		Response resp;
-		resp.sessionID = cmd.sessionID;
-		std::string error = e.what();
-		resp.args.push_back(error);
-		mqm.sendResponse(resp);
+	catch (const boost::bad_get& e) {
+		mqm.sendErrorResponse(cmd.sessionID, e.what());
 	}
-
+	catch (const std::exception& e) {
+		mqm.sendErrorResponse(cmd.sessionID, e.what());
+	}
+	catch (...) {
+		mqm.sendErrorResponse(cmd.sessionID, "Unknown error");
+	}
 }
 
 void GetitemheightCommand::execute() {
@@ -366,12 +391,13 @@ void GetitemheightCommand::execute() {
 		mqm.sendResponse(resp);
 	}
 	catch (const boost::bad_get& e) {
-		Response resp;
-		resp.sessionID = cmd.sessionID;
-		std::string error = e.what();
-		resp.args.push_back(error);
-		mqm.sendResponse(resp);
-
+		mqm.sendErrorResponse(cmd.sessionID, e.what());
+	}
+	catch (const std::exception& e) {
+		mqm.sendErrorResponse(cmd.sessionID, e.what());
+	}
+	catch (...) {
+		mqm.sendErrorResponse(cmd.sessionID, "Unknown error");
 	}
 }
 
@@ -408,11 +434,13 @@ void GetitemcurrenttimeCommand::execute() {
 		mqm.sendResponse(resp);
 	}
 	catch (const boost::bad_get& e) {
-		Response resp;
-		resp.sessionID = cmd.sessionID;
-		std::string error = e.what();
-		resp.args.push_back(error);
-		mqm.sendResponse(resp);
+		mqm.sendErrorResponse(cmd.sessionID, e.what());
+	}
+	catch (const std::exception& e) {
+		mqm.sendErrorResponse(cmd.sessionID, e.what());
+	}
+	catch (...) {
+		mqm.sendErrorResponse(cmd.sessionID, "Unknown error");
 	}
 }
 
@@ -449,12 +477,13 @@ void GetitemdurationCommand::execute() {
 		mqm.sendResponse(resp);
 	}
 	catch (const boost::bad_get& e) {
-		Response resp;
-		resp.sessionID = cmd.sessionID;
-		std::string error = e.what();
-		resp.args.push_back(error);
-
-		mqm.sendResponse(resp);
+		mqm.sendErrorResponse(cmd.sessionID, e.what());
+	}
+	catch (const std::exception& e) {
+		mqm.sendErrorResponse(cmd.sessionID, e.what());
+	}
+	catch (...) {
+		mqm.sendErrorResponse(cmd.sessionID, "Unknown error");
 	}
 }
 
@@ -485,16 +514,17 @@ void SetitemcurrenttimeCommand::execute() {
 				throw std::runtime_error("Unsupported type");
 			}
 			}, itemVariant);
-
+		mqm.sendEmptyResponse(cmd.sessionID);
 
 	}
 	catch (const boost::bad_get& e) {
-		Response resp;
-		resp.sessionID = cmd.sessionID;
-		std::string error = e.what();
-
-		resp.args.push_back(error);
-		mqm.sendResponse(resp);
+		mqm.sendErrorResponse(cmd.sessionID, e.what());
+	}
+	catch (const std::exception& e) {
+		mqm.sendErrorResponse(cmd.sessionID, e.what());
+	}
+	catch (...) {
+		mqm.sendErrorResponse(cmd.sessionID, "Unknown error");
 	}
 }
 
@@ -515,13 +545,15 @@ void GetcompframerateCommand::execute() {
         resp.sessionID = cmd.sessionID;
         resp.args.push_back(frameRate);
         mqm.sendResponse(resp);
-    }
-    catch (const boost::bad_get& e) {
-		Response resp;
-		resp.sessionID = cmd.sessionID;
-		std::string error = e.what();
-		resp.args.push_back(error);
-		mqm.sendResponse(resp);
+	}
+	catch (const boost::bad_get& e) {
+		mqm.sendErrorResponse(cmd.sessionID, e.what());
+	}
+	catch (const std::exception& e) {
+		mqm.sendErrorResponse(cmd.sessionID, e.what());
+	}
+	catch (...) {
+		mqm.sendErrorResponse(cmd.sessionID, "Unknown error");
 	}
 }
 
@@ -539,14 +571,16 @@ void SetcompframerateCommand::execute() {
 				 throw std::runtime_error("Unsupported type");
 			 }
 			 }, compItem);
-
+		 mqm.sendEmptyResponse(cmd.sessionID);
 	}
-    catch (const boost::bad_get& e) {
-		Response resp;
-		resp.sessionID = cmd.sessionID;
-		std::string error = e.what();
-		resp.args.push_back(error);
-		mqm.sendResponse(resp);
+	catch (const boost::bad_get& e) {
+		mqm.sendErrorResponse(cmd.sessionID, e.what());
+	}
+	catch (const std::exception& e) {
+		mqm.sendErrorResponse(cmd.sessionID, e.what());
+	}
+	catch (...) {
+		mqm.sendErrorResponse(cmd.sessionID, "Unknown error");
 	}
 }
 
@@ -568,13 +602,14 @@ void GetcompworkareadurationCommand::execute() {
 		resp.args.push_back(duration);
 		mqm.sendResponse(resp);
 	}
-    catch (const boost::bad_get& e) {
-		Response resp;
-		resp.sessionID = cmd.sessionID;
-
-		std::string error = e.what();
-		resp.args.push_back(error);
-		mqm.sendResponse(resp);
+	catch (const boost::bad_get& e) {
+		mqm.sendErrorResponse(cmd.sessionID, e.what());
+	}
+	catch (const std::exception& e) {
+		mqm.sendErrorResponse(cmd.sessionID, e.what());
+	}
+	catch (...) {
+		mqm.sendErrorResponse(cmd.sessionID, "Unknown error");
 	}
 }
 
@@ -592,16 +627,16 @@ void SetcompdurationCommand::execute() {
 				throw std::runtime_error("Unsupported type");
 			}
 			}, compItem);
-
+		mqm.sendEmptyResponse(cmd.sessionID);
 	}
-    catch (const boost::bad_get& e) {
-
-		Response resp;
-		resp.sessionID = cmd.sessionID;
-
-		std::string error = e.what();
-		resp.args.push_back(error);
-		mqm.sendResponse(resp);
+	catch (const boost::bad_get& e) {
+		mqm.sendErrorResponse(cmd.sessionID, e.what());
+	}
+	catch (const std::exception& e) {
+		mqm.sendErrorResponse(cmd.sessionID, e.what());
+	}
+	catch (...) {
+		mqm.sendErrorResponse(cmd.sessionID, "Unknown error");
 	}
 }
 
@@ -619,15 +654,16 @@ void SetcompwidthCommand::execute() {
 				throw std::runtime_error("Unsupported type");
 			}
 			}, compItem);
+		mqm.sendEmptyResponse(cmd.sessionID);
 	}
-    catch (const boost::bad_get& e) {
-
-		Response resp;
-		resp.sessionID = cmd.sessionID;
-
-		std::string error = e.what();
-		resp.args.push_back(error);
-		mqm.sendResponse(resp);
+	catch (const boost::bad_get& e) {
+		mqm.sendErrorResponse(cmd.sessionID, e.what());
+	}
+	catch (const std::exception& e) {
+		mqm.sendErrorResponse(cmd.sessionID, e.what());
+	}
+	catch (...) {
+		mqm.sendErrorResponse(cmd.sessionID, "Unknown error");
 	}
 }
 
@@ -645,15 +681,16 @@ void SetcompheightCommand::execute() {
 				throw std::runtime_error("Unsupported type");
 			}
 			}, compItem);
+		mqm.sendEmptyResponse(cmd.sessionID);
 	}
-    catch (const boost::bad_get& e) {
-
-		Response resp;
-		resp.sessionID = cmd.sessionID;
-
-		std::string error = e.what();
-		resp.args.push_back(error);
-		mqm.sendResponse(resp);
+	catch (const boost::bad_get& e) {
+		mqm.sendErrorResponse(cmd.sessionID, e.what());
+	}
+	catch (const std::exception& e) {
+		mqm.sendErrorResponse(cmd.sessionID, e.what());
+	}
+	catch (...) {
+		mqm.sendErrorResponse(cmd.sessionID, "Unknown error");
 	}
 }
 
@@ -678,13 +715,15 @@ void GetselectedlayersCommand::execute() {
 		resp.args.push_back(layersID);
 		mqm.sendResponse(resp);
 
-    }
-    catch (const boost::bad_get& e) {
-		Response resp;
-		resp.sessionID = cmd.sessionID;
-		std::string error = e.what();
-		resp.args.push_back(error);
-		mqm.sendResponse(resp);
+	}
+	catch (const boost::bad_get& e) {
+		mqm.sendErrorResponse(cmd.sessionID, e.what());
+	}
+	catch (const std::exception& e) {
+		mqm.sendErrorResponse(cmd.sessionID, e.what());
+	}
+	catch (...) {
+		mqm.sendErrorResponse(cmd.sessionID, "Unknown error");
 	}
 }
 
@@ -710,14 +749,16 @@ void GetlayersCommand::execute() {
 
 	}
 	catch (const boost::bad_get& e) {
-		Response resp;
-		resp.sessionID = cmd.sessionID;
-		std::string error = e.what();
-
-		resp.args.push_back(error);
-		mqm.sendResponse(resp);
+		mqm.sendErrorResponse(cmd.sessionID, e.what());
+	}
+	catch (const std::exception& e) {
+		mqm.sendErrorResponse(cmd.sessionID, e.what());
+	}
+	catch (...) {
+		mqm.sendErrorResponse(cmd.sessionID, "Unknown error");
 	}
 }
+
 void GetAlllayersCommand::execute() {
 	auto& mqm = MessageQueueManager::getInstance();
     try {
@@ -744,12 +785,14 @@ void GetAlllayersCommand::execute() {
 		mqm.sendResponse(resp);
 
 	}
-    catch (const boost::bad_get& e) {
-		Response resp;
-		resp.sessionID = cmd.sessionID;
-		std::string error = e.what();
-		resp.args.push_back(error);
-		mqm.sendResponse(resp);
+	catch (const boost::bad_get& e) {
+		mqm.sendErrorResponse(cmd.sessionID, e.what());
+	}
+	catch (const std::exception& e) {
+		mqm.sendErrorResponse(cmd.sessionID, e.what());
+	}
+	catch (...) {
+		mqm.sendErrorResponse(cmd.sessionID, "Unknown error");
 	}
 }
 
@@ -772,14 +815,14 @@ void GetnumlayersCommand::execute() {
 		mqm.sendResponse(resp);
 
 	}
-    catch (const boost::bad_get& e) {
-
-		Response resp;
-		resp.sessionID = cmd.sessionID;
-
-		std::string error = e.what();
-		resp.args.push_back(error);
-		mqm.sendResponse(resp);
+	catch (const boost::bad_get& e) {
+		mqm.sendErrorResponse(cmd.sessionID, e.what());
+	}
+	catch (const std::exception& e) {
+		mqm.sendErrorResponse(cmd.sessionID, e.what());
+	}
+	catch (...) {
+		mqm.sendErrorResponse(cmd.sessionID, "Unknown error");
 	}
 }
 
@@ -802,14 +845,14 @@ void GetcompitemcurrenttimeCommand::execute() {
 		mqm.sendResponse(resp);
 
 	}
-    catch (const boost::bad_get& e) {
-
-		Response resp;
-		resp.sessionID = cmd.sessionID;
-
-		std::string error = e.what();
-		resp.args.push_back(error);
-		mqm.sendResponse(resp);
+	catch (const boost::bad_get& e) {
+		mqm.sendErrorResponse(cmd.sessionID, e.what());
+	}
+	catch (const std::exception& e) {
+		mqm.sendErrorResponse(cmd.sessionID, e.what());
+	}
+	catch (...) {
+		mqm.sendErrorResponse(cmd.sessionID, "Unknown error");
 	}
 }
 
@@ -829,16 +872,16 @@ void SetcompitemcurrenttimeCommand::execute() {
 			}, comp);
 
 		
-
+		mqm.sendEmptyResponse(cmd.sessionID);
 	}
-    catch (const boost::bad_get& e) {
-
-		Response resp;
-		resp.sessionID = cmd.sessionID;
-
-		std::string error = e.what();
-		resp.args.push_back(error);
-		mqm.sendResponse(resp);
+	catch (const boost::bad_get& e) {
+		mqm.sendErrorResponse(cmd.sessionID, e.what());
+	}
+	catch (const std::exception& e) {
+		mqm.sendErrorResponse(cmd.sessionID, e.what());
+	}
+	catch (...) {
+		mqm.sendErrorResponse(cmd.sessionID, "Unknown error");
 	}
 }
 
@@ -858,16 +901,16 @@ void AddlayertocompCommand::execute() {
 			}
 			}, comp);
 
-
-    }
-    catch (const boost::bad_get& e) {
-
-		Response resp;
-		resp.sessionID = cmd.sessionID;
-
-		std::string error = e.what();
-		resp.args.push_back(error);
-		mqm.sendResponse(resp);
+		mqm.sendEmptyResponse(cmd.sessionID);
+	}
+	catch (const boost::bad_get& e) {
+		mqm.sendErrorResponse(cmd.sessionID, e.what());
+	}
+	catch (const std::exception& e) {
+		mqm.sendErrorResponse(cmd.sessionID, e.what());
+	}
+	catch (...) {
+		mqm.sendErrorResponse(cmd.sessionID, "Unknown error");
 	}
 }
 
@@ -892,14 +935,13 @@ void GetlayernameCommand::execute() {
 
 	}
 	catch (const boost::bad_get& e) {
-
-		Response resp;
-		resp.sessionID = cmd.sessionID;
-
-		std::string error = e.what();
-
-		resp.args.push_back(error);
-		mqm.sendResponse(resp);
+		mqm.sendErrorResponse(cmd.sessionID, e.what());
+	}
+	catch (const std::exception& e) {
+		mqm.sendErrorResponse(cmd.sessionID, e.what());
+	}
+	catch (...) {
+		mqm.sendErrorResponse(cmd.sessionID, "Unknown error");
 	}
 }
 
@@ -924,14 +966,13 @@ void GetlayersourcenameCommand::execute() {
 
 	}
 	catch (const boost::bad_get& e) {
-
-		Response resp;
-		resp.sessionID = cmd.sessionID;
-
-		std::string error = e.what();
-
-		resp.args.push_back(error);
-		mqm.sendResponse(resp);
+		mqm.sendErrorResponse(cmd.sessionID, e.what());
+	}
+	catch (const std::exception& e) {
+		mqm.sendErrorResponse(cmd.sessionID, e.what());
+	}
+	catch (...) {
+		mqm.sendErrorResponse(cmd.sessionID, "Unknown error");
 	}
 }
 
@@ -950,17 +991,16 @@ void SetlayernameCommand::execute() {
 				throw std::runtime_error("Unsupported type");
 			}
 			}, layer);
-
+		mqm.sendEmptyResponse(cmd.sessionID);
 	}
 	catch (const boost::bad_get& e) {
-
-		Response resp;
-		resp.sessionID = cmd.sessionID;
-
-		std::string error = e.what();
-
-		resp.args.push_back(error);
-		mqm.sendResponse(resp);
+		mqm.sendErrorResponse(cmd.sessionID, e.what());
+	}
+	catch (const std::exception& e) {
+		mqm.sendErrorResponse(cmd.sessionID, e.what());
+	}
+	catch (...) {
+		mqm.sendErrorResponse(cmd.sessionID, "Unknown error");
 	}
 }
 
@@ -982,17 +1022,15 @@ void GetlayerindexCommand::execute() {
 		resp.sessionID = cmd.sessionID;
 		resp.args.push_back(index);
 		mqm.sendResponse(resp);
-
 	}
 	catch (const boost::bad_get& e) {
-
-		Response resp;
-		resp.sessionID = cmd.sessionID;
-
-		std::string error = e.what();
-
-		resp.args.push_back(error);
-		mqm.sendResponse(resp);
+		mqm.sendErrorResponse(cmd.sessionID, e.what());
+	}
+	catch (const std::exception& e) {
+		mqm.sendErrorResponse(cmd.sessionID, e.what());
+	}
+	catch (...) {
+		mqm.sendErrorResponse(cmd.sessionID, "Unknown error");
 	}
 }
 
@@ -1011,19 +1049,16 @@ void ChangelayerindexCommand::execute() {
 				throw std::runtime_error("Unsupported type");
 			}
 			}, layer);
-
-
-
+		mqm.sendEmptyResponse(cmd.sessionID);
 	}
 	catch (const boost::bad_get& e) {
-
-		Response resp;
-		resp.sessionID = cmd.sessionID;
-
-		std::string error = e.what();
-
-		resp.args.push_back(error);
-		mqm.sendResponse(resp);
+		mqm.sendErrorResponse(cmd.sessionID, e.what());
+	}
+	catch (const std::exception& e) {
+		mqm.sendErrorResponse(cmd.sessionID, e.what());
+	}
+	catch (...) {
+		mqm.sendErrorResponse(cmd.sessionID, "Unknown error");
 	}
 }
 
@@ -1040,15 +1075,16 @@ void DuplicatelayerCommand::execute() {
 				throw std::runtime_error("Unsupported type");
 			}
 			}, layer);
-
+		mqm.sendEmptyResponse(cmd.sessionID);
 	}
 	catch (const boost::bad_get& e) {
-		Response resp;
-		resp.sessionID = cmd.sessionID;
-		std::string error = e.what();
-
-		resp.args.push_back(error);
-		mqm.sendResponse(resp);
+		mqm.sendErrorResponse(cmd.sessionID, e.what());
+	}
+	catch (const std::exception& e) {
+		mqm.sendErrorResponse(cmd.sessionID, e.what());
+	}
+	catch (...) {
+		mqm.sendErrorResponse(cmd.sessionID, "Unknown error");
 	}
 }
 
@@ -1056,7 +1092,7 @@ void GetlayercurrenttimeCommand::execute() {
 	auto& mqm = MessageQueueManager::getInstance();
 	try {
 		const auto& layer = SessionManager::GetInstance().getSessionObject(cmd.sessionID);
-		int currentTime = std::visit([](const auto& arg) -> int {
+		float currentTime = std::visit([](const auto& arg) -> float {
 			using T = std::decay_t<decltype(arg)>;
 			if constexpr (std::is_same_v<T, std::shared_ptr<Layer>>) {
 				return arg->layerTime();
@@ -1073,12 +1109,13 @@ void GetlayercurrenttimeCommand::execute() {
 
 	}
 	catch (const boost::bad_get& e) {
-		Response resp;
-		resp.sessionID = cmd.sessionID;
-		std::string error = e.what();
-
-		resp.args.push_back(error);
-		mqm.sendResponse(resp);
+		mqm.sendErrorResponse(cmd.sessionID, e.what());
+	}
+	catch (const std::exception& e) {
+		mqm.sendErrorResponse(cmd.sessionID, e.what());
+	}
+	catch (...) {
+		mqm.sendErrorResponse(cmd.sessionID, "Unknown error");
 	}
 }
 
@@ -1086,7 +1123,7 @@ void GetlayerComptimeCommand::execute() {
 	auto& mqm = MessageQueueManager::getInstance();
 	try {
 		const auto& layer = SessionManager::GetInstance().getSessionObject(cmd.sessionID);
-		int compTime = std::visit([](const auto& arg) -> int {
+		float compTime = std::visit([](const auto& arg) -> float {
 			using T = std::decay_t<decltype(arg)>;
 			if constexpr (std::is_same_v<T, std::shared_ptr<Layer>>) {
 				return arg->layerCompTime();
@@ -1102,12 +1139,13 @@ void GetlayerComptimeCommand::execute() {
 
 	}
 	catch (const boost::bad_get& e) {
-		Response resp;
-		resp.sessionID = cmd.sessionID;
-		std::string error = e.what();
-
-		resp.args.push_back(error);
-		mqm.sendResponse(resp);
+		mqm.sendErrorResponse(cmd.sessionID, e.what());
+	}
+	catch (const std::exception& e) {
+		mqm.sendErrorResponse(cmd.sessionID, e.what());
+	}
+	catch (...) {
+		mqm.sendErrorResponse(cmd.sessionID, "Unknown error");
 	}
 }
 
@@ -1115,7 +1153,7 @@ void GetlayerinpointCommand::execute() {
 	auto& mqm = MessageQueueManager::getInstance();
 	try {
 		const auto& layer = SessionManager::GetInstance().getSessionObject(cmd.sessionID);
-		int inPoint = std::visit([](const auto& arg) -> int {
+		float inPoint = std::visit([](const auto& arg) -> float {
 			using T = std::decay_t<decltype(arg)>;
 			if constexpr (std::is_same_v<T, std::shared_ptr<Layer>>) {
 				return arg->inPoint();
@@ -1132,21 +1170,21 @@ void GetlayerinpointCommand::execute() {
 
 	}
 	catch (const boost::bad_get& e) {
-		Response resp;
-		resp.sessionID = cmd.sessionID;
-		std::string error = e.what();
-
-		resp.args.push_back(error);
-		mqm.sendResponse(resp);
+		mqm.sendErrorResponse(cmd.sessionID, e.what());
 	}
-
+	catch (const std::exception& e) {
+		mqm.sendErrorResponse(cmd.sessionID, e.what());
+	}
+	catch (...) {
+		mqm.sendErrorResponse(cmd.sessionID, "Unknown error");
+	}
 }
 
 void GetlayerdurationCommand::execute() {
 	auto& mqm = MessageQueueManager::getInstance();
 	try {
 		const auto& layer = SessionManager::GetInstance().getSessionObject(cmd.sessionID);
-		int duration = std::visit([](const auto& arg) -> int {
+		float duration = std::visit([](const auto& arg) -> float {
 			using T = std::decay_t<decltype(arg)>;
 			if constexpr (std::is_same_v<T, std::shared_ptr<Layer>>) {
 				return arg->duration();
@@ -1162,14 +1200,14 @@ void GetlayerdurationCommand::execute() {
 
 	}
 	catch (const boost::bad_get& e) {
-		Response resp;
-		resp.sessionID = cmd.sessionID;
-
-		std::string error = e.what();
-		resp.args.push_back(error);
-		mqm.sendResponse(resp);
+		mqm.sendErrorResponse(cmd.sessionID, e.what());
 	}
-
+	catch (const std::exception& e) {
+		mqm.sendErrorResponse(cmd.sessionID, e.what());
+	}
+	catch (...) {
+		mqm.sendErrorResponse(cmd.sessionID, "Unknown error");
+	}
 }
 
 void GetlayerqualityCommand::execute() {
@@ -1192,14 +1230,14 @@ void GetlayerqualityCommand::execute() {
 
 	}
 	catch (const boost::bad_get& e) {
-		Response resp;
-		resp.sessionID = cmd.sessionID;
-
-		std::string error = e.what();
-		resp.args.push_back(error);
-		mqm.sendResponse(resp);
+		mqm.sendErrorResponse(cmd.sessionID, e.what());
 	}
-
+	catch (const std::exception& e) {
+		mqm.sendErrorResponse(cmd.sessionID, e.what());
+	}
+	catch (...) {
+		mqm.sendErrorResponse(cmd.sessionID, "Unknown error");
+	}
 }
 
 void SetlayerqualityCommand::execute() {
@@ -1217,19 +1255,17 @@ void SetlayerqualityCommand::execute() {
 				throw std::runtime_error("Unsupported type");
 			}
 			}, layer);
-
-	}
-	catch (const boost::bad_get& e) {
-
-		Response resp;
-		resp.sessionID = cmd.sessionID;
-
-		std::string error = e.what();
-
-		resp.args.push_back(error);
-		mqm.sendResponse(resp);
-	}
-
+		mqm.sendEmptyResponse(cmd.sessionID);
+}
+catch (const boost::bad_get& e) {
+	mqm.sendErrorResponse(cmd.sessionID, e.what());
+}
+catch (const std::exception& e) {
+	mqm.sendErrorResponse(cmd.sessionID, e.what());
+}
+catch (...) {
+	mqm.sendErrorResponse(cmd.sessionID, "Unknown error");
+}
 }
 
 void DeletelayerCommand::execute() {
@@ -1246,25 +1282,24 @@ void DeletelayerCommand::execute() {
 				 throw std::runtime_error("Unsupported type");
 			 }
 			 }, layer);
-
+		 mqm.sendEmptyResponse(cmd.sessionID);
 	}
 	catch (const boost::bad_get& e) {
-		Response resp;
-		resp.sessionID = cmd.sessionID;
-
-		std::string error = e.what();
-
-		resp.args.push_back(error);
-		mqm.sendResponse(resp);
+		mqm.sendErrorResponse(cmd.sessionID, e.what());
 	}
-
+	catch (const std::exception& e) {
+		mqm.sendErrorResponse(cmd.sessionID, e.what());
+	}
+	catch (...) {
+		mqm.sendErrorResponse(cmd.sessionID, "Unknown error");
+	}
 }
 
 void GetlayeroffsetCommand::execute() {
 	auto& mqm = MessageQueueManager::getInstance();
 	try {
         const auto& layer = SessionManager::GetInstance().getSessionObject(cmd.sessionID);
-		int offset = std::visit([](const auto& arg) -> int {
+		float offset = std::visit([](const auto& arg) -> float {
 			using T = std::decay_t<decltype(arg)>;
 			if constexpr (std::is_same_v<T, std::shared_ptr<Layer>>) {
 				return arg->getOffset();
@@ -1280,20 +1315,20 @@ void GetlayeroffsetCommand::execute() {
 
 	}
 	catch (const boost::bad_get& e) {
-		Response resp;
-		resp.sessionID = cmd.sessionID;
-
-		std::string error = e.what();
-		resp.args.push_back(error);
-		mqm.sendResponse(resp);
+		mqm.sendErrorResponse(cmd.sessionID, e.what());
 	}
-
+	catch (const std::exception& e) {
+		mqm.sendErrorResponse(cmd.sessionID, e.what());
+	}
+	catch (...) {
+		mqm.sendErrorResponse(cmd.sessionID, "Unknown error");
+	}
 }
 
 void SetlayeroffsetCommand::execute() {
 	auto& mqm = MessageQueueManager::getInstance();
 	try {
-		int offset = boost::get<int>(cmd.args[0]);
+		float offset = boost::get<float>(cmd.args[0]);
 
 		const auto& layer = SessionManager::GetInstance().getSessionObject(cmd.sessionID);
 		std::visit([&offset](auto&& arg) {
@@ -1305,19 +1340,17 @@ void SetlayeroffsetCommand::execute() {
 				throw std::runtime_error("Unsupported type");
 			}
 			}, layer);
-
+		mqm.sendEmptyResponse(cmd.sessionID);
 	}
 	catch (const boost::bad_get& e) {
-
-		Response resp;
-		resp.sessionID = cmd.sessionID;
-
-		std::string error = e.what();
-
-		resp.args.push_back(error);
-		mqm.sendResponse(resp);
+		mqm.sendErrorResponse(cmd.sessionID, e.what());
 	}
-
+	catch (const std::exception& e) {
+		mqm.sendErrorResponse(cmd.sessionID, e.what());
+	}
+	catch (...) {
+		mqm.sendErrorResponse(cmd.sessionID, "Unknown error");
+	}
 }
 
 void SetlayerflagCommand::execute() {
@@ -1337,19 +1370,17 @@ void SetlayerflagCommand::execute() {
 				throw std::runtime_error("Unsupported type");
 			}
 			}, layer);
-
+		mqm.sendEmptyResponse(cmd.sessionID);
 	}
 	catch (const boost::bad_get& e) {
-
-		Response resp;
-		resp.sessionID = cmd.sessionID;
-
-		std::string error = e.what();
-
-		resp.args.push_back(error);
-		mqm.sendResponse(resp);
+		mqm.sendErrorResponse(cmd.sessionID, e.what());
 	}
-
+	catch (const std::exception& e) {
+		mqm.sendErrorResponse(cmd.sessionID, e.what());
+	}
+	catch (...) {
+		mqm.sendErrorResponse(cmd.sessionID, "Unknown error");
+	}
 }
 
 void GetlayerflagCommand::execute() {
@@ -1371,19 +1402,17 @@ void GetlayerflagCommand::execute() {
 		resp.sessionID = cmd.sessionID;
 		resp.args.push_back(value);
 		mqm.sendResponse(resp);
-
 	}
 	catch (const boost::bad_get& e) {
-		Response resp;
-		resp.sessionID = cmd.sessionID;
-
-		std::string error = e.what();
-		resp.args.push_back(error);
-		mqm.sendResponse(resp);
+		mqm.sendErrorResponse(cmd.sessionID, e.what());
 	}
-
+	catch (const std::exception& e) {
+		mqm.sendErrorResponse(cmd.sessionID, e.what());
+	}
+	catch (...) {
+		mqm.sendErrorResponse(cmd.sessionID, "Unknown error");
+	}
 }
-
 void GetlayersourceCommand::execute() {
 	auto& mqm = MessageQueueManager::getInstance();
 	try {
@@ -1426,14 +1455,14 @@ void GetlayersourceCommand::execute() {
 		}
 	}
 	catch (const boost::bad_get& e) {
-		Response resp;
-		resp.sessionID = cmd.sessionID;
-
-		std::string error = e.what();
-		resp.args.push_back(error);
-		mqm.sendResponse(resp);
+		mqm.sendErrorResponse(cmd.sessionID, e.what());
 	}
-
+	catch (const std::exception& e) {
+		mqm.sendErrorResponse(cmd.sessionID, e.what());
+	}
+	catch (...) {
+		mqm.sendErrorResponse(cmd.sessionID, "Unknown error");
+	}
 }
 
 void GetchilditemsCommand::execute() {
@@ -1459,14 +1488,14 @@ void GetchilditemsCommand::execute() {
 
 	}
 	catch (const boost::bad_get& e) {
-		Response resp;
-		resp.sessionID = cmd.sessionID;
-
-		std::string error = e.what();
-		resp.args.push_back(error);
-		mqm.sendResponse(resp);
+		mqm.sendErrorResponse(cmd.sessionID, e.what());
 	}
-
+	catch (const std::exception& e) {
+		mqm.sendErrorResponse(cmd.sessionID, e.what());
+	}
+	catch (...) {
+		mqm.sendErrorResponse(cmd.sessionID, "Unknown error");
+	}
 }
 void RemovelayerfromcollectionCommand::execute() {
 	auto& mqm = MessageQueueManager::getInstance();
@@ -1502,12 +1531,16 @@ void RemovelayerfromcollectionCommand::execute() {
 		else {
 			throw std::runtime_error("Layer or LayerCollection is null");
 		}
+		mqm.sendEmptyResponse(cmd.sessionID);
+	}
+	catch (const boost::bad_get& e) {
+		mqm.sendErrorResponse(cmd.sessionID, e.what());
 	}
 	catch (const std::exception& e) {
-		Response resp;
-		resp.sessionID = cmd.sessionID;
-		resp.args.push_back(e.what());
-		mqm.sendResponse(resp);
+		mqm.sendErrorResponse(cmd.sessionID, e.what());
+	}
+	catch (...) {
+		mqm.sendErrorResponse(cmd.sessionID, "Unknown error");
 	}
 }
 
@@ -1526,17 +1559,16 @@ void RemovelayerbyindexCommand::execute() {
 				 throw std::runtime_error("Unsupported type");
 			 }
 			 }, layers);
-
+		 mqm.sendEmptyResponse(cmd.sessionID);
 	}
 	catch (const boost::bad_get& e) {
-		Response resp;
-
-		resp.sessionID = cmd.sessionID;
-
-		std::string error = e.what();
-
-		resp.args.push_back(error);
-		mqm.sendResponse(resp);
+		mqm.sendErrorResponse(cmd.sessionID, e.what());
+	}
+	catch (const std::exception& e) {
+		mqm.sendErrorResponse(cmd.sessionID, e.what());
+	}
+	catch (...) {
+		mqm.sendErrorResponse(cmd.sessionID, "Unknown error");
 	}
 }
 
@@ -1558,17 +1590,15 @@ void GetcompnameCommand::execute() {
 		resp.sessionID = cmd.sessionID;
 		resp.args.push_back(name);
 		mqm.sendResponse(resp);
-
 	}
 	catch (const boost::bad_get& e) {
-		Response resp;
-
-		resp.sessionID = cmd.sessionID;
-
-		std::string error = e.what();
-
-		resp.args.push_back(error);
-		mqm.sendResponse(resp);
+		mqm.sendErrorResponse(cmd.sessionID, e.what());
+	}
+	catch (const std::exception& e) {
+		mqm.sendErrorResponse(cmd.sessionID, e.what());
+	}
+	catch (...) {
+		mqm.sendErrorResponse(cmd.sessionID, "Unknown error");
 	}
 }
 
@@ -1588,92 +1618,100 @@ void AddlayertocollectionCommand::execute() {
 			}
 			}, layersVariant);
 
-		std::shared_ptr<FootageItem> footageItemH = std::visit([&](const auto& arg) -> std::shared_ptr<FootageItem> {
+		std::shared_ptr<Layer> footageItemH = std::visit([&](const auto& arg) -> std::shared_ptr<Layer> {
 			using T = std::decay_t<decltype(arg)>;
-			if constexpr (std::is_same_v<T, std::shared_ptr<FootageItem>>) {
-				return arg;
+			if constexpr (std::is_same_v<T, std::shared_ptr<Item>>) {
+				std::shared_ptr<Layer> layer = layerCollection->addLayerToCollection(*arg);
+				return layer;
+			}
+			else if constexpr (std::is_same_v<T, std::shared_ptr<CompItem>>) {
+				std::shared_ptr<Item> item = std::dynamic_pointer_cast<Item>(arg);
+				std::shared_ptr<Layer> layer = layerCollection->addLayerToCollection(*item);
+				return layer;
+			}
+			else if constexpr (std::is_same_v<T, std::shared_ptr<FolderItem>>) {
+				std::shared_ptr<Item> item = std::dynamic_pointer_cast<Item>(arg);
+				std::shared_ptr<Layer> layer = layerCollection->addLayerToCollection(*item);
+				return layer;
+			}
+			else if constexpr (std::is_same_v<T, std::shared_ptr<FootageItem>>) {
+				std::shared_ptr<Item> item = std::dynamic_pointer_cast<Item>(arg);
+				std::shared_ptr<Layer> layer = layerCollection->addLayerToCollection(*item);
+				return layer;
+			}
+			else if constexpr (std::is_same_v<T, std::shared_ptr<SolidItem>>) {
+				std::shared_ptr<Item> item = std::dynamic_pointer_cast<Item>(arg);
+				std::shared_ptr<Layer> layer = layerCollection->addLayerToCollection(*item);
+				return layer;
 			}
 			else {
 				throw std::runtime_error("Invalid type for FootageItem");
 			}
 			}, layerVariant);
 
-		if (layerCollection && footageItemH) {
-			layerCollection->addLayerToCollection(*footageItemH);
-		}
-		else {
-			throw std::runtime_error("Layer or LayerCollection is null");
-		}
-	}
-	catch (const std::exception& e) {
 		Response resp;
 		resp.sessionID = cmd.sessionID;
-		resp.args.push_back(e.what());
+		std::string layerID = createUUID();
+		SessionManager::GetInstance().addToSessions(layerID, footageItemH);
+		resp.args.push_back(layerID);
 		mqm.sendResponse(resp);
 	}
+	catch (const boost::bad_get& e) {
+		mqm.sendErrorResponse(cmd.sessionID, e.what());
+	}
+	catch (const std::exception& e) {
+		mqm.sendErrorResponse(cmd.sessionID, e.what());
+	}
+	catch (...) {
+		mqm.sendErrorResponse(cmd.sessionID, "Unknown error");
+	}
 }
-
 
 
 void GetitemsCommand::execute() {
 	auto& mqm = MessageQueueManager::getInstance();
 	try {
 
-		const auto& projects = SessionManager::GetInstance().getSessionObject(cmd.sessionID);
+		const auto& itemCollection = SessionManager::GetInstance().getSessionObject(cmd.sessionID);
 		std::vector<std::shared_ptr<Item>> items = std::visit([](const auto& arg) -> std::vector<std::shared_ptr<Item>> {
 			using T = std::decay_t<decltype(arg)>;
-			if constexpr (std::is_same_v<T, std::shared_ptr<ProjectCollection>>) {
+			if constexpr (std::is_same_v<T, std::shared_ptr<ItemCollection>>) {
 				return arg->getItems();
 			}
 			else {
 				throw std::runtime_error("Unsupported type");
 			}
-			}, projects);
-		Response resp;
-		resp.sessionID = cmd.sessionID;
-		std::vector<std::string> sessionIDs;
+			}, itemCollection);
+
+		std::vector<std::string> itemIDs;
 		std::vector<std::string> types;
 		for (auto item : items) {
 			std::string itemID = createUUID();
 			std::string type = item->getType();
-			if (type == "Comp") {
-				//turn item into comp, then add to sessions
-				std::shared_ptr<CompItem> comp = std::dynamic_pointer_cast<CompItem>(item);
-				sessionIDs.push_back(itemID);
-				types.push_back("Comp");
-				SessionManager::GetInstance().addToSessions(itemID, comp);
-			}
-			else if (type == "Folder") {
-				//turn item into folder, then add to sessions
-				std::shared_ptr<FolderItem> folder = std::dynamic_pointer_cast<FolderItem>(item);
-				sessionIDs.push_back(itemID);
-				types.push_back("Folder");
-				SessionManager::GetInstance().addToSessions(itemID, folder);
-			}
-			else if (type == "Footage") {
-				//turn item into footage, then add to sessions
-				std::shared_ptr<FootageItem> footage = std::dynamic_pointer_cast<FootageItem>(item);
-				sessionIDs.push_back(itemID);
-				types.push_back("Footage");
-				SessionManager::GetInstance().addToSessions(itemID, footage);
-			}
+			itemIDs.push_back(itemID);
+			types.push_back(type);
+			SessionManager::GetInstance().addToSessions(itemID, item);
 		}
-		resp.args.push_back(sessionIDs);
+		Response resp;
+		resp.sessionID = cmd.sessionID;
+		resp.args.push_back(itemIDs);
 		resp.args.push_back(types);
 		mqm.sendResponse(resp);
-
-		}
+	}
 	catch (const boost::bad_get& e) {
-		Response resp;
-
-		resp.sessionID = cmd.sessionID;
-
-		std::string error = e.what();
-
-		resp.args.push_back(error);
-		mqm.sendResponse(resp);
+		mqm.sendErrorResponse(cmd.sessionID, e.what());
 	}
+	catch (const std::bad_variant_access& e) {
+		mqm.sendErrorResponse(cmd.sessionID, e.what());
 	}
+	catch (const std::exception& e) {
+		mqm.sendErrorResponse(cmd.sessionID, e.what());
+	}
+
+	catch (...) {
+		mqm.sendErrorResponse(cmd.sessionID, "Unknown error");
+	}
+}
 
 void GetselecteditemsCommand::execute() {
 	auto& mqm = MessageQueueManager::getInstance();
@@ -1725,14 +1763,13 @@ void GetselecteditemsCommand::execute() {
 		}
 	}
 	catch (const boost::bad_get& e) {
-		Response resp;
-
-		resp.sessionID = cmd.sessionID;
-
-		std::string error = e.what();
-
-		resp.args.push_back(error);
-		mqm.sendResponse(resp);
+		mqm.sendErrorResponse(cmd.sessionID, e.what());
+	}
+	catch (const std::exception& e) {
+		mqm.sendErrorResponse(cmd.sessionID, e.what());
+	}
+	catch (...) {
+		mqm.sendErrorResponse(cmd.sessionID, "Unknown error");
 	}
 }
 
@@ -1754,17 +1791,15 @@ void GetfootagepathCommand::execute() {
 		resp.sessionID = cmd.sessionID;
 		resp.args.push_back(path);
 		mqm.sendResponse(resp);
-
 	}
 	catch (const boost::bad_get& e) {
-		Response resp;
-
-		resp.sessionID = cmd.sessionID;
-
-		std::string error = e.what();
-
-		resp.args.push_back(error);
-		mqm.sendResponse(resp);
+		mqm.sendErrorResponse(cmd.sessionID, e.what());
+	}
+	catch (const std::exception& e) {
+		mqm.sendErrorResponse(cmd.sessionID, e.what());
+	}
+	catch (...) {
+		mqm.sendErrorResponse(cmd.sessionID, "Unknown error");
 	}
 }
 
@@ -1785,18 +1820,16 @@ void ReplacefootageCommand::execute() {
 				throw std::runtime_error("Unsupported type");
 			}
 			}, footage);
-
-	} 
+		mqm.sendEmptyResponse(cmd.sessionID);
+	}
 	catch (const boost::bad_get& e) {
-		Response resp;
-
-		resp.sessionID = cmd.sessionID;
-
-		std::string error = e.what();
-
-		resp.args.push_back(error);
-		mqm.sendResponse(resp);
-
+		mqm.sendErrorResponse(cmd.sessionID, e.what());
+	}
+	catch (const std::exception& e) {
+		mqm.sendErrorResponse(cmd.sessionID, e.what());
+	}
+	catch (...) {
+		mqm.sendErrorResponse(cmd.sessionID, "Unknown error");
 	}
 }
 
@@ -1854,36 +1887,14 @@ void ActiveitemCommand::execute() {
 		mqm.sendResponse(resp);
 
 	}
-	catch (const std::runtime_error& e) {
-		// Handle runtime errors, such as session ID validation or type mismatches
-		Response errorResponse;
-		errorResponse.sessionID = cmd.sessionID;
-		errorResponse.args.push_back(std::string("Runtime error: ") + e.what());
-		mqm.sendResponse(errorResponse);
-
-	}
 	catch (const boost::bad_get& e) {
-		// Handle bad_get exception from boost::get
-		Response errorResponse;
-		errorResponse.sessionID = cmd.sessionID;
-		errorResponse.args.push_back(std::string("Argument retrieval error: ") + e.what());
-		mqm.sendResponse(errorResponse);
-
+		mqm.sendErrorResponse(cmd.sessionID, e.what());
 	}
 	catch (const std::exception& e) {
-		// Handle any other standard exceptions
-		Response errorResponse;
-		errorResponse.sessionID = cmd.sessionID;
-		errorResponse.args.push_back(std::string("Exception: ") + e.what());
-		mqm.sendResponse(errorResponse);
-
+		mqm.sendErrorResponse(cmd.sessionID, e.what());
 	}
 	catch (...) {
-		// Catch any other non-standard exceptions
-		Response errorResponse;
-		errorResponse.sessionID = cmd.sessionID;
-		errorResponse.args.push_back("Unknown exception occurred");
-		mqm.sendResponse(errorResponse);
+		mqm.sendErrorResponse(cmd.sessionID, "Unknown error");
 	}
 }
 
@@ -1907,17 +1918,15 @@ void GetactivelayerCommand::execute() {
 		resp.sessionID = cmd.sessionID;
 		resp.args.push_back(layerID);
 		mqm.sendResponse(resp);
-	} 
+	}
 	catch (const boost::bad_get& e) {
-		Response resp;
-
-		resp.sessionID = cmd.sessionID;
-
-		std::string error = e.what();
-
-		resp.args.push_back(error);
-		mqm.sendResponse(resp);
-
+		mqm.sendErrorResponse(cmd.sessionID, e.what());
+	}
+	catch (const std::exception& e) {
+		mqm.sendErrorResponse(cmd.sessionID, e.what());
+	}
+	catch (...) {
+		mqm.sendErrorResponse(cmd.sessionID, "Unknown error");
 	}
 }
 
@@ -1940,13 +1949,13 @@ void GetprojectnameCommand::execute() {
 		mqm.sendResponse(resp);
 	}
 	catch (const boost::bad_get& e) {
-		Response resp;
-
-		resp.sessionID = cmd.sessionID;
-		std::string error = e.what();
-		resp.args.push_back(error);
-		mqm.sendResponse(resp);
-
+		mqm.sendErrorResponse(cmd.sessionID, e.what());
+	}
+	catch (const std::exception& e) {
+		mqm.sendErrorResponse(cmd.sessionID, e.what());
+	}
+	catch (...) {
+		mqm.sendErrorResponse(cmd.sessionID, "Unknown error");
 	}
 }
 
@@ -1969,13 +1978,13 @@ void GetprojectpathCommand::execute() {
 		mqm.sendResponse(resp);
 	}
 	catch (const boost::bad_get& e) {
-		Response resp;
-
-		resp.sessionID = cmd.sessionID;
-		std::string error = e.what();
-		resp.args.push_back(error);
-		mqm.sendResponse(resp);
-
+		mqm.sendErrorResponse(cmd.sessionID, e.what());
+	}
+	catch (const std::exception& e) {
+		mqm.sendErrorResponse(cmd.sessionID, e.what());
+	}
+	catch (...) {
+		mqm.sendErrorResponse(cmd.sessionID, "Unknown error");
 	}
 }
 
@@ -1993,16 +2002,16 @@ void SaveprojectasCommand::execute() {
 				throw std::runtime_error("Unsupported type");
 			}
 			}, project);
-
+		mqm.sendEmptyResponse(cmd.sessionID);
 	}
 	catch (const boost::bad_get& e) {
-		Response resp;
-
-		resp.sessionID = cmd.sessionID;
-		std::string error = e.what();
-		resp.args.push_back(error);
-		mqm.sendResponse(resp);
-
+		mqm.sendErrorResponse(cmd.sessionID, e.what());
+	}
+	catch (const std::exception& e) {
+		mqm.sendErrorResponse(cmd.sessionID, e.what());
+	}
+	catch (...) {
+		mqm.sendErrorResponse(cmd.sessionID, "Unknown error");
 	}
 }
 
@@ -2072,12 +2081,172 @@ void AppenditemCommand::execute() {
 
 	}
 	catch (const boost::bad_get& e) {
-		Response resp;
+		mqm.sendErrorResponse(cmd.sessionID, e.what());
+	}
+	catch (const std::exception& e) {
+		mqm.sendErrorResponse(cmd.sessionID, e.what());
+	}
+	catch (...) {
+		mqm.sendErrorResponse(cmd.sessionID, "Unknown error");
+	}
+};
 
+void CreateFootageItemCommand::execute() {
+	auto &mqm = MessageQueueManager::getInstance();
+	try {
+		std::string name = boost::get<std::string>(cmd.args[0]);
+		std::string path = boost::get<std::string>(cmd.args[1]);
+		int index = boost::get<int>(cmd.args[2]);
+
+		std::shared_ptr<FootageItem> footageItemH = FootageItem::createNew(name, path, index);
+		std::string footageItemID = createUUID();
+		SessionManager::GetInstance().addToSessions(footageItemID, footageItemH);
+		Response resp;
 		resp.sessionID = cmd.sessionID;
-		std::string error = e.what();
-		resp.args.push_back(error);
+		resp.args.push_back(footageItemID);
+		mqm.sendResponse(resp);
+	}
+	catch (const boost::bad_get& e) {
+		mqm.sendErrorResponse(cmd.sessionID, e.what());
+	}
+	catch (const std::exception& e) {
+		mqm.sendErrorResponse(cmd.sessionID, e.what());
+	}
+	catch (...) {
+		mqm.sendErrorResponse(cmd.sessionID, "Unknown error");
+	}
+};
+
+void CreateSolidItemCommand::execute() {
+	auto &mqm = MessageQueueManager::getInstance();
+	try {
+		std::string name = boost::get<std::string>(cmd.args[0]);
+		float width = boost::get<float>(cmd.args[1]);
+		float height = boost::get<float>(cmd.args[2]);
+		float r = boost::get<float>(cmd.args[3]);
+		float g = boost::get<float>(cmd.args[4]);
+		float b = boost::get<float>(cmd.args[5]);
+		float a = boost::get<float>(cmd.args[6]);
+		float duration = boost::get<float>(cmd.args[7]);
+		int index = boost::get<int>(cmd.args[8]);
+		std::shared_ptr<SolidItem> solidItemH = SolidItem::createNew(name, width, height, r, g, b, a, duration, index);
+		std::string solidItemID = createUUID();
+		SessionManager::GetInstance().addToSessions(solidItemID, solidItemH);
+		Response resp;
+		resp.sessionID = cmd.sessionID;
+		resp.args.push_back(solidItemID);
+		mqm.sendResponse(resp);
+	}
+	catch (const boost::bad_get& e) {
+		mqm.sendErrorResponse(cmd.sessionID, e.what()); 
+	}
+	catch (const std::exception& e) {
+		mqm.sendErrorResponse(cmd.sessionID, e.what()); 
+	}
+	catch (...) {
+		mqm.sendErrorResponse(cmd.sessionID, "Unknown error"); 
+
+
+	}
+}
+
+void getAllChildItemsCommand::execute() {
+	auto &mqm = MessageQueueManager::getInstance();
+	try {
+		std::string sessionID = cmd.sessionID;
+		const auto& projectCollection = SessionManager::GetInstance().getSessionObject(sessionID);
+		std::vector<std::shared_ptr<Item>> items = std::visit([](const auto& arg) -> std::vector<std::shared_ptr<Item>> {
+			using T = std::decay_t<decltype(arg)>;
+			if constexpr (std::is_same_v<T, std::shared_ptr<ProjectCollection>>) {
+				return arg->getItems();
+			}
+			else {
+				throw std::runtime_error("Unsupported type");
+			}
+			}, projectCollection);
+
+		std::vector<std::string> sessionIDs;
+		std::vector<std::string> types;
+
+	for (auto item : items) {
+		std::string itemID = createUUID();
+		std::string type = item->getType();
+		if (type == "Comp") {
+			//turn item into comp, then add to sessions
+			std::shared_ptr<CompItem> comp = std::dynamic_pointer_cast<CompItem>(item);
+			sessionIDs.push_back(itemID);
+			types.push_back("Comp");
+			SessionManager::GetInstance().addToSessions(itemID, comp);
+		}
+		else if (type == "Folder") {
+			//turn item into folder, then add to sessions
+			std::shared_ptr<FolderItem> folder = std::dynamic_pointer_cast<FolderItem>(item);
+			sessionIDs.push_back(itemID);
+			types.push_back("Folder");
+			SessionManager::GetInstance().addToSessions(itemID, folder);
+		}
+		else if (type == "Footage") {
+			//turn item into footage, then add to sessions
+			std::shared_ptr<FootageItem> footage = std::dynamic_pointer_cast<FootageItem>(item);
+			sessionIDs.push_back(itemID);
+			types.push_back("Footage");
+			SessionManager::GetInstance().addToSessions(itemID, footage);
+		}
+		else if (type == "Solid") {
+			//turn item into footage, then add to sessions
+			std::shared_ptr<SolidItem> solid = std::dynamic_pointer_cast<SolidItem>(item);
+			sessionIDs.push_back(itemID);
+			types.push_back("Solid");
+			SessionManager::GetInstance().addToSessions(itemID, solid);
+		}
+	}
+		Response resp;
+		resp.sessionID = cmd.sessionID;
+		resp.args.push_back(sessionIDs);
+		resp.args.push_back(types);
+		mqm.sendResponse(resp);
+	}
+	catch (const boost::bad_get& e) {
+		mqm.sendErrorResponse(cmd.sessionID, e.what());
+	}
+	catch (const std::exception& e) {
+		mqm.sendErrorResponse(cmd.sessionID, e.what());
+	}
+	catch (...) {
+		mqm.sendErrorResponse(cmd.sessionID, "Unknown error");
+}
+}
+
+void GetfolderitemsCommand::execute() {
+	auto& mqm = MessageQueueManager::getInstance();
+	try {
+		auto& folder = SessionManager::GetInstance().getSessionObject(cmd.sessionID);
+		std::shared_ptr<ItemCollection> items = std::visit([](const auto& arg) -> std::shared_ptr<ItemCollection> {
+			using T = std::decay_t<decltype(arg)>;
+			if constexpr (std::is_same_v<T, std::shared_ptr<FolderItem>>) {
+				return arg->ChildItems();
+			}
+			else {
+				return nullptr;
+			}
+			}, folder);
+
+		std::string itemsID = createUUID();
+		SessionManager::GetInstance().addToSessions(itemsID, items);
+
+		Response resp;
+		resp.sessionID = cmd.sessionID;
+		resp.args.push_back(itemsID);
 		mqm.sendResponse(resp);
 
 	}
-};
+	catch (const boost::bad_get& e) {
+		mqm.sendErrorResponse(cmd.sessionID, e.what());
+	}
+	catch (const std::exception& e) {
+		mqm.sendErrorResponse(cmd.sessionID, e.what());
+	}
+	catch (...) {
+		mqm.sendErrorResponse(cmd.sessionID, "Unknown error");
+	}
+}

@@ -636,6 +636,46 @@ public:
 
 };
 
+class CreateFootageItemCommand : public CommandBase {
+public:
+	CreateFootageItemCommand() = default;
+
+	CreateFootageItemCommand(Command cmd) : CommandBase(cmd) {
+
+	};
+	void execute() override;
+};
+
+class CreateSolidItemCommand : public CommandBase {
+public:
+	CreateSolidItemCommand() = default;
+
+	CreateSolidItemCommand(Command cmd) : CommandBase(cmd) {
+
+	};
+	void execute() override;
+};
+
+class getAllChildItemsCommand : public CommandBase {
+public:
+	getAllChildItemsCommand() = default;
+
+	getAllChildItemsCommand(Command cmd) : CommandBase(cmd) {
+
+	};
+	void execute() override;
+};
+
+class GetfolderitemsCommand : public CommandBase {
+public:
+    GetfolderitemsCommand() = default;
+
+    GetfolderitemsCommand(Command cmd) : CommandBase(cmd) {
+
+	};
+	void execute() override;
+};
+
 class CommandFactory {
 public:
     CommandFactory() {
@@ -687,7 +727,7 @@ public:
         commands["SetLayerFlag"] =  [](const Command& cmd) { return std::make_unique<SetlayerflagCommand>(cmd); };
         commands["GetLayerFlag"] =  [](const Command& cmd) { return std::make_unique<GetlayerflagCommand>(cmd); };
         commands["GetLayerSource"] =  [](const Command& cmd) { return std::make_unique<GetlayersourceCommand>(cmd); };
-        commands["GetChildItems"] =  [](const Command& cmd) { return std::make_unique<GetchilditemsCommand>(cmd); };
+        commands["getFolderChildren"] =  [](const Command& cmd) { return std::make_unique<GetfolderitemsCommand>(cmd); };
         commands["RemoveLayerFromCollection"] =  [](const Command& cmd) { return std::make_unique<RemovelayerfromcollectionCommand>(cmd); };
         commands["RemoveLayerByIndex"] =  [](const Command& cmd) { return std::make_unique<RemovelayerbyindexCommand>(cmd); };
         commands["GetCompName"] =  [](const Command& cmd) { return std::make_unique<GetcompnameCommand>(cmd); };
@@ -705,7 +745,9 @@ public:
         commands["getItems"] =  [](const Command& cmd) { return std::make_unique<GetitemsCommand>(cmd); };
         commands["appendItem"] =  [](const Command& cmd) { return std::make_unique<AppenditemCommand>(cmd); };
         commands["GetAllLayers"] =  [](const Command& cmd) { return std::make_unique<GetAlllayersCommand>(cmd); };
-
+        commands["CreateFootageItem"] = [](const Command& cmd) { return std::make_unique<CreateFootageItemCommand>(cmd); };
+        commands["CreateSolidItem"] = [](const Command& cmd) { return std::make_unique<CreateSolidItemCommand>(cmd); }; // [TODO]
+        commands["getAllChildItems"] = [](const Command& cmd) { return std::make_unique<getAllChildItemsCommand>(cmd); };
     }
 
     std::unique_ptr<CommandBase> createCommand(const std::string& commandName, const Command& cmd) {

@@ -45,9 +45,11 @@ struct Command {
     }
 };
 
+
 struct Response {
     std::string sessionID = "0";
     CommandArgs args; // Vector of arguments
+    std::string error = "";
     //serialize method
     template<class Archive>
     void serialize(Archive& ar, const unsigned int version) {
@@ -141,6 +143,20 @@ public:
             return true;
         }
         return false;
+    }
+
+    void sendErrorResponse(std::string sessionID, std::string error) {
+		Response response;
+		response.sessionID = sessionID;
+		response.error = error;
+		sendResponse(response);
+	}
+
+    void sendEmptyResponse(std::string sessionID) {
+        Response response;
+        response.sessionID = sessionID;
+        response.error = "";
+        sendResponse(response);
     }
 
 private:

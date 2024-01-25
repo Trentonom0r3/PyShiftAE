@@ -24,7 +24,7 @@ const A_char* SuiteTraits<AEGP_PanelSuite1>::i_name = kAEGPPanelSuite;
 template <>
 const int32_t SuiteTraits<AEGP_PanelSuite1>::i_version = kAEGPPanelSuiteVersion1;
 
-class MYSUITE_API SuiteManager {
+class SuiteManager {
 public:
     // Gets the singleton instance of SuiteManager
     static SuiteManager& GetInstance() {
