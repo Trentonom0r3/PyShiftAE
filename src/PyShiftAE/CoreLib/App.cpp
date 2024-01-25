@@ -1,12 +1,10 @@
 #include "App.h"
 
-App::App() {
-	Project project;
-}
 
 Project App::getProject() {
 	return this->project;
 }
+
 
 void App::beginUndoGroup(std::string undoName) {
 	auto& message = enqueueSyncTask(StartUndoGroup, undoName);
@@ -235,5 +233,4 @@ Result<void> writeToDebugPanel(std::string message) {
 
 	return Result<void>();
 }
-
 

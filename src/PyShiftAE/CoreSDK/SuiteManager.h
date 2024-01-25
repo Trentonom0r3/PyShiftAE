@@ -1,9 +1,15 @@
 // SuiteManager.h
 #pragma once
 
+#ifdef MYSUITEDLL_EXPORTS
+#define MYSUITE_API __declspec(dllexport)
+#else
+#define MYSUITE_API __declspec(dllimport)
+#endif
+
 #include "AEGP_SuiteHandler.h"
 #include "AE_GeneralPlugPanels.h"
-#include "SuiteHelper.h"#
+#include "SuiteHelper.h"
 /*
  * File: SuiteManager.h
  * Description: Singleton class managing the After Effects suite handler and plugin ID.
@@ -72,3 +78,5 @@ private:
     bool panelSuitesInitialized;
     AEGP_PluginID* pluginIDPtr;
 };
+
+

@@ -1,5 +1,7 @@
 #include "ProjectSuites.h"
 
+
+
 Result<AEGP_ProjectH> getProject() {
 	AEGP_SuiteHandler& suites = SuiteManager::GetInstance().GetSuiteHandler();
 	A_Err err = A_Err_NONE;

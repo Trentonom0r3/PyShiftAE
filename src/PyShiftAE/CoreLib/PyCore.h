@@ -4,6 +4,9 @@
 #include "Project.h"
 #include "ItemManager.h"
 #include "Panel.h"
+
+#define Py_LIMITED_API 0x030A0000  // for python 3.10
+#include <Python.h>
 #include <pybind11/pybind11.h>
 #include <pybind11/embed.h>  // for the embedded interpreter
 #include <pybind11/numpy.h>
@@ -37,9 +40,11 @@ public:
 		_pythonDefault("3.11"),
 		name("Plugin Name"),
 		version("1.0.0"),
+        useJS(false),
 		author("Author Name"),
 		description("A Python-based plugin for After Effects."),
 		entryPath("path/to/entry_script.py"),
+        mainPath("path/to/main_script.py"),
 		dependenciesFolder({ "numpy", "opencv-python" })
 	{}
 
@@ -50,7 +55,9 @@ public:
     std::string description;
     std::vector<std::string> AE_VERS;
     std::string entryPath;
+    std::string mainPath;
     std::vector<std::string> dependenciesFolder;
+    bool useJS = false;
     AEGP_Command command;
     void validate();
     void load();

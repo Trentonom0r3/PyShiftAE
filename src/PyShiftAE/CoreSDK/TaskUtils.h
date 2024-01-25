@@ -35,8 +35,6 @@ auto enqueueSyncTask(Func&& func, Args&&... args) {
     return message;
 }
 
-
-
 /*
 
 AEGP_ItemH someFunction(AEGP_ItemH itemHandle) {

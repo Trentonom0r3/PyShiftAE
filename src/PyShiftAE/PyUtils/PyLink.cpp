@@ -22,63 +22,15 @@ PYBIND11_EMBEDDED_MODULE(PyShiftCore, m) {
 
 }
 
-// Function to initialize the embedded Python interpreter and import the PyShiftCore module.
-void initialize_python_module() {
-    try {
-        // Initialize the Python interpreter.
-        py::initialize_interpreter();
-        py::module_::import("PyShiftCore");
-        py::object sys = py::module_::import("sys");
-        py::object pyOutputStream = py::cast(new PyOutputStream());  // Create a new instance
-        sys.attr("stdout") = pyOutputStream;
-        sys.attr("stderr") = pyOutputStream;
-    }
-    catch (const py::error_already_set& e) {
-        // Handle any exceptions thrown by pybind11.
-        std::cerr << "Python exception: " << e.what() << std::endl;
-    }
-    catch (const std::exception& e) {
-        // Handle any standard C++ exceptions.
-        std::cerr << "Standard exception: " << e.what() << std::endl;
-    }
-    catch (...) {
-        // Catch all other exceptions.
-        std::cerr << "Unknown exception occurred" << std::endl;
-    }
-}
-
-void executeFlyoutFunction(FlyoutMenuItem item) {
-    try {
-        py::function flyoutFunction = item.callback;
-        if (flyoutFunction) {
-			py::object result = flyoutFunction();
-            bool answer = result.cast<bool>();
-            if (answer) {
-				std::cout << "True" << std::endl;
-			}
-            else {
-				std::cout << "False" << std::endl;
-			}
-		}
-    }
-    catch (const py::error_already_set& e) {
-		// Handle any exceptions thrown by pybind11.
-		std::cerr << "Python exception: " << e.what() << std::endl;
-	}
-    catch (const std::exception& e) {
-		// Handle any standard C++ exceptions.
-		std::cerr << "Standard exception: " << e.what() << std::endl;
-	}
-    catch (...) {
-		// Catch all other exceptions.
-		std::cerr << "Unknown exception occurred" << std::endl;
-	}
-}
-
 Manifest executeManifestFromFile(const std::string& scriptPath) {
 	Manifest manifest;
     try {
-		py::object result = py::eval_file(scriptPath);
+        //py::scoped_interpreter guard{}; // start the interpreter and keep it alive
+        py::gil_scoped_acquire acquire;
+        py::globals().clear();
+        py::object pyShiftCore = py::module_::import("PyShiftCore");
+        //clear globals
+        py::object result = py::eval_file(scriptPath);
         manifest = py::globals()["manifest"].cast<Manifest>();
 	}
     catch (const py::error_already_set& e) {
@@ -102,33 +54,6 @@ Manifest executeManifestFromFile(const std::string& scriptPath) {
 	return manifest;
 }
 
-Panel executePanelLoad(const std::string& scriptPath) {
-    Panel panel;
-    try {
-        py::object result = py::eval_file(scriptPath);
-        panel = py::globals()["panel"].cast<Panel>();
-    }
-    catch (const py::error_already_set& e) {
-        // Handle any exceptions thrown by pybind11.
-        std::cerr << "Python exception: " << e.what() << std::endl;
-        panel = Panel();
-    }
-    catch (const py::reference_cast_error& e) {
-        std::cerr << "Cast error: " << e.what() << std::endl;
-        panel = Panel();
-    }
-    catch (const py::cast_error& e) {
-        std::cerr << "Cast error: " << e.what() << std::endl;
-        panel = Panel();
-    }
-    catch (...) {
-        // Catch all other exceptions.
-        std::cerr << "Unknown exception occurred" << std::endl;
-        panel = Panel();
-    }
-    return panel;
-}
-
 std::string escape_backslashes(const std::string& input) {
     std::string output = input;
     std::replace(output.begin(), output.end(), '\\', '/');
@@ -137,6 +62,11 @@ std::string escape_backslashes(const std::string& input) {
 
 py::module_ import_module_as(const std::string& module_path, const std::string& custom_name) {
     try {
+        //py::scoped_interpreter guard{}; // start the interpreter and keep it alive
+        // Import PyShiftCore module
+        py::gil_scoped_acquire acquire;
+        py::object pyShiftCore = py::module_::import("PyShiftCore");
+
         // Escape backslashes in the module path
         std::string escaped_path = escape_backslashes(module_path);
         std::string file_name = "entry";
@@ -151,7 +81,7 @@ py::module_ import_module_as(const std::string& module_path, const std::string& 
         py::exec(import_code.c_str());
 
         // Import the module in C++ using the custom name
-        py::module module = py::module("PyShiftCore");
+        py::module module = py::module::import("PyShiftCore");
         module.add_object(custom_name.c_str(), py::module::import(file_name.c_str()));
         return module;
     }
@@ -172,6 +102,9 @@ py::module_ import_module_as(const std::string& module_path, const std::string& 
 
 std::string executeJSFunction(const std::string& module_path, const std::string& custom_name, JSData data)
 {
+    py::gil_scoped_acquire acquire;
+    py::object pyShiftCore = py::module_::import("PyShiftCore");
+
     std::string funcName = data.funcName;
     std::vector<std::variant<std::string, bool, double, std::nullptr_t>> args = data.args;
     std::string result;
@@ -214,8 +147,12 @@ std::string executeJSFunction(const std::string& module_path, const std::string&
     return result;
 }
 
+
 void executeFromFile(const std::string& scriptPath) {
     try {
+        py::gil_scoped_acquire acquire;
+        py::object pyShiftCore = py::module_::import("PyShiftCore");
+
         py::eval_file(scriptPath);
     }
     catch (const py::error_already_set& e) {
@@ -232,10 +169,27 @@ void executeFromFile(const std::string& scriptPath) {
 	}
 }
 
+void executeFileInNewProcess(const std::string& scriptPath) {
+    try {
 
-// Function to finalize the embedded Python interpreter.
-void finalize() {
-    // Finalize the Python interpreter.
-    // This will clean up any resources used by Python.
-    py::finalize_interpreter();
+        py::gil_scoped_acquire acquire;
+        py::object pyShiftCore = py::module_::import("PyShiftCore");
+
+
+        py::eval_file(scriptPath);
+    }
+    catch (const py::error_already_set& e) {
+        // Handle any exceptions thrown by pybind11.
+        std::cerr << "Python exception: " << e.what() << std::endl;
+    }
+    catch (const std::exception& e) {
+        // Handle any standard C++ exceptions.
+        std::cerr << "Standard exception: " << e.what() << std::endl;
+    }
+    catch (...) {
+        // Catch all other exceptions.
+        std::cerr << "Unknown exception occurred" << std::endl;
+    }
 }
+
+//create new function to run in a 

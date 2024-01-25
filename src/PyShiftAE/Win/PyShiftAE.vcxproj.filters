@@ -155,6 +155,15 @@
     <ClInclude Include="..\CoreLib\Json.h">
       <Filter>CoreLib</Filter>
     </ClInclude>
+    <ClInclude Include="..\PyUtils\SessionManager.h">
+      <Filter>PyUtils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MessageManager.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Commands.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\Util\AEGP_SuiteHandler.cpp">
@@ -215,15 +224,16 @@
     <ClCompile Include="..\CoreSDK\EffectSuites.cpp">
       <Filter>CoreSDK</Filter>
     </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <ResourceCompile Include="PyShiftAE_PiPL.rc">
-      <Filter>Resources</Filter>
-    </ResourceCompile>
+    <ClCompile Include="..\MessageManager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="..\PyShiftAE_PiPL.r">
       <Filter>Resources</Filter>
     </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="PyShiftAE_PiPL.rc">
+      <Filter>Resources</Filter>
+    </ResourceCompile>
   </ItemGroup>
 </Project>

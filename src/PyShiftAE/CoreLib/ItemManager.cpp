@@ -18,6 +18,7 @@ Result<AEGP_ItemH> Item::getItemHandle()
 return this->itemHandle_;
 }
 
+
 bool Item::isSelected()
 {
 	auto item = this->itemHandle_;
@@ -45,6 +46,28 @@ void Item::setSelected(bool select)
 
 	Result<void> result = message->getResult();
 	return;
+}
+
+std::string Item::getType()
+{
+	auto item = this->itemHandle_;
+	if (item.value == NULL) {
+		throw std::runtime_error("No active item");
+		return std::string{};
+	}
+
+	auto& message = enqueueSyncTask(getItemType, item);
+	message->wait();
+
+	Result<AEGP_ItemType> result = message->getResult();
+	switch (result.value) {
+	case AEGP_ItemType_COMP:
+		return "Comp";
+	case AEGP_ItemType_FOOTAGE:
+		return "Footage";
+	case AEGP_ItemType_FOLDER:
+		return "Folder";
+	}
 }
 
 std::string Item::getName() {

@@ -376,6 +376,8 @@ void bindManifest(py::module_& m)
         .def_readwrite("author", &Manifest::author)
         .def_readwrite("description", &Manifest::description)
         .def_readwrite("entry", &Manifest::entryPath)
+        .def_readwrite("main", &Manifest::mainPath)
+        .def_readwrite("use_js", &Manifest::useJS)
         .def_readwrite("dependencies", &Manifest::dependenciesFolder);
 }
 

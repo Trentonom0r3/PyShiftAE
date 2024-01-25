@@ -97,9 +97,9 @@
     <TargetExt Condition="'$(Configuration)|$(Platform)'=='Release|x64'">.aex</TargetExt>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>C:\Users\tjerf\vcpkg\installed\x64-windows-static\include;C:\Program Files\Python311\include;$(IncludePath)</IncludePath>
+    <IncludePath>C:\Users\tjerf\vcpkg\installed\x64-windows-static\include;C:\Program Files\Python312\include;$(IncludePath)</IncludePath>
     <ExternalIncludePath>$(ExternalIncludePath)</ExternalIncludePath>
-    <LibraryPath>C:\Program Files\Python311\libs;$(LibraryPath)</LibraryPath>
+    <LibraryPath>C:\Users\tjerf\vcpkg\installed\x64-windows-static\lib;C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib;C:\Program Files\Python312\libs;$(LibraryPath)</LibraryPath>
     <EnableClangTidyCodeAnalysis>true</EnableClangTidyCodeAnalysis>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -108,6 +108,14 @@
     <LibraryPath>C:\Python311\libs;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Label="Vcpkg" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <VcpkgUseStatic>true</VcpkgUseStatic>
+    <VcpkgConfiguration>Debug</VcpkgConfiguration>
+    <VcpkgInstalledDir>C:\Users\tjerf\vcpkg\installed</VcpkgInstalledDir>
+  </PropertyGroup>
+  <PropertyGroup Label="Vcpkg">
+    <VcpkgEnableManifest>false</VcpkgEnableManifest>
+  </PropertyGroup>
+  <PropertyGroup Label="Vcpkg" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <VcpkgUseStatic>true</VcpkgUseStatic>
     <VcpkgConfiguration>Debug</VcpkgConfiguration>
   </PropertyGroup>
@@ -123,9 +131,8 @@
     </Midl>
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>C:\Users\tjerf\vcpkg\installed\x64-windows-static\include;C:\Program Files\Python311\include;..\..\..\Headers;..\..\..\Headers\SP;..\..\..\Headers\Win;..\..\..\Resources;..\..\..\Util;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>MSWindows;WIN32;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <AdditionalIncludeDirectories>C:\Users\tjerf\vcpkg\installed\x64-windows-static\include;C:\Program Files\Python312\include;..\..\..\Headers;..\..\..\Headers\SP;..\..\..\Headers\Win;..\..\..\Resources;..\..\..\Util;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>MYSUITEDLL_EXPORTS;MSWindows;WIN32;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StructMemberAlignment>Default</StructMemberAlignment>
       <PrecompiledHeader>
       </PrecompiledHeader>
@@ -142,6 +149,7 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <CompileAs>Default</CompileAs>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -159,8 +167,8 @@
       </DataExecutionPrevention>
       <ImportLibrary>$(IntDir)/$(TargetName).lib</ImportLibrary>
       <TargetMachine>MachineX64</TargetMachine>
-      <AdditionalDependencies>"C:\Program Files\Python311\libs\python311.lib";"C:\Program Files\Python311\libs\python311_d.lib";%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>C:\Program Files\Python311\libs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>"C:\Program Files\Python312\libs\python3.lib";"C:\Program Files\Python312\libs\python3_d.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\boost_atomic-vc140-mt-gd.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\boost_chrono-vc140-mt-gd.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\boost_container-vc140-mt-gd.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\boost_context-vc140-mt-gd.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\boost_contract-vc140-mt-gd.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\boost_coroutine-vc140-mt-gd.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\boost_date_time-vc140-mt-gd.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\boost_exception-vc140-mt-gd.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\boost_fiber-vc140-mt-gd.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\boost_filesystem-vc140-mt-gd.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\boost_graph-vc140-mt-gd.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\boost_iostreams-vc140-mt-gd.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\boost_json-vc140-mt-gd.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\boost_locale-vc140-mt-gd.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\boost_log_setup-vc140-mt-gd.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\boost_log-vc140-mt-gd.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\boost_math_c99f-vc140-mt-gd.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\boost_math_c99l-vc140-mt-gd.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\boost_math_c99-vc140-mt-gd.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\boost_math_tr1f-vc140-mt-gd.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\boost_math_tr1l-vc140-mt-gd.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\boost_math_tr1-vc140-mt-gd.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\boost_nowide-vc140-mt-gd.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\boost_program_options-vc140-mt-gd.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\boost_python311-vc140-mt-gd.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\boost_random-vc140-mt-gd.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\boost_regex-vc140-mt-gd.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\boost_serialization-vc140-mt-gd.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\boost_stacktrace_noop-vc140-mt-gd.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\boost_stacktrace_windbg_cached-vc140-mt-gd.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\boost_stacktrace_windbg-vc140-mt-gd.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\boost_system-vc140-mt-gd.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\boost_thread-vc140-mt-gd.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\boost_timer-vc140-mt-gd.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\boost_type_erasure-vc140-mt-gd.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\boost_unit_test_framework-vc140-mt-gd.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\boost_url-vc140-mt-gd.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\boost_wave-vc140-mt-gd.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\boost_wserialization-vc140-mt-gd.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\bz2d.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\libexpatdMT.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\lzma.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\python311_d.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\zlibd.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\zstd.lib";%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>C:\Users\tjerf\vcpkg\installed\x64-windows-static\lib;C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib;C:\Program Files\Python312\libs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <Bscmake>
       <OutputFile>$(IntDir)$(TargetName).bsc</OutputFile>
@@ -180,8 +188,6 @@
       <Optimization>MaxSpeed</Optimization>
       <AdditionalIncludeDirectories>C:\Program Files\Python311\include;C:\Users\tjerf\vcpkg\installed\x64-windows-static\include;..\..\..\Headers;..\..\..\Headers\SP;..\..\..\Headers\Win;..\..\..\Resources;..\..\..\Util;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>MSWindows;WIN32;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
-      <StructMemberAlignment>Default</StructMemberAlignment>
       <PrecompiledHeader>
       </PrecompiledHeader>
       <PrecompiledHeaderFile>AE_Effect.h</PrecompiledHeaderFile>
@@ -197,6 +203,7 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <CompileAs>Default</CompileAs>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -215,7 +222,7 @@
       </DataExecutionPrevention>
       <ImportLibrary>$(IntDir)/$(TargetName).lib</ImportLibrary>
       <TargetMachine>MachineX64</TargetMachine>
-      <AdditionalDependencies>"C:\Program Files\Python311\libs\python311.lib";"C:\Program Files\Python311\libs\python311_d.lib";%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>"C:\Program Files\Python311\libs\python311.lib";"C:\Program Files\Python311\libs\python311_d.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\lib\boost_stacktrace_windbg_cached-vc140-mt.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\lib\boost_stacktrace_windbg-vc140-mt.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\lib\boost_system-vc140-mt.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\lib\boost_thread-vc140-mt.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\lib\boost_timer-vc140-mt.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\lib\boost_type_erasure-vc140-mt.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\lib\boost_unit_test_framework-vc140-mt.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\lib\boost_url-vc140-mt.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\lib\boost_wave-vc140-mt.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\lib\boost_wserialization-vc140-mt.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\lib\bz2.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\lib\libexpatMT.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\lib\lzma.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\lib\python311.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\lib\zlib.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\lib\zstd.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\lib\boost_atomic-vc140-mt.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\lib\boost_chrono-vc140-mt.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\lib\boost_container-vc140-mt.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\lib\boost_context-vc140-mt.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\lib\boost_contract-vc140-mt.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\lib\boost_coroutine-vc140-mt.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\lib\boost_date_time-vc140-mt.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\lib\boost_exception-vc140-mt.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\lib\boost_fiber-vc140-mt.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\lib\boost_filesystem-vc140-mt.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\lib\boost_graph-vc140-mt.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\lib\boost_iostreams-vc140-mt.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\lib\boost_json-vc140-mt.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\lib\boost_locale-vc140-mt.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\lib\boost_log_setup-vc140-mt.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\lib\boost_log-vc140-mt.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\lib\boost_math_c99f-vc140-mt.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\lib\boost_math_c99l-vc140-mt.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\lib\boost_math_c99-vc140-mt.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\lib\boost_math_tr1f-vc140-mt.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\lib\boost_math_tr1l-vc140-mt.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\lib\boost_math_tr1-vc140-mt.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\lib\boost_nowide-vc140-mt.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\lib\boost_program_options-vc140-mt.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\lib\boost_python311-vc140-mt.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\lib\boost_random-vc140-mt.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\lib\boost_regex-vc140-mt.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\lib\boost_serialization-vc140-mt.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\lib\boost_stacktrace_noop-vc140-mt.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\boost_url-vc140-mt-gd.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\boost_wave-vc140-mt-gd.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\boost_wserialization-vc140-mt-gd.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\bz2d.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\libexpatdMT.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\lzma.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\python311_d.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\zlibd.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\zstd.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\boost_atomic-vc140-mt-gd.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\boost_chrono-vc140-mt-gd.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\boost_container-vc140-mt-gd.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\boost_context-vc140-mt-gd.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\boost_contract-vc140-mt-gd.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\boost_coroutine-vc140-mt-gd.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\boost_date_time-vc140-mt-gd.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\boost_exception-vc140-mt-gd.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\boost_fiber-vc140-mt-gd.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\boost_filesystem-vc140-mt-gd.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\boost_graph-vc140-mt-gd.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\boost_iostreams-vc140-mt-gd.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\boost_json-vc140-mt-gd.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\boost_locale-vc140-mt-gd.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\boost_log_setup-vc140-mt-gd.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\boost_log-vc140-mt-gd.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\boost_math_c99f-vc140-mt-gd.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\boost_math_c99l-vc140-mt-gd.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\boost_math_c99-vc140-mt-gd.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\boost_math_tr1f-vc140-mt-gd.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\boost_math_tr1l-vc140-mt-gd.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\boost_math_tr1-vc140-mt-gd.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\boost_nowide-vc140-mt-gd.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\boost_program_options-vc140-mt-gd.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\boost_python311-vc140-mt-gd.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\boost_random-vc140-mt-gd.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\boost_regex-vc140-mt-gd.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\boost_serialization-vc140-mt-gd.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\boost_stacktrace_noop-vc140-mt-gd.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\boost_stacktrace_windbg_cached-vc140-mt-gd.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\boost_stacktrace_windbg-vc140-mt-gd.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\boost_system-vc140-mt-gd.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\boost_thread-vc140-mt-gd.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\boost_timer-vc140-mt-gd.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\boost_type_erasure-vc140-mt-gd.lib";"C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib\boost_unit_test_framework-vc140-mt-gd.lib";%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>C:\Python311\libs;C:\Users\tjerf\vcpkg\installed\x64-windows-static\lib;C:\Users\tjerf\vcpkg\installed\x64-windows-static\debug\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <Bscmake>
@@ -328,6 +335,7 @@
     </Bscmake>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\Commands.h" />
     <ClInclude Include="..\CoreLib\App.h" />
     <ClInclude Include="..\CoreLib\ItemManager.h" />
     <ClInclude Include="..\CoreLib\Json.h" />
@@ -350,6 +358,7 @@
     <ClInclude Include="..\CoreSDK\UtilitySuites.h" />
     <ClInclude Include="..\CoreSDK\Utils.h" />
     <ClInclude Include="..\CoreSDK\WorldSuites.h" />
+    <ClInclude Include="..\MessageManager.h" />
     <ClInclude Include="..\PyShiftAE.h" />
     <ClInclude Include="..\..\..\Headers\A.h" />
     <ClInclude Include="..\..\..\Headers\AE_AdvEffectSuites.h" />
@@ -371,6 +380,7 @@
     <ClInclude Include="..\..\..\Headers\PR_Public.h" />
     <ClInclude Include="..\..\..\Util\String_Utils.h" />
     <ClInclude Include="..\PyUtils\PyLink.h" />
+    <ClInclude Include="..\PyUtils\SessionManager.h" />
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="..\PyShiftAE_PiPL.r">
@@ -419,6 +429,7 @@ cl /D "MSWindows" /EP $(IntDir)%(Filename).rrc &gt;               "$(ProjectDir)
     <ClCompile Include="..\CoreSDK\RenderSuites.cpp" />
     <ClCompile Include="..\CoreSDK\UtilitySuites.cpp" />
     <ClCompile Include="..\CoreSDK\WorldSuites.cpp" />
+    <ClCompile Include="..\MessageManager.cpp" />
     <ClCompile Include="..\PyShiftAE.cpp" />
     <ClCompile Include="..\PyUtils\PyLink.cpp" />
   </ItemGroup>
