@@ -53,6 +53,13 @@ The ripple effect of PyShiftAE in the AE community could be profound. Scriptwrit
 # ChangeLog
 All Updates should be assumed to come with updated documentation, and an updated binary .aex file located in `dist`, unless otherwise specified. 
 ChangeLog will contain a brief description of changes. See Wiki API docs for more info. 
+- [1.24.24]
+    - Various small changes and refactorings.
+    - Compatible with python `3.1x` and up.
+    - If using a previous version, please delete, clear AE cache, and then reinstall the new .aex binary.
+    - Removed JS communication (will replace later).
+    - Cleaned up plugin main entry.
+    - Added submodule for external python library [WiP].
 - [12.22.23]
     - Added `replace` method to `FootageItem`.
     - Created `PSC.exe` to help install `PyShiftAE` in the correct location, with the correct python version. Find this in `/dist/`.
