@@ -96,14 +96,12 @@ Represents a composition item, which is a collection of layers.
       
       
       ```python
-      # THIS IS GOOD.
         from PyShiftCore import *
         comp = app.project.activeItem
         if isinstance(comp, CompItem):
           layers = comp.layers
           for layer in layers:
 
-      # THIS IS BAD, WILL CAUSE ERROR
         from PyShiftCore import *
         comp = app.project.activeItem
         if isinstance(comp, CompItem):
