@@ -1,4 +1,5 @@
 #include "App.h"
+#include "../MessageManager.h"
 
 
 Project App::getProject() {
@@ -45,6 +46,13 @@ std::string App::pluginPaths()
 	std::string resultString = result.value;
 	return resultString;
 }
+
+
+// Define a custom message for Python GUI resizing
+#define WM_PYTHON_GUI_RESIZE WM_APP + 1
+
+// OS Window Property Key
+const char OSWndObjectProperty[] = "PanelatorUI_PlatPtr";
 
 PanelatorUI::PanelatorUI(SPBasicSuite* spbP, AEGP_PanelH panelH,
 	AEGP_PlatformViewRef platformWindowRef,
@@ -101,136 +109,78 @@ A_Err	PanelatorUI::S_DoFlyoutCommand(AEGP_PanelRefcon refcon, AEGP_FlyoutMenuCmd
 	} PT_XTE_CATCH_RETURN_ERR;
 }
 
-PanelatorUI_Plat::PanelatorUI_Plat(SPBasicSuite* spbP, AEGP_PanelH panelH,
-	AEGP_PlatformViewRef platformWindowRef,
-	AEGP_PanelFunctions1* outFunctionTable)
-	: PanelatorUI(spbP, panelH, platformWindowRef, outFunctionTable),
-	i_prevWindowProc(nullptr),
-	hWnd(static_cast<HWND>(platformWindowRef)) {
+// Constructor
+PanelatorUI_Plat::PanelatorUI_Plat(std::string sessionID, SPBasicSuite* spbP,
+    AEGP_PanelH panelH, AEGP_PlatformViewRef platformWindowRef,
+    AEGP_PanelFunctions1* outFunctionTable)
+    : PanelatorUI(spbP, panelH, platformWindowRef, outFunctionTable),
+    i_prevWindowProc(nullptr), hWnd(static_cast<HWND>(platformWindowRef)),
+    sessionID(sessionID) {
 
-	i_prevWindowProc = reinterpret_cast<WindowProc>(GetWindowLongPtr(hWnd, GWLP_WNDPROC));
-	SetWindowLongPtrA(hWnd, GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(StaticOSWindowWndProc));
-	SetProp(hWnd, "PanelatorUI_PlatPtr", this);
+    // Hook the main window
+    i_prevWindowProc = (WindowProc)GetWindowLongPtr(platformWindowRef, GWLP_WNDPROC);
+    SetWindowLongPtrA(platformWindowRef, GWLP_WNDPROC, (LONG_PTR)PanelatorUI_Plat::StaticOSWindowWndProc);
+    ::SetProp(platformWindowRef, OSWndObjectProperty, (HANDLE)this);
 
-	// Initialize the Python GUI
-	pyGUI = CreateWindowEx(0, "EDIT", "",
-		WS_CHILD | WS_VISIBLE | WS_VSCROLL |
-		ES_LEFT | ES_MULTILINE | ES_AUTOVSCROLL | ES_READONLY,
-		0, 0, 100, 100, hWnd, nullptr, nullptr, nullptr);
-
-	// Set up the font, colors, and initial text for the Python GUI
-	InitializePyGUI();
+    HWND hwnd = SessionManager::GetInstance().getHWND(sessionID);
+    pyHWND = (HWND)hwnd;
+    SetParent(pyHWND, hWnd);
 }
 
-void PanelatorUI_Plat::InitializePyGUI() {
-	HFONT hFont = CreateFont(18, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE, ANSI_CHARSET,
-		OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY,
-		DEFAULT_PITCH | FF_SWISS, "Courier New");
-	SendMessage(pyGUI, WM_SETFONT, (WPARAM)hFont, TRUE);
-	std::string initialInfo = "Python GUI Initialized: Welcome to PyShiftAE! \r\n"
-		                      "All Python output will be displayed here. \r\n";
-	SendMessage(pyGUI, WM_SETTEXT, 0, (LPARAM)initialInfo.c_str());
-	HDC hdcEdit = GetDC(pyGUI);
-	SendMessage(hWnd, WM_CTLCOLOREDIT, reinterpret_cast<WPARAM>(hdcEdit), reinterpret_cast<LPARAM>(pyGUI));
-	ReleaseDC(pyGUI, hdcEdit);
+// Static Window Procedure
+LRESULT CALLBACK PanelatorUI_Plat::StaticOSWindowWndProc(HWND hWnd, UINT message,
+    WPARAM wParam, LPARAM lParam) {
+    PanelatorUI_Plat* platPtr = reinterpret_cast<PanelatorUI_Plat*>(GetProp(hWnd, OSWndObjectProperty));
+    if (platPtr) {
+        return platPtr->OSWindowWndProc(hWnd, message, wParam, lParam);
+    }
+    else {
+        return DefWindowProc(hWnd, message, wParam, lParam);
+    }
 }
 
-
-LRESULT CALLBACK PanelatorUI_Plat::StaticOSWindowWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
-	PanelatorUI_Plat* platPtr = reinterpret_cast<PanelatorUI_Plat*>(GetProp(hWnd, "PanelatorUI_PlatPtr"));
-	if (platPtr) {
-		return platPtr->OSWindowWndProc(hWnd, message, wParam, lParam);
-	}
-	else {
-		return DefWindowProc(hWnd, message, wParam, lParam);
-	}
-}
-
+// Instance-specific Window Procedure
 LRESULT PanelatorUI_Plat::OSWindowWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
-	PanelatorUI_Plat* platPtr = reinterpret_cast<PanelatorUI_Plat*>(GetProp(hWnd, "PanelatorUI_PlatPtr"));
-	switch (message) {
-	case WM_SIZE: {
-		RECT rect;
-		GetClientRect(hWnd, &rect);
-		SetWindowPos(pyGUI, HWND_TOP, 0, 0, rect.right, rect.bottom, SWP_NOMOVE);
-		return 0;
+    switch (message) {
+    case WM_SIZE: {
+        PostMessage(hWnd, WM_PYTHON_GUI_RESIZE, wParam, lParam);
+        break;
+    }
+    case WM_PYTHON_GUI_RESIZE: {
+        int width = LOWORD(lParam);
+        int height = HIWORD(lParam);
+        MoveWindow(pyHWND, 0, 0, width, height, TRUE);
+        break;
+    }
+    case WM_DESTROY: {
+		InvalidateAll();
+		break;
 	}
-	case WM_UPDATE_DEBUG_CONSOLE: {
-		const char* debugMessage = reinterpret_cast<const char*>(lParam);
-		std::string formattedMessage = debugMessage;
-
-		// Get the current length of the text
-		int length = GetWindowTextLength(platPtr->pyGUI);
-
-		// Ensure the new message ends with a newline
-		if (!formattedMessage.empty() && formattedMessage.back() != '\r\n') {
-			formattedMessage += "\r\n";
-		}
-
-		// Check if the current content in pyGUI ends with a newline
-		// If not, append a newline character
-		SendMessage(platPtr->pyGUI, EM_SETSEL, (WPARAM)length, (LPARAM)length); // Move caret to the end
-		SendMessage(platPtr->pyGUI, EM_REPLACESEL, 0, (LPARAM)"\r\n");
-
-		// Now, move the caret to the new line, after the newly inserted newline
-		length = GetWindowTextLength(platPtr->pyGUI); // Update the length after adding newline
-		SendMessage(platPtr->pyGUI, EM_SETSEL, (WPARAM)length, (LPARAM)length); // Move caret to the new line
-
-		// Append the formatted message to the edit control
-		SendMessage(platPtr->pyGUI, EM_REPLACESEL, 0, (LPARAM)formattedMessage.c_str());
-
-		// Auto-scroll to the bottom
-		SendMessage(platPtr->pyGUI, WM_VSCROLL, SB_BOTTOM, 0);
-
-		return 0; // Indicate message handled
-	}
-
-	case WM_CTLCOLOREDIT: {
-		if ((HWND)lParam == pyGUI) {
-			HDC hdcEdit = (HDC)wParam;
-			SetTextColor(hdcEdit, RGB(255, 255, 255)); // White text
-			SetBkColor(hdcEdit, RGB(0, 0, 0));         // Black background
-
-			static HBRUSH hbrBkgnd = CreateSolidBrush(RGB(0, 0, 0));
-			return (INT_PTR)hbrBkgnd;
-		}
-	}	// ... Handle other messages like WM_PAINT if necessary ...
-	}
-
-	if (i_prevWindowProc) {
-		return CallWindowProc(i_prevWindowProc, hWnd, message, wParam, lParam);
-	}
-	else {
-		return DefWindowProc(hWnd, message, wParam, lParam);
-	}
+    case WM_CLOSE: {
+        InvalidateAll();
+        break;
+    }
+    case WM_QUIT: {
+        InvalidateAll();
+        break;
+    }
+                 // Handle other messages
+    }
+    return CallWindowProc(i_prevWindowProc, hWnd, message, wParam, lParam);
 }
 
+// Invalidate and clean-up resources
 void PanelatorUI_Plat::InvalidateAll() {
-	InvalidateRect(hWnd, nullptr, FALSE);
+    InvalidateRect(pyHWND, nullptr, FALSE);
+    InvalidateRect(hWnd, nullptr, FALSE);
+    SessionManager::GetInstance().killProcess(sessionID);
+    pyHWND = nullptr;
+    hWnd = nullptr;
+    i_prevWindowProc = nullptr;
+    RemoveProp(i_refH, OSWndObjectProperty);
 }
 
-
-static char debugMessageBuffer[1024];
-
-Result<void> writeToDebugPanel(std::string message) {
-	PanelatorUI_Plat* myPanel = PanelatorUI_Plat::GetInstance();
-	HWND hWnd = myPanel ? myPanel->GetHWND() : nullptr;
-
-	if (!hWnd) {
-		throw std::runtime_error("Window handle is null");
-	}
-
-	const size_t bufferLength = sizeof(debugMessageBuffer);
-	size_t messageLength = message.size();
-	size_t processedLength = 0;
-
-	while (processedLength < messageLength) {
-		size_t chunkLength = (std::min)(messageLength - processedLength, bufferLength - 1);
-		strncpy_s(debugMessageBuffer, message.substr(processedLength, chunkLength).c_str(), bufferLength);
-		SendMessage(hWnd, WM_UPDATE_DEBUG_CONSOLE, 0, (LPARAM)debugMessageBuffer);
-		processedLength += chunkLength;
-	}
-
-	return Result<void>();
+// Destructor
+PanelatorUI_Plat::~PanelatorUI_Plat() {
+    InvalidateAll();
 }
-

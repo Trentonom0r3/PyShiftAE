@@ -27,8 +27,6 @@ extern "C" DllExport AEGP_PluginInitFuncPrototype EntryPointFunc;
 struct ScriptTask {
 	enum ResultType { ManifestType, NoResult, GUIType } resultType;
 	std::string scriptPath;
-	FlyoutMenuItem* flyoutItem;
-	Panel* panel;
 	std::tuple<std::string, std::string> pathFunc; // For loading a Python module
 	std::promise<std::string> resultPromise; // For generic Python object results
 	std::promise<Manifest> manifestPromise; // Specifically for Manifest results

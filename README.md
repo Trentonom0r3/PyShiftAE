@@ -36,6 +36,11 @@ Python for After Effects! PyShiftAE is an experimental, Open Source library desi
 # ChangeLog:
 All Updates should be assumed to come with updated documentation, and an updated binary .aex file located in `dist`, unless otherwise specified. 
 ChangeLog will contain a brief description of changes. See Wiki API docs for more info. 
+- [1.28.24]
+    - Ability to write full python GUI extensions! (Docs coming soon)
+    - Ability to control AE from ANY python process!
+    - Slight Refactorings, deletions, and changes.
+    - TODO: Refactor further, finalize API transfer to `.pyd`, and fully test extension and python process communication.
 - [1.24.24]
     - Various small changes and refactorings.
     - Compatible with python `3.1x` and up.

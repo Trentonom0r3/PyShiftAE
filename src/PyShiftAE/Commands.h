@@ -676,6 +676,50 @@ public:
 	void execute() override;
 };
 
+class CreateFolderItemCommand : public CommandBase {
+public:
+    CreateFolderItemCommand() = default;
+
+    CreateFolderItemCommand(Command cmd) : CommandBase(cmd) {
+
+	};
+	void execute() override;
+
+};
+
+class AppendItemCommand : public CommandBase {
+public:
+    AppendItemCommand() = default;
+
+    AppendItemCommand(Command cmd) : CommandBase(cmd) {
+
+	};
+	void execute() override;
+
+};
+
+class RemoveItemCommand : public CommandBase {
+public:
+	RemoveItemCommand() = default;
+
+    RemoveItemCommand(Command cmd) : CommandBase(cmd) {
+
+	};
+	void execute() override;
+
+};
+
+class CreatePanelCommand : public CommandBase {
+public: 
+	CreatePanelCommand() = default;
+
+    CreatePanelCommand(Command cmd) : CommandBase(cmd) {
+
+	};
+	void execute() override;
+
+};
+
 class CommandFactory {
 public:
     CommandFactory() {
@@ -748,6 +792,10 @@ public:
         commands["CreateFootageItem"] = [](const Command& cmd) { return std::make_unique<CreateFootageItemCommand>(cmd); };
         commands["CreateSolidItem"] = [](const Command& cmd) { return std::make_unique<CreateSolidItemCommand>(cmd); }; // [TODO]
         commands["getAllChildItems"] = [](const Command& cmd) { return std::make_unique<getAllChildItemsCommand>(cmd); };
+        commands["CreateFolderItem"] = [](const Command& cmd) { return std::make_unique<CreateFolderItemCommand>(cmd); };
+        commands["AppendItem"] = [](const Command& cmd) { return std::make_unique<AppendItemCommand>(cmd); };
+        commands["RemoveItem"] = [](const Command& cmd) { return std::make_unique<RemoveItemCommand>(cmd); };
+        commands["CreatePanel"] = [](const Command& cmd) { return std::make_unique<CreatePanelCommand>(cmd); };
     }
 
     std::unique_ptr<CommandBase> createCommand(const std::string& commandName, const Command& cmd) {
