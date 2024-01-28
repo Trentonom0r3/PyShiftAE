@@ -1094,9 +1094,8 @@ std::shared_ptr<ItemCollection> FolderItem::ChildItems()
 	}
 
 	Result<AEGP_ItemH> itemH = item;
-	ItemCollection collection(itemH);
+	std::shared_ptr<ItemCollection> itemCollection = std::make_shared<ItemCollection>(itemH);
 
-	std::shared_ptr<ItemCollection> itemCollection = std::make_shared<ItemCollection>(collection);
 	return itemCollection;
 
 }
@@ -1216,7 +1215,7 @@ std::shared_ptr<Layer> LayerCollection::addLayerToCollection(Item itemHandle, in
 
 std::vector<std::shared_ptr<Item>> ItemCollection::getItems()
 {
-	std::vector<std::shared_ptr<Item>> items;
+	std::vector<std::shared_ptr<Item>> items = {};
 	auto item = this->itemHandle_;
 
 	Result<AEGP_ItemH> itemhandle = item;
@@ -1268,9 +1267,6 @@ std::vector<std::shared_ptr<Item>> ItemCollection::getItems()
 		auto& nextItemMessage = enqueueSyncTask(GetNextProjItem, projectResult, currentItemResult);
 		nextItemMessage->wait();
 		currentItemResult = nextItemMessage->getResult();
-		if (currentItemResult.error != A_Err_NONE) {
-			throw std::runtime_error("Error getting next project item");
-		}
 	}
 
 	return items;

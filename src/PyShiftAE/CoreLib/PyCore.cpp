@@ -108,12 +108,6 @@ void bindLayerEnum(py::module_& m)
         .value("ENVIRONMENT_LAYER", LayerFlag::ENVIRONMENT_LAYER)
         .export_values();
 
-        py::enum_<FlyoutMenuMarkType>(m, "MenuMark")
-		.value("NORMAL", FlyoutMenuMarkType::NORMAL)
-		.value("SEPARATOR", FlyoutMenuMarkType::SEPARATOR)
-		.value("RADIO", FlyoutMenuMarkType::RADIO)
-		.value("CHECKED", FlyoutMenuMarkType::CHECKED)
-		.export_values();
 	
 }
 
@@ -346,10 +340,6 @@ void bindProject(py::module_& m)
 
 void bindApp(py::module_& m)
 {
-    py::class_<PyOutputStream>(m, "OutputStream")
-        .def(py::init<>())
-        .def("write", &PyOutputStream::write)
-        .def("flush", &PyOutputStream::flush);
 
     py::class_<App, std::shared_ptr<App>>(m, "App")
         .def(py::init<>())

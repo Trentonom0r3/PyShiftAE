@@ -292,7 +292,7 @@ public:
         }
         Item item2 = *item;
         item2.deleteItem();
-
+        items_.erase(std::remove(items_.begin(), items_.end(), item), items_.end());
         return items_;
     }
 

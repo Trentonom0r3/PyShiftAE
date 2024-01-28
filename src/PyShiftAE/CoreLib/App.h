@@ -3,11 +3,16 @@
 #include "../CoreSDK/Utils.h"
 #include "Project.h"
 
-//forward declaration
-class Effect;
-class EffectCollection;
-class EffectProperties;
-class EffectFlags;
+class Panel {
+public:
+	Panel(int hwnd, std::string sessionID) : _hwnd(hwnd), sessionID(sessionID) {}
+
+	int getHwnd() const { return _hwnd; }
+private:
+	int _hwnd;
+	std::string sessionID;
+};
+
 
 class App {
 public:
@@ -68,69 +73,31 @@ private:
 };
 
 
+// Class Declaration
 class PanelatorUI_Plat : public PanelatorUI {
 public:
-	explicit PanelatorUI_Plat(SPBasicSuite* spbP, AEGP_PanelH panelH,
-		AEGP_PlatformViewRef platformWindowRef, AEGP_PanelFunctions1* outFunctionTable);
-	static PanelatorUI_Plat* GetInstance() {
-		std::lock_guard<std::mutex> lock(instanceMutex);
-		return instance;
-	}
-
-	// Method to initialize the instance
-	static void InitializeInstance(SPBasicSuite* spbP, AEGP_PanelH panelH,
-		AEGP_PlatformViewRef platformWindowRef, AEGP_PanelFunctions1* outFunctionTable) {
-		std::lock_guard<std::mutex> lock(instanceMutex);
-		if (!instance) {
-			instance = new PanelatorUI_Plat(spbP, panelH, platformWindowRef, outFunctionTable);
-		} 
-		else if (instance) {
-			delete instance;
-			instance = new PanelatorUI_Plat(spbP, panelH, platformWindowRef, outFunctionTable);
-		}
-	}
-	HWND GetHWND() const { return hWnd; }
+    explicit PanelatorUI_Plat(std::string sessionID, SPBasicSuite* spbP, 
+                              AEGP_PanelH panelH, AEGP_PlatformViewRef platformWindowRef, 
+                              AEGP_PanelFunctions1* outFunctionTable);
+    ~PanelatorUI_Plat();
 
 protected:
-	virtual void InvalidateAll();
+    virtual void InvalidateAll();
 
 private:
-	HWND pyGUI; // HWND for the Python GUI
-	void EmbedPythonGUI();
-	void operator=(const PanelatorUI&);
-	PanelatorUI_Plat(const PanelatorUI_Plat&); // private, unimplemented
-	// Static instance pointer
-	static PanelatorUI_Plat* instance;
-	static std::mutex instanceMutex;
-	typedef LRESULT(CALLBACK* WindowProc)(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
-	void InitializePyGUI();
-	WindowProc i_prevWindowProc;
-	HWND hWnd;
+    HWND pyGUI; // HWND for the Python GUI
+    std::string sessionID;
+    // Prevent copying and assignment
+    PanelatorUI_Plat(const PanelatorUI_Plat&) = delete;
+    PanelatorUI_Plat& operator=(const PanelatorUI_Plat&) = delete;
 
-	static LRESULT CALLBACK StaticOSWindowWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
-	LRESULT OSWindowWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+    static PanelatorUI_Plat* instance;
+    typedef LRESULT(CALLBACK* WindowProc)(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+    
+    WindowProc i_prevWindowProc;
+    HWND hWnd;
+    HWND pyHWND;
+    static LRESULT CALLBACK StaticOSWindowWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+    LRESULT OSWindowWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 };
 
-// Static member definitions
-#define WM_UPDATE_DEBUG_CONSOLE (WM_USER + 1)
-
-Result<void> writeToDebugPanel(std::string message);
-
-class PyOutputStream {
-public:
-	PyOutputStream() = default;
-
-	void write(py::str message) {  // Use py::str for Python compatibility
-		std::string std_message = message.cast<std::string>();  // Cast py::str to std::string
-		auto& messageFuture = enqueueSyncTask(writeToDebugPanel, std_message);
-		messageFuture->wait();
-		Result<void> result = messageFuture->getResult();
-		if (result.error != A_Err_NONE) {
-			throw std::runtime_error("Error writing to panel");
-		}
-	}
-
-	void flush() {
-		// Implement flush if needed
-	}
-};

@@ -2250,3 +2250,236 @@ void GetfolderitemsCommand::execute() {
 		mqm.sendErrorResponse(cmd.sessionID, "Unknown error");
 	}
 }
+
+void CreateFolderItemCommand::execute() {
+	auto &mqm = MessageQueueManager::getInstance();
+	try {
+		std::string folderItemID = createUUID();
+		std::shared_ptr<FolderItem> folderItemH = FolderItem::createNew(boost::get<std::string>(cmd.args[0]));
+		SessionManager::GetInstance().addToSessions(folderItemID, folderItemH);
+		Response resp;
+		resp.sessionID = cmd.sessionID;
+		resp.args.push_back(folderItemID);
+		mqm.sendResponse(resp);
+	}
+	catch (const boost::bad_get& e) {
+		mqm.sendErrorResponse(cmd.sessionID, e.what());
+	}
+	catch (const std::exception& e) {
+		mqm.sendErrorResponse(cmd.sessionID, e.what());
+	}
+	catch (...) {
+		mqm.sendErrorResponse(cmd.sessionID, "Unknown error");
+	}
+}
+
+void AppendItemCommand::execute() {
+	auto &mqm = MessageQueueManager::getInstance();
+	try {
+		auto &itemCollection = SessionManager::GetInstance().getSessionObject(cmd.sessionID);
+		auto &itemVariant = SessionManager::GetInstance().getSessionObject(boost::get<std::string>(cmd.args[0]));
+
+		std::shared_ptr<Item> item = std::visit([&](const auto& arg) -> std::shared_ptr<Item> {
+			using T = std::decay_t<decltype(arg)>;
+			if constexpr (std::is_same_v<T, std::shared_ptr<Item>>) {
+				return arg;
+			}
+			else if constexpr (std::is_same_v<T, std::shared_ptr<CompItem>>) {
+				std::shared_ptr<Item> item = std::dynamic_pointer_cast<Item>(arg);
+				return item;
+			}
+			else if constexpr (std::is_same_v<T, std::shared_ptr<FolderItem>>) {
+				std::shared_ptr<Item> item = std::dynamic_pointer_cast<Item>(arg);
+				return item;
+			}
+			else if constexpr (std::is_same_v<T, std::shared_ptr<FootageItem>>) {
+				std::shared_ptr<Item> item = std::dynamic_pointer_cast<Item>(arg);
+				return item;
+			}
+			else if constexpr (std::is_same_v<T, std::shared_ptr<SolidItem>>) {
+				std::shared_ptr<Item> item = std::dynamic_pointer_cast<Item>(arg);
+				return item;
+			}
+			else {
+				throw std::runtime_error("Invalid type for item");
+			}
+			}, itemVariant);
+		//use the item as a narg to add to the item collection
+		//use ItemCollection->append(item)
+		std::vector<std::shared_ptr<Item>> items = std::visit([&](const auto& arg) -> std::vector<std::shared_ptr<Item>> {
+			using T = std::decay_t<decltype(arg)>;
+				if constexpr (std::is_same_v<T, std::shared_ptr<ItemCollection>>) {
+					return arg->append(item);
+									}
+				else {
+						throw std::runtime_error("Invalid type for item collection");
+									}
+				}, itemCollection);
+
+		std::vector<std::string> sessionIDs;
+		std::vector<std::string> types;
+
+		for (auto item : items) {
+			std::string itemID = createUUID();
+			std::string type = item->getType();
+			if (type == "Comp") {
+				//turn item into comp, then add to sessions
+				std::shared_ptr<CompItem> comp = std::dynamic_pointer_cast<CompItem>(item);
+				sessionIDs.push_back(itemID);
+				types.push_back("Comp");
+				SessionManager::GetInstance().addToSessions(itemID, comp);
+			}
+			else if (type == "Folder") {
+				//turn item into folder, then add to sessions
+				std::shared_ptr<FolderItem> folder = std::dynamic_pointer_cast<FolderItem>(item);
+				sessionIDs.push_back(itemID);
+				types.push_back("Folder");
+				SessionManager::GetInstance().addToSessions(itemID, folder);
+			}
+			else if (type == "Footage") {
+				//turn item into footage, then add to sessions
+				std::shared_ptr<FootageItem> footage = std::dynamic_pointer_cast<FootageItem>(item);
+				sessionIDs.push_back(itemID);
+				types.push_back("Footage");
+				SessionManager::GetInstance().addToSessions(itemID, footage);
+			}
+			else if (type == "Solid") {
+				//turn item into footage, then add to sessions
+				std::shared_ptr<SolidItem> solid = std::dynamic_pointer_cast<SolidItem>(item);
+				sessionIDs.push_back(itemID);
+				types.push_back("Solid");
+				SessionManager::GetInstance().addToSessions(itemID, solid);
+			}
+		}
+
+		Response resp;
+		resp.sessionID = cmd.sessionID;
+		resp.args.push_back(sessionIDs);
+		resp.args.push_back(types);
+		mqm.sendResponse(resp);
+	} 	catch (const boost::bad_get& e) {
+		mqm.sendErrorResponse(cmd.sessionID, e.what()); 
+	}
+	catch (const std::exception& e) {
+		mqm.sendErrorResponse(cmd.sessionID, e.what()); 
+	}
+	catch (...) {
+		mqm.sendErrorResponse(cmd.sessionID, "Unknown error"); 
+	}
+}
+
+
+void RemoveItemCommand::execute() {
+	auto& mqm = MessageQueueManager::getInstance();
+	try {
+		auto& itemCollection = SessionManager::GetInstance().getSessionObject(cmd.sessionID);
+		auto& itemVariant = SessionManager::GetInstance().getSessionObject(boost::get<std::string>(cmd.args[0]));
+
+		std::shared_ptr<Item> item = std::visit([&](const auto& arg) -> std::shared_ptr<Item> {
+			using T = std::decay_t<decltype(arg)>;
+			if constexpr (std::is_same_v<T, std::shared_ptr<Item>>) {
+				return arg;
+			}
+			else if constexpr (std::is_same_v<T, std::shared_ptr<CompItem>>) {
+				std::shared_ptr<Item> item = std::dynamic_pointer_cast<Item>(arg);
+				return item;
+			}
+			else if constexpr (std::is_same_v<T, std::shared_ptr<FolderItem>>) {
+				std::shared_ptr<Item> item = std::dynamic_pointer_cast<Item>(arg);
+				return item;
+			}
+			else if constexpr (std::is_same_v<T, std::shared_ptr<FootageItem>>) {
+				std::shared_ptr<Item> item = std::dynamic_pointer_cast<Item>(arg);
+				return item;
+			}
+			else if constexpr (std::is_same_v<T, std::shared_ptr<SolidItem>>) {
+				std::shared_ptr<Item> item = std::dynamic_pointer_cast<Item>(arg);
+				return item;
+			}
+			else {
+				throw std::runtime_error("Invalid type for item");
+			}
+			}, itemVariant);
+		//use the item as a narg to add to the item collection
+		//use ItemCollection->append(item)
+		std::vector<std::shared_ptr<Item>> items = std::visit([&](const auto& arg) -> std::vector<std::shared_ptr<Item>> {
+			using T = std::decay_t<decltype(arg)>;
+			if constexpr (std::is_same_v<T, std::shared_ptr<ItemCollection>>) {
+				return arg->remove(item);
+			}
+			else {
+				throw std::runtime_error("Invalid type for item collection");
+			}
+			}, itemCollection);
+
+		std::vector<std::string> sessionIDs;
+		std::vector<std::string> types;
+
+		for (auto item : items) {
+			std::string itemID = createUUID();
+			std::string type = item->getType();
+			if (type == "Comp") {
+				//turn item into comp, then add to sessions
+				std::shared_ptr<CompItem> comp = std::dynamic_pointer_cast<CompItem>(item);
+				sessionIDs.push_back(itemID);
+				types.push_back("Comp");
+				SessionManager::GetInstance().addToSessions(itemID, comp);
+			}
+			else if (type == "Folder") {
+				//turn item into folder, then add to sessions
+				std::shared_ptr<FolderItem> folder = std::dynamic_pointer_cast<FolderItem>(item);
+				sessionIDs.push_back(itemID);
+				types.push_back("Folder");
+				SessionManager::GetInstance().addToSessions(itemID, folder);
+			}
+			else if (type == "Footage") {
+				//turn item into footage, then add to sessions
+				std::shared_ptr<FootageItem> footage = std::dynamic_pointer_cast<FootageItem>(item);
+				sessionIDs.push_back(itemID);
+				types.push_back("Footage");
+				SessionManager::GetInstance().addToSessions(itemID, footage);
+			}
+			else if (type == "Solid") {
+				//turn item into footage, then add to sessions
+				std::shared_ptr<SolidItem> solid = std::dynamic_pointer_cast<SolidItem>(item);
+				sessionIDs.push_back(itemID);
+				types.push_back("Solid");
+				SessionManager::GetInstance().addToSessions(itemID, solid);
+			}
+		}
+		Response resp;
+		resp.sessionID = cmd.sessionID;
+		resp.args.push_back(sessionIDs);
+		resp.args.push_back(types);
+		mqm.sendResponse(resp);
+	}
+	catch (const boost::bad_get& e) {
+		mqm.sendErrorResponse(cmd.sessionID, e.what());
+	}
+	catch (const std::exception& e) {
+		mqm.sendErrorResponse(cmd.sessionID, e.what());
+	}
+	catch (...) {
+		mqm.sendErrorResponse(cmd.sessionID, "Unknown error");
+	}
+}
+
+void CreatePanelCommand::execute() {
+	auto &mqm = MessageQueueManager::getInstance();
+	try {
+		std::shared_ptr<Panel> panel = std::make_shared<Panel>(boost::get<int>(cmd.args[0]), cmd.sessionID);
+		SessionManager::GetInstance().addToSessions(cmd.sessionID, panel);
+		Response resp;
+		resp.sessionID = cmd.sessionID;
+		mqm.sendResponse(resp);
+	}
+	catch (const boost::bad_get& e) {
+		mqm.sendErrorResponse(cmd.sessionID, e.what());
+	}
+	catch (const std::exception& e) {
+		mqm.sendErrorResponse(cmd.sessionID, e.what());
+	}
+	catch (...) {
+		mqm.sendErrorResponse(cmd.sessionID, "Unknown error");
+	}
+}

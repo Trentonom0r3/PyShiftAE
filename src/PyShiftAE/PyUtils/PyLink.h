@@ -16,6 +16,3 @@ struct JSData {
 
 Manifest executeManifestFromFile(const std::string& scriptPath);
 void executeFromFile(const std::string& scriptPath);
-std::string executeJSFunction(const std::string& module_path, const std::string& custom_name, JSData data);
-void executeFileInNewProcess(const std::string& scriptPath);
-

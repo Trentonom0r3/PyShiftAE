@@ -159,6 +159,7 @@ public:
         sendResponse(response);
     }
 
+
 private:
     MessageQueueManager() {
         clearQueue("PyC21");

@@ -36,7 +36,6 @@ std::condition_variable scriptAddedCond;
 bool newScriptAdded = false;
 
 
-/*
 static A_Err
 S_CreatePanelHook(
 	AEGP_GlobalRefcon		plugin_refconP,
@@ -46,12 +45,171 @@ S_CreatePanelHook(
 	AEGP_PanelFunctions1* outFunctionTable,
 	AEGP_PanelRefcon* outRefcon)
 {
-	PanelatorUI_Plat::InitializeInstance(sP, panelH, container, outFunctionTable);
-	PanelatorUI_Plat* myPanel = PanelatorUI_Plat::GetInstance();
-	*outRefcon = reinterpret_cast<AEGP_PanelRefcon>(myPanel);
-	return A_Err_NONE;
+	try {
+		Manifest* manifest = reinterpret_cast<Manifest*>(refconP);
+		std::string name = manifest->name;
+		std::string version = manifest->version;
+		std::string sessionID = name + version;
+		// Construct the path to the Python executable in the venv
+		std::filesystem::path entryPathObj(manifest->entryPath);
+		std::filesystem::path venvPath = entryPathObj.parent_path() / "venv" / "Scripts" / "python.exe";
+		// Form the command to run the Python script
+		std::string venvPathS = venvPath.string();
+		//create command which is the path to the python executable, followed by the path to the script, wrapped in quotes
+		std::string command = "\"" + venvPathS + "\" \"" + manifest->entryPath + "\"";
+
+		std::cout << "Executing command: " << command << std::endl;
+		SessionManager::GetInstance().executeCommandAsync(command, sessionID);
+
+		int timeout = 100;
+		while (timeout > 0) {
+			if (SessionManager::GetInstance().isHWNDStored(sessionID)) {
+				break;
+			}
+			std::this_thread::sleep_for(std::chrono::milliseconds(100));
+			timeout--;
+			if (timeout == 0) {
+				std::cout << "Timeout reached" << std::endl;
+				App app;
+				app.reportInfo("Timed out finding HWND");
+				return A_Err_PARAMETER;
+			}
+		}
+
+		PanelatorUI_Plat* myPanel = new PanelatorUI_Plat(sessionID, sP, panelH, container, outFunctionTable);
+		*outRefcon = reinterpret_cast<AEGP_PanelRefcon>(myPanel);
+		return A_Err_NONE;
+	}
+	catch (std::exception& e) {
+		std::cout << e.what() << std::endl;
+		std::string error = e.what();
+	}
+	catch (std::filesystem::filesystem_error& e) {
+		std::cout << e.what() << std::endl;
+		std::string error = e.what();
+	}
+	catch (...) {
+		std::cout << "Unknown error occurred" << std::endl;
+	}
 }
-*/
+
+
+std::vector<Manifest> getManifests() {
+	std::vector<Manifest> manifests = std::vector<Manifest>();
+	A_Err 					err = A_Err_NONE,
+		err2 = A_Err_NONE;
+
+	AEGP_SuiteHandler& suites = SuiteManager::GetInstance().GetSuiteHandler();
+
+	Result<std::string> paths = getPluginPaths();
+
+	if (paths.error != A_Err_NONE) {
+		ERR2(suites.UtilitySuite3()->AEGP_ReportInfo(PyShiftAE, "PyShiftAE : Could not get plugin paths."));
+	}
+
+	std::string pluginPath = paths.value;
+	pluginPath = pluginPath.substr(0, 3);
+	pluginPath += "Program Files (x86)\\Common Files\\Adobe\\CEP\\extensions";
+
+	std::string path = pluginPath;
+	try {
+		for (const auto& entry : std::filesystem::recursive_directory_iterator(path)) {
+			// Find folders following the format "com.psc.[EXTENSION_NAME]"
+			std::string folderName = entry.path().filename().string();
+			if (folderName.rfind("com.psc.", 0) == 0) {  // More efficient way to check prefix
+				//check within for a manifest.py file
+				std::string manifestPath = entry.path().string() + "\\manifest.py";
+				// Creating a Manifest task
+				ScriptTask manifestTask;
+				manifestTask.scriptPath = manifestPath;
+				manifestTask.resultType = ScriptTask::ManifestType;
+				std::future<Manifest> manifestFuture = manifestTask.manifestPromise.get_future();
+				Manifest manifest;
+				{
+					std::lock_guard<std::mutex> lock(scriptQueueMutex);
+					scriptExecutionQueue.push(std::move(manifestTask));
+					scriptAddedCond.notify_one();
+				}
+				manifest = manifestFuture.get();
+				A_long cmdID;
+				ERR(suites.CommandSuite1()->AEGP_GetUniqueCommand(&cmdID));
+				manifest.command = cmdID;
+				manifests.push_back(manifest);
+				ERR(suites.CommandSuite1()->AEGP_InsertMenuCommand(manifest.command,
+					manifest.name.c_str(),
+					AEGP_Menu_WINDOW,
+					AEGP_MENU_INSERT_SORTED));
+
+				SuiteHelper<AEGP_PanelSuite1> i_ps(sP);
+				std::string name = manifest.name;
+				const A_u_char* matchName = reinterpret_cast<const A_u_char*>(name.c_str());
+				Manifest* manifestP = new Manifest();
+				*manifestP = manifest;
+				AEGP_CreatePanelRefcon refcon = reinterpret_cast<AEGP_CreatePanelRefcon>(manifestP);
+				i_ps->AEGP_RegisterCreatePanelHook(PyShiftAE, matchName,
+					S_CreatePanelHook, refcon, FALSE);
+
+			}
+		}
+		return manifests;
+	}
+	// cast manifest list to global refcon, if manifest.use_js == True, do below, if false, we'll create the commmand and register it for use.
+	// Then, when the command is called from the menu, we'll match command with manifest.command, and then execute manifest.entryPath
+	catch (std::exception& e) {
+		std::cout << e.what() << std::endl;
+		std::string error = e.what();
+	}
+	catch (std::filesystem::filesystem_error& e) {
+		std::cout << e.what() << std::endl;
+		std::string error = e.what();
+	}
+	catch (...) {
+		std::cout << "Unknown error occurred" << std::endl;
+	}
+}
+
+void startPythonThread(std::atomic<bool>& shouldExitPythonThread, std::mutex& scriptQueueMutex, std::condition_variable& scriptAddedCond, std::queue<ScriptTask>& scriptExecutionQueue) {
+	std::thread pythonThread([&]() {
+		py::scoped_interpreter guard{}; // start the interpreter and keep it alive
+		//py::object pyShiftCore = py::module_::import("PyShiftCore");
+
+		while (!shouldExitPythonThread.load()) {
+			ScriptTask task;
+
+			{
+				std::unique_lock<std::mutex> lock(scriptQueueMutex);
+				scriptAddedCond.wait(lock, [&] { return !scriptExecutionQueue.empty() || shouldExitPythonThread.load(); });
+
+				if (!scriptExecutionQueue.empty()) {
+					task = std::move(scriptExecutionQueue.front());
+					scriptExecutionQueue.pop();
+				}
+			}
+
+			if (!task.scriptPath.empty()) {
+				switch (task.resultType) {
+				case ScriptTask::ManifestType:
+					task.manifestPromise.set_value(executeManifestFromFile(task.scriptPath));
+					break;
+				case ScriptTask::NoResult:
+					executeFromFile(task.scriptPath);
+					break;
+				case ScriptTask::GUIType:
+
+					break;
+					// other cases...
+				}
+			}
+		}
+
+		// Finalize the Python interpreter if necessary
+		if (shouldExitPythonThread) {
+			//finalize();
+		}
+		});
+
+	pythonThread.detach();
+}
 
 static A_Err
 DeathHook(
@@ -72,6 +230,7 @@ DeathHook(
 	}
 	// Finalize the Python interpreter (if not done in the Python thread)
 	//finalize();
+	SessionManager::GetInstance().cleanAll();
 	return err;
 }
 
@@ -86,13 +245,16 @@ UpdateMenuHook(
 
 
 	AEGP_SuiteHandler	suites(sP);
+	SuiteHelper<AEGP_PanelSuite1>	i_ps(sP);
+	A_Boolean	out_thumb_is_shownB = FALSE, out_panel_is_frontmostB = FALSE;
 
 	Manifests *manifests = reinterpret_cast<Manifests*>(plugin_refconPV);
 	for (int i = 0; i < manifests->manifests.size(); i++) {
 		if (manifests->manifests[i].useJS == FALSE)
 		{
 			ERR(suites.CommandSuite1()->AEGP_EnableCommand(manifests->manifests[i].command));
-			//entry in this case will be the GUI script that shall be executed
+			i_ps->AEGP_IsShown(reinterpret_cast<const A_u_char*>(manifests->manifests[i].name.c_str()), &out_thumb_is_shownB, &out_panel_is_frontmostB);
+			suites.CommandSuite1()->AEGP_CheckMarkMenuCommand(manifests->manifests[i].command, out_thumb_is_shownB && out_panel_is_frontmostB);
 		}
 	}
 	ERR(suites.CommandSuite1()->AEGP_EnableCommand(PyShift));
@@ -183,126 +345,19 @@ CommandHook(
 				//run the manifest
 				//get the manifest from the vector
 				Manifest manifest = manifests->manifests[i];
-				//venvpath is in same location as manifest, but in a folder called venv. manifest.entryPath is 'entry.py', need to remove that
-				std::string venvPath = manifest.entryPath.substr(0, manifest.entryPath.size() - 8) + "venv";
-				std::string guiScriptPath = manifest.entryPath;
-				ScriptTask task;
-				task.scriptPath = guiScriptPath;
-				task.resultType = ScriptTask::GUIType;
-				{
-					std::lock_guard<std::mutex> lock(scriptQueueMutex);
-					scriptExecutionQueue.push(std::move(task));
-					scriptAddedCond.notify_one();
+				std::string name = manifest.name;
 
-				}
-				*handledPB = TRUE;
+			    //show the panel that matches the manifest name
+				i_ps->AEGP_ToggleVisibility(reinterpret_cast<const A_u_char*>(name.c_str()));
+
 			}
-			*handledPB = FALSE;
+			*handledPB = TRUE;
+			return err;
 		}
-
+		*handledPB = FALSE;
 	}
 
 	return err;
-}
-
-std::vector<Manifest> getManifests() {
-	std::vector<Manifest> manifests = std::vector<Manifest>();
-	A_Err 					err = A_Err_NONE,
-							err2 = A_Err_NONE;
-	AEGP_SuiteHandler& suites = SuiteManager::GetInstance().GetSuiteHandler();
-	Result<std::string> paths = getPluginPaths();
-	if (paths.error != A_Err_NONE) {
-		ERR2(suites.UtilitySuite3()->AEGP_ReportInfo(PyShiftAE, "PyShiftAE : Could not get plugin paths."));
-	}
-
-	std::string pluginPath = paths.value;
-	pluginPath = pluginPath.substr(0, 3);
-	pluginPath += "Program Files (x86)\\Common Files\\Adobe\\CEP\\extensions";
-
-	std::string path = pluginPath;
-	try {
-		for (const auto& entry : std::filesystem::recursive_directory_iterator(path)) {
-			// Find folders following the format "com.psc.[EXTENSION_NAME]"
-			std::string folderName = entry.path().filename().string();
-			if (folderName.rfind("com.psc.", 0) == 0) {  // More efficient way to check prefix
-				//check within for a manifest.py file
-				std::string manifestPath = entry.path().string() + "\\manifest.py";
-				// Creating a Manifest task
-				ScriptTask manifestTask;
-				manifestTask.scriptPath = manifestPath;
-				manifestTask.resultType = ScriptTask::ManifestType;
-				std::future<Manifest> manifestFuture = manifestTask.manifestPromise.get_future();
-				Manifest manifest;
-				{
-					std::lock_guard<std::mutex> lock(scriptQueueMutex);
-					scriptExecutionQueue.push(std::move(manifestTask));
-					scriptAddedCond.notify_one();
-				}
-				manifest = manifestFuture.get();
-				A_long cmdID;
-				StringToLong(manifest.name.c_str(), &cmdID);
-				manifest.command = cmdID;
-				manifests.push_back(manifest);
-			}
-		}
-		return manifests;
-	}
-	// cast manifest list to global refcon, if manifest.use_js == True, do below, if false, we'll create the commmand and register it for use.
-	// Then, when the command is called from the menu, we'll match command with manifest.command, and then execute manifest.entryPath
-	catch (std::exception& e) {
-		std::cout << e.what() << std::endl;
-		std::string error = e.what();
-	}
-	catch (std::filesystem::filesystem_error& e) {
-		std::cout << e.what() << std::endl;
-		std::string error = e.what();
-	}
-	catch (...) {
-		std::cout << "Unknown error occurred" << std::endl;
-	}
-}
-
-void startPythonThread(std::atomic<bool>& shouldExitPythonThread, std::mutex& scriptQueueMutex, std::condition_variable& scriptAddedCond, std::queue<ScriptTask>& scriptExecutionQueue) {
-	std::thread pythonThread([&]() {
-		py::scoped_interpreter guard{}; // start the interpreter and keep it alive
-		py::object pyShiftCore = py::module_::import("PyShiftCore");
-
-		while (!shouldExitPythonThread.load()) {
-			ScriptTask task;
-
-			{
-				std::unique_lock<std::mutex> lock(scriptQueueMutex);
-				scriptAddedCond.wait(lock, [&] { return !scriptExecutionQueue.empty() || shouldExitPythonThread.load(); });
-
-				if (!scriptExecutionQueue.empty()) {
-					task = std::move(scriptExecutionQueue.front());
-					scriptExecutionQueue.pop();
-				}
-			}
-
-			if (!task.scriptPath.empty()) {
-				switch (task.resultType) {
-				case ScriptTask::ManifestType:
-					task.manifestPromise.set_value(executeManifestFromFile(task.scriptPath));
-					break;
-				case ScriptTask::NoResult:
-					executeFromFile(task.scriptPath);
-					break;
-				case ScriptTask::GUIType:
-					executeFileInNewProcess(task.scriptPath);
-					break;
-					// other cases...
-				}
-			}
-		}
-
-		// Finalize the Python interpreter if necessary
-		if (shouldExitPythonThread) {
-			//finalize();
-		}
-		});
-
-	pythonThread.detach();
 }
 
 A_Err
@@ -332,12 +387,6 @@ EntryPointFunc(
 	SuiteManager::GetInstance().SetPluginID(&PyShiftAE); // Set the plugin ID
 	
 	ERR(suites.CommandSuite1()->AEGP_GetUniqueCommand(&PyShift));
-	//ERR(suites.CommandSuite1()->AEGP_GetUniqueCommand(&console));
-
-	//ERR(suites.CommandSuite1()->AEGP_InsertMenuCommand(console,
-				//"Python Console",
-				//AEGP_Menu_WINDOW,
-				//AEGP_MENU_INSERT_SORTED));
 
 	ERR(suites.CommandSuite1()->AEGP_InsertMenuCommand(PyShift,
 		"Run Script (.py)",
@@ -350,10 +399,6 @@ EntryPointFunc(
 		CommandHook,
 		0));
 
-	//SuiteHelper<AEGP_PanelSuite1> i_ps(sP);
-	//i_ps->AEGP_RegisterCreatePanelHook(PyShiftAE, reinterpret_cast<A_u_char*>("PyConsole"),
-		//S_CreatePanelHook, NULL, TRUE);
-
 	ERR(suites.RegisterSuite5()->AEGP_RegisterDeathHook(PyShiftAE, DeathHook, NULL));
 
 	ERR(suites.RegisterSuite5()->AEGP_RegisterUpdateMenuHook(PyShiftAE, UpdateMenuHook, NULL));
@@ -363,7 +408,7 @@ EntryPointFunc(
 	if (err) { // not !err, err!
 		ERR2(suites.UtilitySuite3()->AEGP_ReportInfo(PyShiftAE, "PyShiftAE : Could not register command hook."));
 	}
-
+	
 	std::vector<Manifest> manifests = getManifests();
 	Manifests *manifestsP = new Manifests();
 	manifestsP->manifests = manifests;
