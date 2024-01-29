@@ -1,41 +1,110 @@
-# PyShiftAE:
-Python for After Effects! PyShiftAE is an experimental, Open Source library designed to transcend the boundaries of the built-in ExtendScript library in Adobe After Effects (AE), heralding a new era of scripting possibilities in AE. 
+_______________
+# PyShiftAE - Python for After Effects!
+-----------------------
+Table of Contents:
+---------------------
+- [ChangeLog](#changelog)
+- [Introduction](#introduction)
+- [Requirements](#requirements)
+- [Installation](#installation)
+- [Contributing](./CONTRIBUTING.md)
+- [Code of Conduct](./CODEOFCONDUCT.md)
+- [FAQ](./FAQ.md)
+- [License](./license.txt)
+- [Getting Started with PyShiftAE](./GettingStarted.md)
+    - [App](./App.md)
+    - [Project](./Project.md)
+    - [Items](./Item.md)
+    - [Layers](./Layer.md)
+- [Writing Pure Python Extensions](./CEPY.md)
 
-- By offering a Python library as an alternative to ExtendScript, PyShiftAE not only enriches the existing feature set but simplifies and amplifies the scripting experience. PyShiftAE is NOT a wrapper around extendscript. Instead, it is a python library written around the c++ SDK.
-  
-- PyShiftAE not only allows scripting of AE through python, but integration of most (if not all) external python libraries, provided you have the installed. 
-- As ways to script shapes/masks/text et alia are implemented, this will open doors to python data-driven animation within AE, utilization of various ML and AI libraries, and much, much more.
 ### Join the Official **PyShiftAE** Discord!
 - Check it out [here](https://discord.gg/S2AE9Zfuxb)!
 
-## Contents:
-- [Building from source](https://github.com/Trentonom0r3/PyShiftAE/wiki/Building-from-source)
-- [Installation via installer(RECOMMENDED)](https://github.com/Trentonom0r3/PyShiftAE/wiki/Installing-from-.exe-(RECOMMENDED))
-- [ChangeLog](#changelog)
-- [Problem Statement](#problem-statement)
-- [Why PyShiftAE?](#why-pyshiftae)
-- [Impact](#impact)
-- [Challenges](#challenges-ahead)
-- [API-Reference](https://github.com/Trentonom0r3/PyShiftAE/wiki/API-Reference)
-    - [CSXS Events](https://github.com/Trentonom0r3/PyShiftAE/wiki/CSXS-Utils)
-    - [Demos](https://github.com/Trentonom0r3/PyShiftAE/wiki/Demos)
-      
-- [Contributing](https://github.com/Trentonom0r3/PyShiftAE/blob/main/CONTRIBUTING.md)
-    - [Issues](https://github.com/Trentonom0r3/PyShiftAE/blob/main/CONTRIBUTING.md#reporting-issues)
-    - [Pull Requests](https://github.com/Trentonom0r3/PyShiftAE/blob/main/CONTRIBUTING.md#submitting-pull-requests)
-    - [Guidelines](https://github.com/Trentonom0r3/PyShiftAE/blob/main/CONTRIBUTING.md#code-guidelines)
-    - [Testing](https://github.com/Trentonom0r3/PyShiftAE/blob/main/CONTRIBUTING.md#testing)
-    - [Docs](https://github.com/Trentonom0r3/PyShiftAE/blob/main/CONTRIBUTING.md#docs)
-    - [Community](https://github.com/Trentonom0r3/PyShiftAE/blob/main/CONTRIBUTING.md#community-interaction)
-    - [Legal](https://github.com/Trentonom0r3/PyShiftAE/blob/main/CONTRIBUTING.md#legal)
-    - [Setup](https://github.com/Trentonom0r3/PyShiftAE/blob/main/CONTRIBUTING.md#environment-setup)
-    - [Review Process](https://github.com/Trentonom0r3/PyShiftAE/blob/main/CONTRIBUTING.md#review-process)
-    - [Acknowledgements](https://github.com/Trentonom0r3/PyShiftAE/blob/main/CONTRIBUTING.md#acknowledgements)
-      - All contributors will be acknowledged in the project repository. Your contributions, no matter how small, are valuable to us and the community.
+# Introduction
+-------------
+<p>ExtendScript, the established scripting language in AE, poses certain limitations particularly around sophisticated tasks such as pixel or audio data manipulation, as well as certain automation tasks.<p>
+<p>Its capabilities are somewhat confined, often demanding a transition to the more complex C++ SDK for advanced functionalities, or packaging 3rd party node modules or python venvs to achieve the functionality you truly want.<p>
 
-# ChangeLog:
+- PyShiftAE is an experimental, Open Source library designed to transcend the boundaries of the built-in ExtendScript library in Adobe After Effects (AE), heralding a new era of scripting possibilities in AE.
+
+- By offering a Python library as an alternative to ExtendScript, PyShiftAE not only enriches the existing feature set but simplifies and amplifies the scripting experience. PyShiftAE is NOT a wrapper around extendscript. Instead, it is a python library written around the c++ SDK.
+
+- PyShiftAE not only allows scripting of AE through python, but integration of most (if not all) external python libraries, provided you have the installed.
+
+As ways to script shapes/masks/text et alia are implemented, this will open doors to python data-driven animation within AE, utilization of various ML and AI libraries, and much, much more.
+
+### Problem Statement:
+ExtendScript, the established scripting language in AE, poses certain limitations particularly around sophisticated tasks such as pixel or audio data manipulation. Its capabilities are somewhat confined, often demanding a transition to the more complex C++ SDK for advanced functionalities.
+
+### Why PyShiftAE?:
+- **Ease of Use**: Python, being a more intuitive and widely adopted language compared to ExtendScript, lowers the entry barrier for scriptwriters. 
+- **Extended Functionality**: PyShiftAE is not a mere wrapper around ExtendScript; it's a full-fledged library offering novel functionalities and a simplified approach to existing ones.
+- **Community Empowerment**: With PyShiftAE, a broader spectrum of developers including CEP developers and those proficient in Python can effortlessly script in AE, thus democratizing advanced scripting capabilities.
+- **Innovation Unleashed**: Direct integration with APIs, machine learning libraries, and more becomes a reality with PyShiftAE, paving the way for innovative scripts and extensions.
+
+### Impact:
+The ripple effect of PyShiftAE in the AE community could be profound. Scriptwriters could venture into more advanced coding territories, and CEP extension authors could craft hybrid extensions blending SDK features via PyShiftAE, thereby catalyzing a wave of innovative solutions in the AE ecosystem.
+
+## Requirements:
+------------------------
+To Use PyShiftAE, you must have the following core dependencies installed;
+
+- **Windows 10/11, x64 build**
+- **Python 3.5** or above.
+    - `PyShiftAE` will use the python version on PATH, as long as it is 3.5 or above. Otherwise, if PyShiftBase is installed, it will use the built in python version (3.12).
+
+- **After Effects 2023** or above.
+
+## Installation:
+#### PyShiftAE Provides two installers for ease of use:
+
+- **PyShiftBase**:
+    - Installer contains the `.aex` plugin file, and installs a minimal python installation along with the plugin. This is useful for distributing your `CEPy` extensions. 
+
+- **PyShiftExtended**:
+    - Installer contains only the `.aex` file. It is up to the user to ensure python is installed to their PATH to use this option. For Developers and anyone who already has python installed. 
+
+#### For Manual Installation:
+(For Developers, or anyone with python installed)
+- First, Pip install `PyShiftAE`.
+
+```sh
+pip install PyShiftAE
+```
+
+- Secondly, create a build script. `PyShiftAE` provides functions to not only install the `PyShiftAE` plugin, but also for creating template `CEPy` extensions, and installing `CEPy` extensions.
+
+Your Script should look something like this:
+
+```py
+import PyShiftAE as psc
+
+def main():
+    # Create a template extension
+    psc.create_template()
+
+    # Install the PyShiftAE plugin
+    psc.install_plugin()
+
+    # To install a CEPy extension, uncomment the following line and specify the folder path
+    # psc.install_extension(folder_path)
+
+if __name__ == "__main__":
+    main()
+
+```
+
+### Changelog:
 All Updates should be assumed to come with updated documentation, and an updated binary .aex file located in `dist`, unless otherwise specified. 
 ChangeLog will contain a brief description of changes. See Wiki API docs for more info. 
+- [1.29.24]
+    - Updated Documentation, release `PyShiftAE 1.0.1`
+    - Release `pypi` project.
+        ```sh
+        pip install PyShiftAE
+        ```
+    - Include Docs for `CEPy` extensions
 - [1.28.24]
     - Ability to write full python GUI extensions! (Docs coming soon)
     - Ability to control AE from ANY python process!
@@ -210,21 +279,3 @@ ChangeLog will contain a brief description of changes. See Wiki API docs for mor
             - This is a bit special. It utilizes a thread safe message queue to wrap the functions.
         -  ```PyUtils``` contains the python init, script running, and embedded module.
     - Overall refactoring to ensure separation of concerns and easier maintainability.
-
-### Problem Statement:
-ExtendScript, the established scripting language in AE, poses certain limitations particularly around sophisticated tasks such as pixel or audio data manipulation. Its capabilities are somewhat confined, often demanding a transition to the more complex C++ SDK for advanced functionalities.
-
-### Why PyShiftAE?:
-- **Ease of Use**: Python, being a more intuitive and widely adopted language compared to ExtendScript, lowers the entry barrier for scriptwriters. 
-- **Extended Functionality**: PyShiftAE is not a mere wrapper around ExtendScript; it's a full-fledged library offering novel functionalities and a simplified approach to existing ones.
-- **Community Empowerment**: With PyShiftAE, a broader spectrum of developers including CEP developers and those proficient in Python can effortlessly script in AE, thus democratizing advanced scripting capabilities.
-- **Innovation Unleashed**: Direct integration with APIs, machine learning libraries, and more becomes a reality with PyShiftAE, paving the way for innovative scripts and extensions.
-
-### Impact:
-The ripple effect of PyShiftAE in the AE community could be profound. Scriptwriters could venture into more advanced coding territories, and CEP extension authors could craft hybrid extensions blending SDK features via PyShiftAE, thereby catalyzing a wave of innovative solutions in the AE ecosystem.
-
-## Challenges Ahead:
-- Feature Parity: Retaining all the functionality from ExtendScript, albeit with an enhanced and simplified interface, is a significant challenge.
-- `CEPy` Extensions: A play on `CEP`, `CEPy` extensions aim to provide an interface for pure python GUI creation, for those that don't care about having a pretty JS UI.
-- Custom Effects: The ability to create and write your own custom effects. They function like effects, have keyframeable parameters like effects, etc. Users would write custom python callbacks, determining the behavior of their effect.
-
