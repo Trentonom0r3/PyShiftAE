@@ -57,7 +57,7 @@ To Use PyShiftAE, you must have the following core dependencies installed;
 - **After Effects 2023** or above.
 
 ## Installation:
-#### PyShiftAE Provides two installers for ease of use:
+#### PyShiftAE Provides two installers for ease of use (COMING SOON):
 
 - **PyShiftBase**:
     - Installer contains the `.aex` plugin file, and installs a minimal python installation along with the plugin. This is useful for distributing your `CEPy` extensions. 
