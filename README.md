@@ -11,12 +11,6 @@ Table of Contents:
 - [Code of Conduct](./CODEOFCONDUCT.md)
 - [FAQ](./FAQ.md)
 - [License](./license.txt)
-- [Getting Started with PyShiftAE](./GettingStarted.md)
-    - [App](./App.md)
-    - [Project](./Project.md)
-    - [Items](./Item.md)
-    - [Layers](./Layer.md)
-- [Writing Pure Python Extensions](./CEPY.md)
 
 ### Join the Official **PyShiftAE** Discord!
 - Check it out [here](https://discord.gg/S2AE9Zfuxb)!
@@ -51,53 +45,80 @@ The ripple effect of PyShiftAE in the AE community could be profound. Scriptwrit
 To Use PyShiftAE, you must have the following core dependencies installed;
 
 - **Windows 10/11, x64 build**
-- **Python 3.5** or above.
-    - `PyShiftAE` will use the python version on PATH, as long as it is 3.5 or above. Otherwise, if PyShiftBase is installed, it will use the built in python version (3.12).
-
+- **Python 3.12**
+    - Should work on other builds, but untested. 
 - **After Effects 2023** or above.
 
-## Installation:
-#### PyShiftAE Provides two installers for ease of use (COMING SOON):
 
-- **PyShiftBase**:
-    - Installer contains the `.aex` plugin file, and installs a minimal python installation along with the plugin. This is useful for distributing your `CEPy` extensions. 
+# Installation
 
-- **PyShiftExtended**:
-    - Installer contains only the `.aex` file. It is up to the user to ensure python is installed to their PATH to use this option. For Developers and anyone who already has python installed. 
+## Step 1: Clone the Repository
+1. Open a terminal or command prompt.
+2. Run the following command to clone the repository:
+   ```bash
+   git clone https://github.com/Trentonom0r3/PyShiftAE.git
+   ```
 
-#### For Manual Installation:
-(For Developers, or anyone with python installed)
-- First, Pip install `PyShiftAE`.
+3. Navigate to the cloned directory:
+   ```bash
+   cd PyShiftAE
+   ```
 
-```sh
-pip install PyShiftAE
-```
+---
 
-- Secondly, create a build script. `PyShiftAE` provides functions to not only install the `PyShiftAE` plugin, but also for creating template `CEPy` extensions, and installing `CEPy` extensions.
+## Step 2: Install Python Dependencies
+1. Ensure you have Python 3.12 is installed (and used as default). You can check your Python version by running:
+   ```bash
+   python --version
+   ```
+   or
+   ```bash
+   python3 --version
+   ```
 
-Your Script should look something like this:
+2. Navigate to the `Builds` directory:
+   ```bash
+   cd Builds
+   ```
 
-```py
-import PyShiftAE as psc
+3. Install the Python wheel package:
+   ```bash
+   pip install pyshiftae-0.1.0-py3-none-any.whl
+   ```
 
-def main():
-    # Create a template extension
-    psc.create_template()
+   This will install the **PyShiftAE** Python library.
 
-    # Install the PyShiftAE plugin
-    psc.install_plugin()
+---
 
-    # To install a CEPy extension, uncomment the following line and specify the folder path
-    # psc.install_extension(folder_path)
+## Step 3: Set Up After Effects Plugin
+1. Locate the **PyShiftAE.aex** file in the `Builds` directory:
+   ```
+   D:\dev\Projects\Repos\PyShiftAE\Builds\PyShiftAE.aex
+   ```
 
-if __name__ == "__main__":
-    main()
+2. Copy the **PyShiftAE.aex** file to your After Effects `Plug-ins\Effects` directory:
+   ```
+   C:\Program Files\Adobe\Adobe After Effects 202X\Support Files\Plug-ins\Effects
+   ```
 
-```
+3. Restart After Effects to ensure the plugin is loaded correctly.
+
 
 ### Changelog:
 All Updates should be assumed to come with updated documentation, and an updated binary .aex file located in `dist`, unless otherwise specified. 
 ChangeLog will contain a brief description of changes. See Wiki API docs for more info. 
+
+- [12.22.24]
+    - I'm baaaaaaaaack! 
+    - Reworked PyShiftAE. 
+        - Closer to metal
+        - lower latency
+        - broader api 
+        - simpler api
+        - much, much moore.
+    - Reset version to `0.1.0`.
+    - NOTE: Docs are NOT updated as of yet. See the Python folder for the new API for now. 
+    
 - [1.29.24]
     - Updated Documentation, release `PyShiftAE 1.0.1`
     - Release `pypi` project.

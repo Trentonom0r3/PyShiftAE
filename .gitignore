@@ -9,6 +9,21 @@
 *.user
 *.userosscache
 *.sln.docstates
+Python.dist 
+# Ignore build artifacts
+build/
+dist/
+*.egg-info/
+
+# Ignore Python cache files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Ignore virtual environments
+env/
+venv/
 
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
