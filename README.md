@@ -74,6 +74,15 @@ To Use PyShiftAE, you must have the following core dependencies installed;
    pip install pyshiftae-0.1.1-cp311-cp311-win_amd64.whl
 ```
 
+## 4. Install the Plugin
+1. Open a new python terminal.
+2. Run the command:
+```bash
+   psc-install
+```
+3. Paste the proper Effects Directory into the input. Voila!
+4. Restart AE.
+   
 ### Changelog:
 All Updates should be assumed to come with updated documentation, and an updated binary .aex file located in `dist`, unless otherwise specified. 
 ChangeLog will contain a brief description of changes. See Wiki API docs for more info. 
