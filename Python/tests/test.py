@@ -3,6 +3,8 @@ import sys
 
 import random
 import string
+#D:\dev\Projects\Repos\PyShiftAE\Python
+sys.path.append(r"D:\dev\Projects\Repos\PyShiftAE\Python")
 import pyshiftae as ae  
 
 # Utility function to generate random strings
@@ -47,7 +49,7 @@ def stress_test_layers_and_effects():
     
     # Assume we are working with the active composition
     comp = ae.Layer.active_layer().parent_comp  # Get the parent composition of the active layer
- #   ae.App().report_info(f"Active Composition: {comp.name}")
+    print(f"Comp Name: {comp.name}")
     # Stress test by adding random layers and applying effects
     num_layers = 5  # Large number of layers to test performance
     for i in range(num_layers):
@@ -61,14 +63,14 @@ def stress_test_layers_and_effects():
             height=1080,
             duration=10  # 10 seconds duration
         )
-   #     ae.App().report_info(f"Added Layer {layer_name}")
+        print(f"Layer Name: {layer.name}")
 
         # Apply random effects to the layer
         num_effects = random.randint(5, 10)  # Applying 5-10 effects per layer
         for j in range(num_effects):
             effect_name = random.choice(effect_names)
             effect = ae.Effect.apply(layer, effect_name)
-           # ae.App().report_info(f"Applied Effect {effect_name} to Layer {layer_name}")
+            print(f"Effect Name: {effect.name}")
 #
             # Set random effect parameter values (assuming the effect has such parameters)
            # for param_index in range(ae.StreamSuite().GetEffectNumParamStreams(effect.effect)):
@@ -89,20 +91,21 @@ def stress_test_keyframes():
             time = random.uniform(0, 10)  # Random time for keyframe within 10 seconds
             position = (random.uniform(-500, 500), random.uniform(-500, 500), random.uniform(-500, 500))  # Random position
             layer.position.set_value(position)
-           # ae.App().report_info(f"Added Keyframe {keyframe_idx} for Layer {layer.name} at Time {time} with Position {position}")
-
+            print(f"Added Keyframe {keyframe_idx} for Layer {layer.name} at Time {time} with Position {position}")
         # Similarly, add keyframes for other properties like opacity, scale, etc.
         for keyframe_idx in range(num_keyframes):
             time = random.uniform(0, 10)  # Random time for keyframe within 10 seconds
             opacity = random.uniform(0, 100)  # Random opacity value
             layer.opacity.set_value(opacity)
-          #  ae.App().report_info(f"Added Keyframe {keyframe_idx} for Layer {layer.name} at Time {time} with Opacity {opacity}")
-
+            print(f"Added Keyframe {keyframe_idx} for Layer {layer.name} at Time {time} with Opacity {opacity}")
+            
 if __name__ == "__main__":
     import traceback
+    print("Beginning stress test...")
     try:
        
         stress_test_keyframes()
     except Exception as e:
-        ae.App().report_info(f"Error: {e}")
-        ae.App().report_info(traceback.format_exc())
+        print(f"Error: {e}")
+        traceback.print_exc()
+        sys.exit(1)

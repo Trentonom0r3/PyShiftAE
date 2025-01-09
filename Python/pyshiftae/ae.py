@@ -4,9 +4,31 @@ import os
 from typing import Any, Iterator, List, Tuple, Union
 
 class AssetManager:
+    """
+    Class for managing assets in After Effects.
+    
+    Attributes:
+        None
+        
+    Methods:
+        import_asset: Import an asset into After Effects.
+        replace_asset: Replace an existing asset with
+                          a new one.
+                          
+    """
     def __init__(self) -> None:
         pass
 
+    """
+    Import an asset into After Effects.
+    
+    Args:
+        file_path (str): The path to the file to import.
+        name (str): The name to give the asset.
+        
+    Returns:
+        PyFx.ItemPtr: The imported asset.
+    """
     def import_asset(self, file_path: str, name: str) -> PyFx.ItemPtr:
         suite = PyFx.FootageSuite()
         item = None
@@ -21,6 +43,16 @@ class AssetManager:
             item = suite.addFootageToProject(footage, PyFx.ProjSuite().GetProjectRootFolder(PyFx.ProjSuite().GetProjectByIndex(0)))
         return item
 
+    """
+    Replace an existing asset with a new one.
+    
+    Args:
+        old_asset (PyFx.ItemPtr): The asset to replace.
+        new_file_path (str): The path to the new file.
+        
+    Returns:
+        None
+    """
     def replace_asset(self, old_asset: PyFx.ItemPtr, new_file_path: str) -> None:
         suite = PyFx.FootageSuite()
         new_footage = self.import_asset(new_file_path, "")
@@ -30,19 +62,73 @@ class AssetManager:
             raise Exception("Failed to import new footage")
 
     
+
 class App:
+    """
+    Class for managing the After Effects application.
+    """
     _suite = PyFx.UtilitySuite()
     def __init__(self) -> None:
         pass
     
+    """
+    Report a message in a popup dialog.
+    
+    Args:
+        message (str): The message to display.
+        
+    Returns:
+        None
+    """
     def report_info(self, message: str) -> None:
         self._suite.reportInfo(message)
         
+        
 class Item:
+    """
+    Base class for all items in After Effects.
+    
+    Attributes:
+        item (PyFx.ItemPtr): The item pointer.
+        
+    Methods:
+        delete: Delete the item.
+    Class Methods:
+        active_item: Get the currently active item.
+        create: Create a new item.
+            
+    Properties:
+        name: The name of the item.
+        type: The type of the item.
+        parent_folder: The parent folder of the item.
+        duration: The duration of the item.
+        current_time: The current time of the item.
+        comment: The comment of the item.
+        label: The label of the item.
+        dimensions: The dimensions of the item.
+        pixel_aspect: The pixel aspect ratio of the item.
+        selected: Whether the item is selected.
+        missing: Whether the item is missing.
+        has_proxy: Whether the item has a proxy.
+        using_proxy: Whether the item is using a proxy.
+        missing_proxy: Whether the item is missing a proxy.
+        has_video: Whether the item has video.
+        has_audio: Whether the item has audio.
+        still: Whether the item is a still.
+        has_active_audio: Whether the item has active audio.
+        
+    """
     _suite = PyFx.ItemSuite()
     def __init__(self, item: PyFx.ItemPtr) -> None:
         self.item = item
     
+    """
+    Get the currently active item.
+    
+    Args:
+        None
+        
+    """
     @staticmethod
     def active_item() -> Union['Item', 'CompItem', 'FootageItem', None]:
         item_ptr = PyFx.ItemSuite().GetActiveItem()

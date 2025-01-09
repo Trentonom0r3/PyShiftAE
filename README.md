@@ -45,64 +45,34 @@ The ripple effect of PyShiftAE in the AE community could be profound. Scriptwrit
 To Use PyShiftAE, you must have the following core dependencies installed;
 
 - **Windows 10/11, x64 build**
-- **Python 3.12**
-    - Should work on other builds, but untested. 
+- **Python 3.1X**
 - **After Effects 2023** or above.
 
 
 # Installation
 
-## Step 1: Clone the Repository
-1. Open a terminal or command prompt.
-2. Run the following command to clone the repository:
-   ```bash
-   git clone https://github.com/Trentonom0r3/PyShiftAE.git
-   ```
+## 1. Check Your Python Version
+1. Make sure you have **Python 3.1x** installed (e.g., Python 3.11 or 3.12).  
+   - To verify, open a terminal and run:
+     ```bash
+     python --version
+     ```
+     or
+     ```bash
+     python3 --version
+     ```
+   - The output should show a Python version in the 3.1x range.
 
-3. Navigate to the cloned directory:
-   ```bash
-   cd PyShiftAE
-   ```
+## 2. Obtain the Matching Wheel
+1. Download the latest `.whl` file for **your** Python version (e.g., `cp311` for Python 3.11).  
+2. Keep in mind that PyShiftAE will use whichever Python interpreter is first in your system `PATH`.
 
----
-
-## Step 2: Install Python Dependencies
-1. Ensure you have Python 3.12 is installed (and used as default). You can check your Python version by running:
-   ```bash
-   python --version
-   ```
-   or
-   ```bash
-   python3 --version
-   ```
-
-2. Navigate to the `Builds` directory:
-   ```bash
-   cd Builds
-   ```
-
-3. Install the Python wheel package:
-   ```bash
-   pip install pyshiftae-0.1.0-py3-none-any.whl
-   ```
-
-   This will install the **PyShiftAE** Python library.
-
----
-
-## Step 3: Set Up After Effects Plugin
-1. Locate the **PyShiftAE.aex** file in the `Builds` directory:
-   ```
-   D:\dev\Projects\Repos\PyShiftAE\Builds\PyShiftAE.aex
-   ```
-
-2. Copy the **PyShiftAE.aex** file to your After Effects `Plug-ins\Effects` directory:
-   ```
-   C:\Program Files\Adobe\Adobe After Effects 202X\Support Files\Plug-ins\Effects
-   ```
-
-3. Restart After Effects to ensure the plugin is loaded correctly.
-
+## 3. Install the Wheel
+1. Open a terminal in the same folder where you saved the `.whl`.  
+2. Install with pip:
+```bash
+   pip install pyshiftae-0.1.1-cp311-cp311-win_amd64.whl
+```
 
 ### Changelog:
 All Updates should be assumed to come with updated documentation, and an updated binary .aex file located in `dist`, unless otherwise specified. 

@@ -1,5 +1,0 @@
-python:
-  path: "/usr/bin/python3.9"
-  logging:
-    level: "DEBUG"
-    file: "./PyShiftAE.log"
